@@ -2,37 +2,129 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["jsonProtocol", "metrics", "tracing"]
-    binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["jsonProtocol", "metrics", "tracing"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id           String   @id @default(cuid())
-    nim          String   @unique
-    passwordHash String
-    role         UserRole @default(USER)
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+  id           String   @id @default(cuid())
+  nim          String   @unique
+  passwordHash String
+  role         UserRole @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student Student?
+  mentor  Mentor?
+}
+
+model Mentor {
+  id        String   @id @default(cuid())
+  group     String   @db.VarChar(1)
+  zoomLink  String
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id])
+  student Student[]
+}
+
+model Student {
+  id          String   @id @default(cuid())
+  gender      Gender?
+  firstName   String   @db.VarChar(50)
+  lastName    String   @db.VarChar(50)
+  fakultas    String   @db.VarChar(50)
+  jurusan     String   @db.VarChar(50)
+  phoneNumber String?  @unique @db.VarChar(15)
+  imagePath   String?
+  accepted    Boolean  @default(false)
+  userId      String   @unique
+  mentorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User                   @relation(fields: [userId], references: [id])
+  mentor     Mentor                 @relation(fields: [mentorId], references: [id])
+  attendance Attendance[]
+  submission AssignmentSubmission[]
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  date      DateTime
+  status    AttendanceStatus @default(TIDAK_HADIR)
+  studentId String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  student Student           @relation(fields: [studentId], references: [id])
+  reason  AttendanceReason?
+}
+
+model AttendanceReason {
+  id           String   @id @default(cuid())
+  reason       String?  @db.Text
+  attendanceId String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+}
+
+model AssignmentSubmission {
+  id           String   @id @default(cuid())
+  filePath     String   @db.VarChar(255)
+  studentId    String
+  assignmentId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student    Student    @relation(fields: [studentId], references: [id])
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(50)
+  description String?  @db.Text
+  deadline    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submission AssignmentSubmission[]
 }
 
 model Example {
-    id        String   @id @default(cuid())
-    message   String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid())
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum UserRole {
-    ADMIN
-    USER
+  MENTOR
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AttendanceStatus {
+  HADIR
+  IZIN
+  TIDAK_HADIR
 }
