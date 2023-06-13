@@ -124,27 +124,27 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   });
 });
 
-/** Reusable middleware that enforces users have admin role before running the procedure.
+/** Reusable middleware that enforces users have mentor role before running the procedure.
  *
  * It is safe to use despite the `unstable` prefix.
  *
  * @see https://trpc.io/docs/middleware
  */
-const isAdmin = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
-  if (ctx.session.user.role !== "ADMIN") {
+const isMentor = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
+  if (ctx.session.user.role !== "MENTOR") {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
 });
 
-/** Reusable middleware that enforces users have user role before running the procedure.
+/** Reusable middleware that enforces users have student role before running the procedure.
  *
  * It is safe to use despite the `unstable` prefix.
  *
  * @see https://trpc.io/docs/middleware
  */
-const isUser = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
-  if (ctx.session.user.role !== "USER") {
+const isStudent = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
+  if (ctx.session.user.role !== "STUDENT") {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
@@ -163,19 +163,19 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 /**
  * Protected (admin) procedure
  *
- * If you want a query or mutation to ONLY be accessible to admin role users, use this. It verifies
+ * If you want a query or mutation to ONLY be accessible to mentor role users, use this. It verifies
  * the session is valid dan guarantees that the role is admin.
  *
  * @see https://trpc.io/docs/procedures
  */
-export const adminProcedure = t.procedure.use(isAdmin);
+export const mentorProcedure = t.procedure.use(isMentor);
 
 /**
  * Protected (user) procedure
  *
- * If you want a query or mutation to ONLY be accessible to user role users, use this. It verifies
+ * If you want a query or mutation to ONLY be accessible to student role users, use this. It verifies
  * the session is valid dan guarantees that the role is user.
  *
  * @see https://trpc.io/docs/procedures
  */
-export const userProcedure = t.procedure.use(isUser);
+export const studentProcedure = t.procedure.use(isStudent);
