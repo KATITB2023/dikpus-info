@@ -20,7 +20,7 @@ model User {
   id           String   @id @default(cuid())
   nim          String   @unique
   passwordHash String
-  role         UserRole @default(USER)
+  role         UserRole @default(STUDENT)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -114,8 +114,8 @@ model Example {
 }
 
 enum UserRole {
-  ADMIN
-  USER
+  MENTOR
+  STUDENT
 }
 
 enum Gender {
