@@ -17,6 +17,11 @@
 /out/
 next-env.d.ts
 
+#yarn cache
+.yarn
+.yarnrc.yml
+yarn.lock
+
 # production
 /build
 
