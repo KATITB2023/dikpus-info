@@ -66,10 +66,12 @@ model Attendance {
   date      DateTime
   status    AttendanceStatus @default(TIDAK_HADIR)
   studentId String           @db.Uuid
+  eventId   String           @db.Uuid
   createdAt DateTime         @default(now())
   updatedAt DateTime         @default(now()) @updatedAt
 
   student Student           @relation(fields: [studentId], references: [id])
+  event   Event             @relation(fields: [eventId], references: [id])
   reason  AttendanceReason?
 }
 
@@ -83,6 +85,18 @@ model AttendanceReason {
   attendance Attendance @relation(fields: [attendanceId], references: [id])
 }
 
+model Event {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String   @db.VarChar(50)
+  materialPath String   @db.VarChar(255)
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  attendances Attendance[]
+}
+
 model Assignment {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String   @db.VarChar(50)
@@ -93,7 +107,6 @@ model Assignment {
 
   submission AssignmentSubmission[]
 }
-
 
 model AssignmentSubmission {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
