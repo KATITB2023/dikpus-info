@@ -2267,6 +2267,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^9.0.2":
+  version: 9.0.2
+  resolution: "@types/uuid@npm:9.0.2"
+  checksum: 1754bcf3444e1e3aeadd6e774fc328eb53bc956665e2e8fb6ec127aa8e1f43d9a224c3d22a9a6233dca8dd81a12dc7fed4d84b8876dd5ec82d40f574f7ff8b68
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/eslint-plugin@npm:^5.59.6":
   version: 5.59.11
   resolution: "@typescript-eslint/eslint-plugin@npm:5.59.11"
@@ -6749,6 +6756,7 @@ __metadata:
     "@types/prettier": ^2.7.2
     "@types/react": ^18.2.6
     "@types/react-dom": ^18.2.4
+    "@types/uuid": ^9.0.2
     "@typescript-eslint/eslint-plugin": ^5.59.6
     "@typescript-eslint/parser": ^5.59.6
     autoprefixer: ^10.4.14
@@ -6768,6 +6776,7 @@ __metadata:
     sharp: ^0.32.1
     superjson: 1.12.2
     typescript: ^5.0.4
+    uuid: ^9.0.0
     zod: ^3.21.4
   languageName: unknown
   linkType: soft
