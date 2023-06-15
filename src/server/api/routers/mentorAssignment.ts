@@ -9,25 +9,34 @@ export const mentorAssignmentRouter = createTRPCRouter({
     .input(z.object({
       userId: z.string(),
       namaTugas: z.string().optional(),
-      kelompok: z.string().optional()
     }))
     .query(async ({ ctx, input }) => {
-      // TODO
-      // get tugas with optional filter [namaTugas, kelompok]
-      return []
+      const submissionList = await ctx.prisma.assignmentSubmission.findMany({
+        where: {
+          assignment: {
+            is: {
+              title: input.namaTugas
+            }
+          },
+          student: {
+            is: {
+              id: input.userId
+            }
+          }
+        },
+        include: {
+          student: true
+        }
+      })
+      return submissionList;
     }),
 
   getListNamaTugas: mentorProcedure
     .query(async ({ ctx }) => {
-      // TODO
-      // get list nama semua tugas
-      return []
+      return await ctx.prisma.assignment.findMany({
+        select: {
+          title: true
+        }
+      });
     }),
-
-  getListKelompok: mentorProcedure
-    .query(async ({ ctx }) => {
-      // TODO
-      // get list semua kelompok
-      return []
-    })
 });
