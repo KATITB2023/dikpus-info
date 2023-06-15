@@ -8,6 +8,7 @@ export const mentorAssignmentRouter = createTRPCRouter({
   getTugas: mentorProcedure
     .input(z.object({
       userId: z.string(),
+      studentId: z.string().optional(),
       namaTugas: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
@@ -20,9 +21,12 @@ export const mentorAssignmentRouter = createTRPCRouter({
           },
           student: {
             is: {
-              id: input.userId
-            }
-          }
+              id: input.studentId,
+              mentor: {
+                id: input.userId
+              }
+            },
+          },
         },
         include: {
           student: true
