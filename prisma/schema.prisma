@@ -17,31 +17,31 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nim          String   @unique
   passwordHash String
   role         UserRole @default(STUDENT)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now()) @updatedAt
 
   student Student?
   mentor  Mentor?
 }
 
 model Mentor {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   group     String   @db.VarChar(1)
   zoomLink  String
-  userId    String   @unique
+  userId    String   @unique @db.Uuid
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   user    User      @relation(fields: [userId], references: [id])
   student Student[]
 }
 
 model Student {
-  id          String   @id @default(cuid())
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   gender      Gender?
   firstName   String   @db.VarChar(50)
   lastName    String   @db.VarChar(50)
@@ -50,10 +50,10 @@ model Student {
   phoneNumber String?  @unique @db.VarChar(15)
   imagePath   String?
   accepted    Boolean  @default(false)
-  userId      String   @unique
-  mentorId    String
+  userId      String   @unique @db.Uuid
+  mentorId    String   @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   user       User                   @relation(fields: [userId], references: [id])
   mentor     Mentor                 @relation(fields: [mentorId], references: [id])
@@ -62,55 +62,56 @@ model Student {
 }
 
 model Attendance {
-  id        String           @id @default(cuid())
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   date      DateTime
   status    AttendanceStatus @default(TIDAK_HADIR)
-  studentId String
+  studentId String           @db.Uuid
   createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  updatedAt DateTime         @default(now()) @updatedAt
 
   student Student           @relation(fields: [studentId], references: [id])
   reason  AttendanceReason?
 }
 
 model AttendanceReason {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   reason       String?  @db.Text
-  attendanceId String   @unique
+  attendanceId String   @unique @db.Uuid
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now()) @updatedAt
 
   attendance Attendance @relation(fields: [attendanceId], references: [id])
 }
 
+model Assignment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String   @db.VarChar(50)
+  description String?  @db.Text
+  deadline    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  submission AssignmentSubmission[]
+}
+
+
 model AssignmentSubmission {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   filePath     String   @db.VarChar(255)
-  studentId    String
-  assignmentId String
+  studentId    String   @db.Uuid
+  assignmentId String   @db.Uuid
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now()) @updatedAt
 
   student    Student    @relation(fields: [studentId], references: [id])
   assignment Assignment @relation(fields: [assignmentId], references: [id])
 }
 
-model Assignment {
-  id          String   @id @default(cuid())
-  title       String   @db.VarChar(50)
-  description String?  @db.Text
-  deadline    DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  submission AssignmentSubmission[]
-}
-
 model Example {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   message   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum UserRole {
