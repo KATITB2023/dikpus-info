@@ -30,6 +30,8 @@ steps:
       - instances
       - update-container
       - kat-staging
+      - '--zone'
+      - 'asia-southeast2-a'
       - '--container-image'
       - 'gcr.io/${PROJECT_ID}/dikpus-info:staging'
 options:
