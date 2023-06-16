@@ -20,6 +20,7 @@ next-env.d.ts
 #yarn cache
 .yarn
 .yarnrc.yml
+yarn.lock
 
 # production
 /build
@@ -44,3 +45,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# google credentials
+/secret

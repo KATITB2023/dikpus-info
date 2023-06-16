@@ -1,9 +1,12 @@
-import { z } from "zod";
+import { z } from 'zod';
 import {
   createTRPCRouter,
-  publicProcedure,
-  studentProcedure,
-} from "~/server/api/trpc";
+  protectedProcedure,
+  studentProcedure
+} from '~/server/api/trpc';
+import { compare, hash } from 'bcrypt';
+import { TRPCError } from '@trpc/server';
+import { env } from '~/env.mjs';
 
 export const profileRouter = createTRPCRouter({
   getProfile:studentProcedure
@@ -68,6 +71,7 @@ export const profileRouter = createTRPCRouter({
 
       return data
     }),
+
   editProfile: studentProcedure
     .input(
       z.object({ 
@@ -79,7 +83,6 @@ export const profileRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      
       const student=await ctx.prisma.student.findFirst({
         where:{
           id:input.userId
@@ -94,6 +97,59 @@ export const profileRouter = createTRPCRouter({
           firstName:input.firstName=="" ? student?.firstName : input.firstName,
           lastName:input.lastName=="" ? student?.lastName : input.lastName,
           phoneNumber:input.phoneNumber=="" ? student?.phoneNumber : input.phoneNumber,
+        }
+      });
+    }),
+
+  changePass: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        cur_pass: z.string(),
+        new_pass: z.string(),
+        repeat_pass: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: input.userId
+        },
+        select: {
+          passwordHash: true
+        }
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'User not found'
+        });
+      }
+
+      const isValid = await compare(input.cur_pass, user.passwordHash);
+      if (!isValid) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Incorrect current password'
+        });
+      }
+
+      if (input.repeat_pass.localeCompare(input.new_pass) !== 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: "Confirmation password doesn't match"
+        });
+      }
+
+      const saltRounds = env.BCRYPT_SALT;
+
+      return await ctx.prisma.user.update({
+        where: {
+          id: input.userId
+        },
+        data: {
+          passwordHash: await hash(input.new_pass, saltRounds)
         }
       });
     })
