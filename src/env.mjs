@@ -1,5 +1,7 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 export const env = createEnv({
   /**
@@ -9,7 +11,9 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(['development', 'test', 'production']),
+    NODE_ENV: z.enum(['development', 'test', 'production']),
     NEXTAUTH_SECRET:
+      process.env.NODE_ENV === 'production'
       process.env.NODE_ENV === 'production'
         ? z.string().min(1)
         : z.string().min(1).optional(),
@@ -19,6 +23,11 @@ export const env = createEnv({
       (str) => process.env.VERCEL_URL ?? str,
       // VERCEL_URL doesn't include `https` so it cant be validated as a URL
       process.env.VERCEL ? z.string().min(1) : z.string().url()
+    ),
+    SESSION_MAXAGE: z.preprocess(
+      // If SESSION_MAXAGE is not set, set it to 30 days
+      (str) => (str ? +str : 30 * 24 * 60 * 60),
+      z.number().int().positive().min(1)
     ),
     S_MAXAGE: z.preprocess(
       // If S_MAXAGE is not set, set it to 1 second
@@ -32,6 +41,20 @@ export const env = createEnv({
       // STALE_WHILE_REVALIDATE must be a positive integer
       z.number().int().positive().min(1)
     ),
+    SAMPLER_RATIO: z.preprocess(
+      // If SAMPLER_RATIO is not set, set it to 1
+      (str) => (str ? +str : 1),
+      // SAMPLER_RATIO must be a positive number
+      z.number().positive().min(0).max(1)
+    ),
+    GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+    BUCKET_NAME: z.string().min(1),
+    URL_EXPIRATION_TIME: z.preprocess(
+      // If URL_EXPIRATION_TIME is not set, set it to 1 hour
+      (str) => (str ? +str : 60 * 60 * 1000),
+      // URL_EXPIRATION_TIME must be a positive integer
+      z.number().int().positive().min(1)
+    )
     BCRYPT_SALT: z.number()
   },
 
@@ -53,8 +76,13 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    SESSION_MAXAGE: process.env.SESSION_MAXAGE,
     S_MAXAGE: process.env.S_MAXAGE,
     STALE_WHILE_REVALIDATE: process.env.STALE_WHILE_REVALIDATE,
+    SAMPLER_RATIO: process.env.SAMPLER_RATIO,
+    GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    BUCKET_NAME: process.env.BUCKET_NAME,
+    URL_EXPIRATION_TIME: process.env.URL_EXPIRATION_TIME
     BCRYPT_SALT: process.env.BCRYPT_SALT
   },
   /**
