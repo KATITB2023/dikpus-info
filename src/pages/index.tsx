@@ -1,7 +1,6 @@
-import {Box, Button} from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
 import { api } from '~/utils/api';
-import {signIn} from "next-auth/react";
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: 'from tRPC' });
@@ -15,9 +14,6 @@ export default function Home() {
         Ingfo dari tRPC:{' '}
         {hello.data ? hello.data.greeting : 'Loading tRPC query...'}
       </Box>
-        <Button onClick= {() => void signIn()}>
-            Sign in
-        </Button>
     </>
   );
 }
