@@ -1,7 +1,5 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
 
 export const env = createEnv({
   /**
@@ -11,9 +9,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(['development', 'test', 'production']),
-    NODE_ENV: z.enum(['development', 'test', 'production']),
     NEXTAUTH_SECRET:
-      process.env.NODE_ENV === 'production'
       process.env.NODE_ENV === 'production'
         ? z.string().min(1)
         : z.string().min(1).optional(),
@@ -47,6 +43,7 @@ export const env = createEnv({
       // SAMPLER_RATIO must be a positive number
       z.number().positive().min(0).max(1)
     ),
+    BCRYPT_SALT: z.number(),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
     BUCKET_NAME: z.string().min(1),
     URL_EXPIRATION_TIME: z.preprocess(
@@ -55,7 +52,6 @@ export const env = createEnv({
       // URL_EXPIRATION_TIME must be a positive integer
       z.number().int().positive().min(1)
     )
-    BCRYPT_SALT: z.number()
   },
 
   /**
@@ -80,10 +76,10 @@ export const env = createEnv({
     S_MAXAGE: process.env.S_MAXAGE,
     STALE_WHILE_REVALIDATE: process.env.STALE_WHILE_REVALIDATE,
     SAMPLER_RATIO: process.env.SAMPLER_RATIO,
+    BCRYPT_SALT: process.env.BCRYPT_SALT,
     GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     BUCKET_NAME: process.env.BUCKET_NAME,
     URL_EXPIRATION_TIME: process.env.URL_EXPIRATION_TIME
-    BCRYPT_SALT: process.env.BCRYPT_SALT
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
