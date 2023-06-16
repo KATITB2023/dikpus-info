@@ -101,6 +101,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { nim, password } = credentials;
+        if (!nim || !password) {
+            throw new Error("Invalid credentials Nim: " + nim + " Password: " + password);
+        }
 
         const user = await prisma.user.findUnique({
           where: {
