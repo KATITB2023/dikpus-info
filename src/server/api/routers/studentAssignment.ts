@@ -6,7 +6,7 @@ export const studentAssignmentRouter = createTRPCRouter({
   getDeskripsiTugas: studentProcedure
     .input(
       z.object({
-        namaTugas: z.string()
+        namaTugas: z.string().optional()
       })
     )
     .query(async ({ ctx, input }) => {
@@ -59,5 +59,9 @@ export const studentAssignmentRouter = createTRPCRouter({
           filePath: input.fileUrl
         }
       });
+
+      return {
+        message: 'Upload successful'
+      };
     })
 });
