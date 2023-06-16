@@ -85,7 +85,7 @@ export const attendanceRouter = createTRPCRouter({
       }
     }),
 
-  getAbsensi: mentorProcedure
+  getAttendance: mentorProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -159,7 +159,7 @@ export const attendanceRouter = createTRPCRouter({
       return attendances.map((attendance) => attendance.attendances).flat();
     }),
 
-  getListTanggal: mentorProcedure.query(async ({ ctx }) => {
+  getDateList: mentorProcedure.query(async ({ ctx }) => {
     // TODO
     // get list tanggal absensi
     return await ctx.prisma.attendance.findMany({
@@ -169,7 +169,7 @@ export const attendanceRouter = createTRPCRouter({
     });
   }),
 
-  editAbsensi: mentorProcedure
+  editAttendance: mentorProcedure
     .input(
       z.object({
         mentorId: z.string(),
