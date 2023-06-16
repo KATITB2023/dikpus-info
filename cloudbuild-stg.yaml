@@ -5,7 +5,7 @@ steps:
     args:
       - '-c'
       - |
-        gcloud auth activate-service-account --key-file=${_GCS_KEY_FILE}
+        gcloud auth activate-service-account --key-file=${GCS_KEY_FILE}
 
   # Retrieve secrets from Secret Manager
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -34,4 +34,4 @@ steps:
 
 secrets:
   - secretEnv:
-      _GCS_KEY_FILE: gcs_credentials
+      GCS_KEY_FILE: gcs_credentials
