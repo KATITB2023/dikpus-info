@@ -48,7 +48,7 @@ export const profileRouter = createTRPCRouter({
       //MENTOR
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {
-          userId: student?.mentorId
+          id: student?.mentorId
         }
       });
 
@@ -95,15 +95,15 @@ export const profileRouter = createTRPCRouter({
         },
         data: {
           imagePath:
-            input.profile_url == null
+            input.profile_url
               ? student?.imagePath
               : input.profile_url,
           firstName:
-            input.firstName == null ? student?.firstName : input.firstName,
+            input.firstName ? student?.firstName : input.firstName,
           lastName:
-            input.lastName == null ? student?.lastName : input.lastName,
+            input.lastName ? student?.lastName : input.lastName,
           phoneNumber:
-            input.phoneNumber == null
+            input.phoneNumber
               ? student?.phoneNumber
               : input.phoneNumber
         }
