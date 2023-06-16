@@ -41,7 +41,7 @@ export const profileRouter = createTRPCRouter({
       //STUDENT
       const student = await ctx.prisma.student.findFirst({
         where: {
-          id: input.userId
+          userId: input.userId
         }
       });
 
@@ -76,10 +76,10 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        profile_url: z.string(),
-        firstName: z.string(),
-        lastName: z.string(),
-        phoneNumber: z.string()
+        profile_url: z.string().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        phoneNumber: z.string().optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -88,20 +88,27 @@ export const profileRouter = createTRPCRouter({
           id: input.userId
         }
       });
+      // return input
       return await ctx.prisma.student.update({
         where: {
-          id: input.userId
+          userId: input.userId
         },
         data: {
           imagePath:
-            input.profile_url == '' ? student?.imagePath : input.profile_url,
+            input.profile_url == null
+              ? student?.imagePath
+              : input.profile_url,
           firstName:
-            input.firstName == '' ? student?.firstName : input.firstName,
-          lastName: input.lastName == '' ? student?.lastName : input.lastName,
+            input.firstName == null ? student?.firstName : input.firstName,
+          lastName:
+            input.lastName == null ? student?.lastName : input.lastName,
           phoneNumber:
-            input.phoneNumber == '' ? student?.phoneNumber : input.phoneNumber
+            input.phoneNumber == null
+              ? student?.phoneNumber
+              : input.phoneNumber
         }
       });
+  
     }),
 
   changePass: protectedProcedure
