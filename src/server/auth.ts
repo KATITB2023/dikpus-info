@@ -4,12 +4,12 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
-  DefaultUser,
+  type DefaultUser,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import { prisma } from "~/server/db";
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -123,6 +123,11 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  pages: {
+    signIn: '/auth/signin',
+    // signOut: '/auth/signout',
+    // error: '/auth/error', // Error code passed in query string as ?error=
+  }
 };
 
 /**
