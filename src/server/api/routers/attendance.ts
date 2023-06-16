@@ -25,7 +25,7 @@ export const attendanceRouter = createTRPCRouter({
         }
       })
 
-      // error handling
+      // error handling (kalau gak ada ini yg students gak mau jalan)
       if (!mentor) {
         throw new Error("Mentor not found");
       }
@@ -47,14 +47,9 @@ export const attendanceRouter = createTRPCRouter({
           studentId: {
             in: students.map(item => item.id)
           },
-          date: input.tanggal,
-          status: {
-            not: AttendanceStatus.TIDAK_HADIR
-          }
+          date: input.tanggal
         },
         select: {
-          // TODO
-          // data harus ada dari table attendance dan attendanceReason
           id: true,
           date: true,
           status: true,
@@ -97,7 +92,7 @@ export const attendanceRouter = createTRPCRouter({
         }
       })
 
-      // filter kelompok yang unik pakai Set
+      // filter kelompok yang unik pakai Set (handling kalau ada kelompok yang double karena ada 2 mentor)
       const uniqueGroups = [...new Set(groups.map(item => item.group))]
 
       // return
