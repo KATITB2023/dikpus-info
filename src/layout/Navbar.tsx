@@ -40,7 +40,10 @@ export default function Navbar({ title, titleOnly = false }: Props) {
       </Text>
       {!titleOnly ? (
         <HStack spacing={8}>
-          <Heading fontSize='2xl'>{title}</Heading>
+          {/* idk, bodwars fontnya stick ke atas.. */}
+          <Heading fontSize='2xl' pt={1.5}>
+            {title}
+          </Heading>
           <Menu isLazy>
             <MenuButton
               _hover={{ opacity: 0.7 }}
