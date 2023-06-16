@@ -43,7 +43,7 @@ export const env = createEnv({
       // SAMPLER_RATIO must be a positive number
       z.number().positive().min(0).max(1)
     ),
-    BCRYPT_SALT: z.number(),
+    BCRYPT_SALT: z.preprocess((str) => (str ? +str : 10), z.number()),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
     BUCKET_NAME: z.string().min(1),
     URL_EXPIRATION_TIME: z.preprocess(
