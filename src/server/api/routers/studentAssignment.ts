@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, studentProcedure } from '~/server/api/trpc';
 
@@ -42,9 +43,16 @@ export const studentAssignmentRouter = createTRPCRouter({
         }
       });
 
+      if (!student) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: "Student doesn't exist"
+        });
+      }
+
       await ctx.prisma.assignmentSubmission.updateMany({
         where: {
-          studentId: student?.id,
+          studentId: student.id,
           assignmentId: input.assignmentId
         },
         data: {
