@@ -1,0 +1,37 @@
+steps:
+  # Authenticate with the Google Cloud SDK
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud auth activate-service-account --key-file=${_GCS_KEY_FILE}
+
+  # Retrieve secrets from Secret Manager
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud secrets versions access latest --secret=gcs_credentials --format='get(payload.data)' --project=${PROJECT_ID} > .env
+
+  # Build steps
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/dikpus-info:staging', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${PROJECT_ID}/dikpus-info:staging']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'compute'
+      - 'instances'
+      - 'update-container'
+      - 'kat-staging'
+      - '--container-image'
+      - 'gcr.io/${PROJECT_ID}/dikpus-info:staging'
+
+
+secrets:
+  - secretEnv:
+      _GCS_KEY_FILE: gcs_credentials
