@@ -8,3 +8,18 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+@font-face {
+  font-family: 'Bodwars';
+  src: url('../assets/fonts/Bodwars.otf');
+}
+
+@font-face {
+  font-family: 'SomarRounded-Bold';
+  src: url('../assets/fonts/SomarRounded-Bold.ttf');
+}
+
+@font-face {
+  font-family: 'SomarRounded-Regular';
+  src: url('../assets/fonts/SomarRounded-Regular.ttf');
+}
