@@ -13,11 +13,11 @@ export const attendanceRouter = createTRPCRouter({
   }),
 
   setAttendance: studentProcedure
-    .input(z.object({ user_id: z.string(), event_id: z.string() }))
+    .input(z.object({ userId: z.string(), eventId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const student = await ctx.prisma.student.findFirst({
         where: {
-          userId: input.user_id
+          userId: input.userId
         },
         select: {
           id: true
@@ -33,7 +33,7 @@ export const attendanceRouter = createTRPCRouter({
 
       const event = await ctx.prisma.event.findFirst({
         where: {
-          id: input.event_id
+          id: input.eventId
         }
       });
 
@@ -47,7 +47,7 @@ export const attendanceRouter = createTRPCRouter({
       const attendance = await ctx.prisma.attendance.findMany({
         where: {
           studentId: student.id,
-          eventId: input.event_id
+          eventId: input.eventId
         }
       });
 
@@ -65,7 +65,7 @@ export const attendanceRouter = createTRPCRouter({
             date: currentTime,
             status: 'HADIR',
             studentId: student.id,
-            eventId: input.event_id
+            eventId: input.eventId
           }
         });
 
@@ -85,7 +85,7 @@ export const attendanceRouter = createTRPCRouter({
       }
     }),
 
-  getAbsensi: mentorProcedure
+  getAttendance: mentorProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -159,7 +159,7 @@ export const attendanceRouter = createTRPCRouter({
       return attendances.map((attendance) => attendance.attendances).flat();
     }),
 
-  getListTanggal: mentorProcedure.query(async ({ ctx }) => {
+  getDateList: mentorProcedure.query(async ({ ctx }) => {
     // TODO
     // get list tanggal absensi
     return await ctx.prisma.attendance.findMany({
@@ -169,7 +169,7 @@ export const attendanceRouter = createTRPCRouter({
     });
   }),
 
-  editAbsensi: mentorProcedure
+  editAttendance: mentorProcedure
     .input(
       z.object({
         mentorId: z.string(),

@@ -8,7 +8,7 @@ import {
 } from '~/server/api/trpc';
 
 export const assignmentRouter = createTRPCRouter({
-  getDeskripsiTugas: studentProcedure
+  getAssignmentDescription: studentProcedure
     .input(
       z.object({
         namaTugas: z.string().optional()
@@ -22,7 +22,7 @@ export const assignmentRouter = createTRPCRouter({
       });
     }),
 
-  getHasilTugas: mentorProcedure
+  getAssignmentResult: mentorProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -68,7 +68,7 @@ export const assignmentRouter = createTRPCRouter({
       return submissionList;
     }),
 
-  getListNamaTugas: protectedProcedure.query(async ({ ctx }) => {
+  getAssignmentNameList: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.assignment.findMany({
       select: {
         title: true
