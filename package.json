@@ -10,6 +10,9 @@
     "lint": "next lint",
     "start": "next start"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "dependencies": {
     "@chakra-ui/next-js": "^2.1.4",
     "@chakra-ui/react": "^2.7.0",
@@ -44,6 +47,7 @@
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.32.1",
     "superjson": "1.12.2",
+    "ts-node": "^10.9.1",
     "uuid": "^9.0.0",
     "zod": "^3.21.4"
   },
