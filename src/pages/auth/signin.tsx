@@ -1,48 +1,29 @@
-import type { NextPage } from "next";
-import type { FormEventHandler } from "react";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { getCsrfToken } from "next-auth/react"
 
+// TODO:ubah ke typescript sendiri ya!!!!
 
-
-const SignIn: NextPage = () => {
-    const [userInfo, setUserInfo] = useState({email: '', password: ""})
-    const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-        e.preventDefault();
-        signIn('credentials', {
-            email: userInfo.email,
-            password: userInfo.password,
-            redirect: false
-        }).catch((error) => {
-            // Handle error here
-            console.log(error);
-        });
-        return;
-    };
+export default function SignIn({ csrfToken }) {
     return (
-        <div className="sign-in-form">
-            <form onSubmit = {handleSubmit}>
-                <h1>Login</h1>
-                <input
-                    type="text"
-                    placeholder="13520056"
-                    value={userInfo.email}
-                    onChange={({ target }) =>
-                        setUserInfo({ ...userInfo, email: target.value})
-                    }
-                />
-                <input
-                    type="password"
-                    placeholder="********"
-                    value={userInfo.password}
-                    onChange={({ target }) =>
-                        setUserInfo({ ...userInfo, password: target.value})
-                    }
-                />
-                <input type="submit" value="Login"/>
-            </form>
-        </div>
-    );
-};
+        <form method="post" action="/api/auth/callback/credentials">
+            <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+            <label>
+                Nim
+                <input name="nim" type="text" />
+            </label>
+            <label>
+                Password
+                <input name="password" type="password" />
+            </label>
+            <button type="submit">Sign in</button>
+        </form>
+    )
+}
 
-export default SignIn
+// This is the recommended way for Next.js 9.3 or newer
+export async function getServerSideProps(context) {
+    return {
+        props: {
+            csrfToken: await getCsrfToken(context),
+        },
+    }
+}
