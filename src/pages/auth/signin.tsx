@@ -1,8 +1,9 @@
+import { type CtxOrReq } from "next-auth/client/_utils"
 import { getCsrfToken } from "next-auth/react"
 
 // TODO:ubah ke typescript sendiri ya!!!!
 
-export default function SignIn({ csrfToken }) {
+export default function SignIn({ csrfToken }: { csrfToken: string }) {
     return (
         <form method="post" action="/api/auth/callback/credentials">
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
@@ -19,8 +20,8 @@ export default function SignIn({ csrfToken }) {
     )
 }
 
-// This is the recommended way for Next.js 9.3 or newer
-export async function getServerSideProps(context) {
+// // This is the recommended way for Next.js 9.3 or newer
+export async function getServerSideProps(context: CtxOrReq) {
     return {
         props: {
             csrfToken: await getCsrfToken(context),
