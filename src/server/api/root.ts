@@ -1,11 +1,9 @@
 import { exampleRouter } from '~/server/api/routers/example';
 import { metricsRouter } from '~/server/api/routers/metrics';
 import { createTRPCRouter } from '~/server/api/trpc';
+import { assignmentRouter } from './routers/assignment';
+import { attendanceRouter } from './routers/attendance';
 import { profileRouter } from './routers/profile';
-import { mentorAttendanceRouter } from './routers/mentorAttendance';
-import { menteeAttendanceRouter } from './routers/menteeAttendance';
-import { studentAssignmentRouter } from './routers/studentAssignment';
-import { mentorAssignmentRouter } from './routers/mentorAssignment';
 import { storageRouter } from './routers/storage';
 
 /**
@@ -15,11 +13,9 @@ import { storageRouter } from './routers/storage';
  */
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
+  assignment: assignmentRouter,
+  attendance: attendanceRouter,
   profile: profileRouter,
-  mentorAttendance: mentorAttendanceRouter,
-  menteeAttendance: menteeAttendanceRouter,
-  studentAssignment: studentAssignmentRouter,
-  mentorAssignment: mentorAssignmentRouter,
   metrics: metricsRouter,
   storage: storageRouter
 });

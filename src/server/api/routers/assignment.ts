@@ -1,8 +1,13 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { createTRPCRouter, studentProcedure } from '~/server/api/trpc';
+import {
+  createTRPCRouter,
+  studentProcedure,
+  mentorProcedure,
+  protectedProcedure
+} from '~/server/api/trpc';
 
-export const studentAssignmentRouter = createTRPCRouter({
+export const assignmentRouter = createTRPCRouter({
   getDeskripsiTugas: studentProcedure
     .input(
       z.object({
@@ -17,7 +22,53 @@ export const studentAssignmentRouter = createTRPCRouter({
       });
     }),
 
-  getListNamaTugas: studentProcedure.query(async ({ ctx }) => {
+  getHasilTugas: mentorProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        studentId: z.string().optional(),
+        namaTugas: z.string().optional()
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const submissionList = await ctx.prisma.assignmentSubmission.findMany({
+        where: {
+          assignment: {
+            is: {
+              title: input.namaTugas
+            }
+          },
+          student: {
+            is: {
+              id: input.studentId,
+              mentor: {
+                id: input.userId
+              }
+            }
+          }
+        },
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userId: true,
+              mentorId: true,
+              mentor: {
+                select: {
+                  id: true,
+                  group: true
+                }
+              }
+            }
+          }
+        }
+      });
+      return submissionList;
+    }),
+
+  getListNamaTugas: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.assignment.findMany({
       select: {
         title: true
