@@ -48,7 +48,21 @@ export const assignmentRouter = createTRPCRouter({
           }
         },
         include: {
-          student: true
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userId: true,
+              mentorId: true,
+              mentor: {
+                select: {
+                  id: true,
+                  group: true
+                }
+              }
+            }
+          }
         }
       });
       return submissionList;
