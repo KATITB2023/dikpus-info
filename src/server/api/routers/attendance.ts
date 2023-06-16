@@ -9,8 +9,7 @@ export const attendanceRouter = createTRPCRouter({
   getAbsensi: mentorProcedure
     .input(z.object({
       userId: z.string(),
-      tanggal: z.string().optional(),
-      kelompok: z.string().optional()
+      tanggal: z.string().optional()
     }))
     .query(async ({ ctx, input }) => {
       // TODO
