@@ -5,7 +5,7 @@ import {
   mentorProcedure,
 } from "~/server/api/trpc";
 
-export const attendanceRouter = createTRPCRouter({
+export const mentorAttendanceRouter = createTRPCRouter({
   getAbsensi: mentorProcedure
     .input(z.object({
       userId: z.string(),
@@ -41,30 +41,42 @@ export const attendanceRouter = createTRPCRouter({
       })
       
 
-      // get all attendance
-      const attendances = await ctx.prisma.attendance.findMany({
+      // get all attendance per Event
+      const attendances = await ctx.prisma.event.findMany({
         where: {
-          studentId: {
-            in: students.map(item => item.id)
-          },
-          date: input.tanggal
+          attendances: {
+            some: {
+              id: {
+                in: students.map((student) => student.id)
+              }
+            }
+          }
         },
         select: {
-          id: true,
-          date: true,
-          status: true,
-          studentId: true
+          attendances: {
+            select: {
+              id: true,
+              date: true,
+              status: true,
+              studentId: true,
+              eventId: true,
+              createdAt: true,
+              updatedAt: true,
+              reason: {
+                select: {
+                  id: true,
+                  reason: true,
+                  attendanceId: true,
+                  createdAt: true,
+                  updatedAt: true
+                }
+              }
+            }
+          }
         }
       })
 
-      return attendances
-        .map(item => {
-          return {
-            ...item,
-            date: item.date.toISOString()
-          }
-        }
-      )
+      return attendances.map((attendance) => attendance.attendances).flat()
     }),
 
 
@@ -78,25 +90,6 @@ export const attendanceRouter = createTRPCRouter({
         }
       })
 
-    }),
-
-  getListKelompok: mentorProcedure
-    .query(async ({ ctx }) => {
-      // TODO
-      // get list kelompok
-
-      // cari semua kelompok
-      const groups = await ctx.prisma.mentor.findMany({
-        select: {
-          group: true
-        }
-      })
-
-      // filter kelompok yang unik pakai Set (handling kalau ada kelompok yang double karena ada 2 mentor)
-      const uniqueGroups = [...new Set(groups.map(item => item.group))]
-
-      // return
-      return uniqueGroups
     }),
 
   editAbsensi: mentorProcedure
