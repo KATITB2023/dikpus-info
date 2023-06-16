@@ -4,6 +4,7 @@ import { type AppType } from 'next/app';
 import { api } from '~/utils/api';
 import '~/styles/globals.css';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Attendance } from './attendance';
 import theme from '~/styles/theme';
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -13,7 +14,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <ChakraProvider theme={theme}>
-        <Component {...pageProps} />
+        {/* <Component {...pageProps} /> */}
+        <Attendance />
       </ChakraProvider>
     </SessionProvider>
   );
