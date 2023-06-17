@@ -1,19 +1,22 @@
-import { Box } from '@chakra-ui/react';
-import Head from 'next/head';
-import { api } from '~/utils/api';
+// import Head from 'next/head';
+// import { api } from '~/utils/api';
+import { Flex, Heading, Box } from '@chakra-ui/react'
+import PageLayout from '~/layout';
+import LoginForm from '~/components/LoginForm';
 
 export default function Home() {
-  const hello = api.example.hello.useQuery({ text: 'from tRPC' });
+  // const hello = api.example.hello.useQuery({ text: 'from tRPC' });
 
   return (
     <>
-      <Head>
-        <title>Login - KAT ITB 2023</title>
-      </Head>
-      <Box>
-        Ingfo dari tRPC:{' '}
-        {hello.data ? hello.data.greeting : 'Loading tRPC query...'}
-      </Box>
+     <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
+        <Flex minH='80vh' align='center' justify='center' direction='column'>
+          <Heading>Diklat Terpusat</Heading>
+          <Box width='450px'>
+            <LoginForm/>
+          </Box>
+        </Flex>
+      </PageLayout>
     </>
   );
 }
