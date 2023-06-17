@@ -41,11 +41,15 @@ export const assignmentRouter = createTRPCRouter({
           student: {
             is: {
               id: input.studentId,
-              mentor: {
-                id: input.userId
+              group: {
+                mentorGroup: {
+                  every: {
+                    mentorId: input.userId
+                  }
+                }
               }
-            }
-          }
+            },
+          },
         },
         include: {
           student: {
@@ -54,11 +58,10 @@ export const assignmentRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               userId: true,
-              mentorId: true,
-              mentor: {
+              group: {
                 select: {
                   id: true,
-                  group: true
+                  group: true,
                 }
               }
             }
