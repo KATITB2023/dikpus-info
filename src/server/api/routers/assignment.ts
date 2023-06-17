@@ -97,7 +97,7 @@ export const assignmentRouter = createTRPCRouter({
       if (!student) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: "Student doesn't exist"
+          message: 'Student not found'
         });
       }
 

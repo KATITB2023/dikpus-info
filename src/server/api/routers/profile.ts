@@ -89,26 +89,22 @@ export const profileRouter = createTRPCRouter({
         }
       });
       // return input
-      return await ctx.prisma.student.update({
+      await ctx.prisma.student.update({
         where: {
           userId: input.userId
         },
         data: {
-          imagePath:
-            input.profile_url
-              ? student?.imagePath
-              : input.profile_url,
-          firstName:
-            input.firstName ? student?.firstName : input.firstName,
-          lastName:
-            input.lastName ? student?.lastName : input.lastName,
-          phoneNumber:
-            input.phoneNumber
-              ? student?.phoneNumber
-              : input.phoneNumber
+          imagePath: input.profile_url ? student?.imagePath : input.profile_url,
+          firstName: input.firstName ? student?.firstName : input.firstName,
+          lastName: input.lastName ? student?.lastName : input.lastName,
+          phoneNumber: input.phoneNumber
+            ? student?.phoneNumber
+            : input.phoneNumber
         }
       });
-  
+      return {
+        message: 'Edit profile successful'
+      };
     }),
 
   changePass: protectedProcedure
