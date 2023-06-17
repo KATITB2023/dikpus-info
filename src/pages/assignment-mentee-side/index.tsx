@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
 import { api } from '~/utils/api';
-import AssignmentMenteeSidePage from './assigment-mentee-side';
+import AssignmentMenteeSidePage from './assignment-mentee-side';
 import PageLayout from '../../layout/index';
 
 export default function Home() {

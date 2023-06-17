@@ -1,6 +1,11 @@
-import Head from 'next/head';
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { api } from '~/utils/api';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Flex,
@@ -10,10 +15,12 @@ import {
   MenuList,
   MenuItem,
   Button,
-  Icon
+  Icon,
+  VStack
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { MdOutlineFileUpload } from 'react-icons/md';
+import { FolderEnum, AllowableFileTypeEnum, uploadFile } from '~/utils/file';
 
 interface ArrOfTugasProps {
   arrOfTugas: {
@@ -50,8 +57,6 @@ function DropDownMenu({ arrOfTugas }: ArrOfTugasProps) {
           </Flex>
         </MenuButton>
         <MenuList bg='#1C939A' border='none' borderRadius='xl' py={3}>
-          {/* TODO
-          ISI MENU DENGAN TITLE TUGAS */}
           {arrOfTugas.flatMap((assignment) => {
             return (
               <MenuItem
@@ -138,13 +143,110 @@ function AssignmentDetails({ tugas }: AssignmentProps) {
 }
 
 function UploadSection() {
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [downloadURL, setDownloadURL] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const generateURLForUpload = api.storage.generateURLForUpload.useMutation();
+  const generateURLForDownload =
+    api.storage.generateURLForDownload.useMutation();
+
+  const handleDragEnter = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setIsDragActive(true);
+  };
+
+  const handleDragLeave = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setIsDragActive(false);
+  };
+
+  const handleDragOver = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      setIsDragActive(false);
+
+      // if (e.target.files && e.target.files[0]) {
+      //   const files = Array.from(e.target.files);
+      //   const fileNames: any = files.map((file: any) => file);
+      //   setFile(fileNames);
+      // }
+
+      if (!droppedFile) return;
+
+      setFile(droppedFile);
+    }
+    // const handleFileChange = (e: { target: { files: any } }) => {
+    //   const arrOfFiles = Array.from(e.target.files);
+    //   const fileNames: any = arrOfFiles.map((file: any) => file);
+    //   setDroppedFile(fileNames);
+    //   setFile(fileNames[0]);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
+    if (!files) return;
+
+    const file = files[0];
+    if (!file) return;
+
+    setFile(file);
+  };
+
+  const uploadFileButton = () => {
+    document.getElementById('browse-files')?.click();
+  };
+
+  const handleOnClick = async () => {
+    if (!file) return;
+
+    const { url: uploadURL, sanitizedFilename } =
+      await generateURLForUpload.mutateAsync({
+        folder: FolderEnum.ASSIGNMENT,
+        filename: file.name,
+        contentType: AllowableFileTypeEnum.PDF
+      });
+
+    await uploadFile(
+      uploadURL,
+      file,
+      AllowableFileTypeEnum.PDF,
+      (event: { total: number; loaded: number }) => {
+        if (!event.total) return;
+
+        const newProgress = event.loaded / event.total;
+        setProgress(newProgress);
+      }
+    );
+
+    /** TODO: Variabel "sanitizedFilename" disimpan menggunakan tRPC */
+
+    const { url: downloadURL } = await generateURLForDownload.mutateAsync({
+      folder: FolderEnum.ASSIGNMENT,
+      filename: sanitizedFilename
+    });
+
+    setDownloadURL(downloadURL);
+  };
+
   return (
-    <Flex flexDir='column' marginBottom={'18px'}>
+    <Flex
+      flexDir='column'
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={handleDrop}
+    >
       <Flex
         background={
           'linear-gradient(180deg, rgba(28, 147, 154, 0.1) 0%, rgba(28, 147, 154, 0.069) 100%);'
         }
-        margin={'32.5px 0px 29px 0%'}
+        margin={'32.5px 0px 0px 0%'}
         justifyContent={'center'}
         alignItems={'center'}
         height={'300px'}
@@ -152,6 +254,14 @@ function UploadSection() {
         borderRadius={'16px'}
         border={'1px dashed #1C939A'}
         flexDir={'column'}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        style={{
+          background: isDragActive ? '#117584' : 'none',
+          border: isDragActive ? '2px dashed #1C939A' : '1px dashed #1C939A'
+        }}
       >
         <svg height='0' width='0'>
           <linearGradient
@@ -180,6 +290,12 @@ function UploadSection() {
         >
           OR
         </Text>
+        <input
+          type='file'
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+          id='browse-files'
+        />
         <Button
           padding={'0px 40px 0px 40px'}
           backgroundColor={'#1C939A'}
@@ -188,11 +304,19 @@ function UploadSection() {
           fontWeight={'normal'}
           _hover={{ background: '#117584' }}
           cursor={'pointer'}
+          onClick={uploadFileButton}
         >
           Browse Files
         </Button>
       </Flex>
-      <Flex justifyContent={'flex-end'}>
+      <VStack alignItems='flex-start' marginTop='20px'>
+        <Text key={file ? file.name : ''}>{file ? file.name : ''}</Text>
+      </VStack>
+      <Flex
+        justifyContent={'flex-end'}
+        marginTop={'18px'}
+        marginBottom={'18px'}
+      >
         {' '}
         <Button
           padding={'0px 40px 0px 20px'}
@@ -202,6 +326,7 @@ function UploadSection() {
           _hover={{ background: '#117584' }}
           cursor={'pointer'}
           borderRadius={0}
+          onClick={() => void handleOnClick()}
         >
           <Text
             marginRight={'10px'}
@@ -212,7 +337,6 @@ function UploadSection() {
             Upload{' '}
           </Text>
           <Icon
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             as={MdOutlineFileUpload}
             w={10}
             h={10}
