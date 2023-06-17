@@ -1,4 +1,3 @@
-import { metricsRouter } from '~/server/api/routers/metrics';
 import { createTRPCRouter } from '~/server/api/trpc';
 import { assignmentRouter } from './routers/assignment';
 import { attendanceRouter } from './routers/attendance';
@@ -15,7 +14,6 @@ export const appRouter = createTRPCRouter({
   assignment: assignmentRouter,
   attendance: attendanceRouter,
   profile: profileRouter,
-  metrics: metricsRouter,
   storage: storageRouter,
   utility: utilityRouter
 });
