@@ -10,7 +10,7 @@ import { env } from '~/env.mjs';
 
 export const profileRouter = createTRPCRouter({
   getProfile: studentProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       // DATA
       const data = {
@@ -75,7 +75,7 @@ export const profileRouter = createTRPCRouter({
   editProfile: studentProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         profile_url: z.string().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
@@ -114,7 +114,7 @@ export const profileRouter = createTRPCRouter({
   changePass: protectedProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         curPass: z.string(),
         newPass: z.string(),
         repeatPass: z.string()

@@ -25,7 +25,7 @@ export const assignmentRouter = createTRPCRouter({
   getAssignmentResult: mentorProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         studentId: z.string().optional(),
         namaTugas: z.string().optional()
       })
@@ -79,8 +79,8 @@ export const assignmentRouter = createTRPCRouter({
   updateSubmission: studentProcedure
     .input(
       z.object({
-        assignmentId: z.string(),
-        userId: z.string(),
+        assignmentId: z.string().uuid(),
+        userId: z.string().uuid(),
         fileUrl: z.string()
       })
     )
