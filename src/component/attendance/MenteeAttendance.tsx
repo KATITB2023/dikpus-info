@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import PageLayout from '~/layout';
 import { useSession } from 'next-auth/react';
 import {
   Table,
@@ -74,7 +73,7 @@ const TableButton = ({
   );
 };
 
-const Absen = () => {
+export const MenteeAttendance = () => {
   const { data: session } = useSession();
   const toast = useToast();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
@@ -135,78 +134,74 @@ const Absen = () => {
   };
 
   return (
-    <PageLayout title='Absen'>
-      <TableContainer>
-        <Table variant='unstyled'>
-          <Thead borderBottom='1px solid'>
-            <Tr>
-              {tableHeader.map((header, index) => (
-                <Th fontFamily='SomarRounded-Bold' key={index}>
-                  {header}
-                </Th>
-              ))}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {eventList && eventList?.length <= 0 ? (
-              eventList.map((item: Attendance, index: number) => {
-                const tanggal = getDate(item.event.startTime);
-                const waktu = getTwoTime(
-                  item.event.startTime,
-                  item.event.endTime
-                );
-                const alreadyAbsen =
-                  item.status === AttendanceStatus.HADIR ||
-                  item.status === AttendanceStatus.IZIN;
-                const canAbsen = validTime(
-                  item.event.startTime,
-                  item.event.endTime
-                );
+    <TableContainer>
+      <Table variant='unstyled'>
+        <Thead borderBottom='1px solid'>
+          <Tr>
+            {tableHeader.map((header, index) => (
+              <Th fontFamily='SomarRounded-Bold' key={index}>
+                {header}
+              </Th>
+            ))}
+          </Tr>
+        </Thead>
+        <Tbody>
+          {eventList && eventList?.length > 0 ? (
+            eventList.map((item: Attendance, index: number) => {
+              const tanggal = getDate(item.event.startTime);
+              const waktu = getTwoTime(
+                item.event.startTime,
+                item.event.endTime
+              );
+              const alreadyAbsen =
+                item.status === AttendanceStatus.HADIR ||
+                item.status === AttendanceStatus.IZIN;
+              const canAbsen = validTime(
+                item.event.startTime,
+                item.event.endTime
+              );
 
-                return (
-                  <Tr key={index}>
-                    <Td>{tanggal}</Td>
-                    <Td>{waktu}</Td>
-                    <Td>{item.event.title}</Td>
-                    <Td>
+              return (
+                <Tr key={index}>
+                  <Td>{tanggal}</Td>
+                  <Td>{waktu}</Td>
+                  <Td>{item.event.title}</Td>
+                  <Td>
+                    <TableButton
+                      icon={BiDownload}
+                      text='Download'
+                      bg='#1C939A'
+                      onClick={() => downloadFile(item.event.materialPath)}
+                    />
+                  </Td>
+                  <Td>
+                    {alreadyAbsen ? (
                       <TableButton
-                        icon={BiDownload}
-                        text='Download'
-                        bg='#1C939A'
-                        onClick={() => downloadFile(item.event.materialPath)}
+                        text={item.status.toLowerCase()}
+                        bg='transparent'
                       />
-                    </Td>
-                    <Td>
-                      {alreadyAbsen ? (
-                        <TableButton
-                          text={item.status.toLowerCase()}
-                          bg='transparent'
-                        />
-                      ) : canAbsen ? (
-                        <TableButton
-                          text='Tandai Hadir'
-                          bg='#1C939A'
-                          onClick={() => handleAbsen(item.event.id)}
-                        />
-                      ) : (
-                        <TableButton text={waktu} bg='#E8553E' isDisabled />
-                      )}
-                    </Td>
-                  </Tr>
-                );
-              })
-            ) : (
-              <Tr>
-                <Td colSpan={5} textAlign='center'>
-                  Eventnya belum ada nih, coba cek lagi nanti ya!
-                </Td>
-              </Tr>
-            )}
-          </Tbody>
-        </Table>
-      </TableContainer>
-    </PageLayout>
+                    ) : canAbsen ? (
+                      <TableButton
+                        text='Tandai Hadir'
+                        bg='#1C939A'
+                        onClick={() => handleAbsen(item.event.id)}
+                      />
+                    ) : (
+                      <TableButton text={waktu} bg='#E8553E' isDisabled />
+                    )}
+                  </Td>
+                </Tr>
+              );
+            })
+          ) : (
+            <Tr>
+              <Td colSpan={5} textAlign='center'>
+                Eventnya belum ada nih, coba cek lagi nanti ya!
+              </Td>
+            </Tr>
+          )}
+        </Tbody>
+      </Table>
+    </TableContainer>
   );
 };
-
-export default Absen;
