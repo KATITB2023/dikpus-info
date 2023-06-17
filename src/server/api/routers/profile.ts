@@ -10,72 +10,29 @@ import { env } from '~/env.mjs';
 
 export const profileRouter = createTRPCRouter({
   getProfile: studentProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      // DATA
-      const data = {
-        nim: '',
-        gender: '',
-        firstName: '',
-        lastName: '',
-        fakultas: '',
-        jurusan: '',
-        phoneNumber: '',
-        imagePath: '',
-        accepted: false,
-        userId: '',
-        mentorId: '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        zoomLink: '',
-        group: ''
-      };
-
-      //NIM
-      const user = await ctx.prisma.user.findFirst({
-        where: {
-          id: input.userId
-        }
-      });
-
-      //STUDENT
-      const student = await ctx.prisma.student.findFirst({
+      const studentData = await ctx.prisma.student.findFirst({
         where: {
           userId: input.userId
+        },
+        include: {
+          group: {
+            select: {
+              id: true,
+              group: true,
+              zoomLink: true,
+            }
+          }
         }
-      });
-
-      //MENTOR
-      const mentor = await ctx.prisma.mentor.findFirst({
-        where: {
-          id: student?.mentorId
-        }
-      });
-
-      //INSERT DATA
-      data.nim = user?.nim ?? '';
-      data.gender = student?.gender ?? '';
-      data.firstName = student?.firstName ?? '';
-      data.lastName = student?.lastName ?? '';
-      data.fakultas = student?.fakultas ?? '';
-      data.jurusan = student?.jurusan ?? '';
-      data.phoneNumber = student?.phoneNumber ?? '';
-      data.imagePath = student?.imagePath ?? '';
-      data.accepted = student?.accepted ?? false;
-      data.userId = user?.id ?? '';
-      data.mentorId = student?.mentorId ?? '';
-      data.createdAt = student?.createdAt ?? new Date();
-      data.updatedAt = student?.updatedAt ?? new Date();
-      data.zoomLink = mentor?.zoomLink ?? '';
-      data.group = mentor?.group ?? '';
-
-      return data;
+      })
+      return studentData;
     }),
 
   editProfile: studentProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         profile_url: z.string().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
@@ -83,38 +40,28 @@ export const profileRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const student = await ctx.prisma.student.findFirst({
-        where: {
-          id: input.userId
-        }
-      });
       // return input
-      return await ctx.prisma.student.update({
+      await ctx.prisma.student.update({
         where: {
           userId: input.userId
         },
         data: {
-          imagePath:
-            input.profile_url
-              ? student?.imagePath
-              : input.profile_url,
-          firstName:
-            input.firstName ? student?.firstName : input.firstName,
-          lastName:
-            input.lastName ? student?.lastName : input.lastName,
-          phoneNumber:
-            input.phoneNumber
-              ? student?.phoneNumber
-              : input.phoneNumber
+          imagePath: input.profile_url,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          phoneNumber: input.phoneNumber
         }
       });
-  
+      
+      return {
+        message: 'Edit profile successful'
+      };
     }),
 
   changePass: protectedProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         curPass: z.string(),
         newPass: z.string(),
         repeatPass: z.string()

@@ -1,7 +1,6 @@
 import { extendTheme } from '@chakra-ui/react';
 
 const theme = extendTheme({
-  // TODO: add font + colors
   fonts: {
     heading: 'Bodwars',
     body: 'SomarRounded-Regular'
@@ -14,7 +13,14 @@ const theme = extendTheme({
       },
       '*': {
         '&::-webkit-scrollbar': {
-          w: '0'
+          w: '2'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#1C939A',
+          borderRadius: '4'
         }
       }
     }

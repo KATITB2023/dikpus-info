@@ -25,7 +25,7 @@ export const assignmentRouter = createTRPCRouter({
   getAssignmentResult: mentorProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         studentId: z.string().optional(),
         namaTugas: z.string().optional()
       })
@@ -41,11 +41,19 @@ export const assignmentRouter = createTRPCRouter({
           student: {
             is: {
               id: input.studentId,
-              mentor: {
-                id: input.userId
+              group: {
+                mentorGroup: {
+                  every: {
+                    mentor: {
+                      is: {
+                        userId: input.userId
+                      }
+                    }
+                  }
+                }
               }
-            }
-          }
+            },
+          },
         },
         include: {
           student: {
@@ -54,11 +62,10 @@ export const assignmentRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               userId: true,
-              mentorId: true,
-              mentor: {
+              group: {
                 select: {
                   id: true,
-                  group: true
+                  group: true,
                 }
               }
             }
@@ -79,8 +86,8 @@ export const assignmentRouter = createTRPCRouter({
   updateSubmission: studentProcedure
     .input(
       z.object({
-        assignmentId: z.string(),
-        userId: z.string(),
+        assignmentId: z.string().uuid(),
+        userId: z.string().uuid(),
         fileUrl: z.string()
       })
     )
@@ -97,7 +104,7 @@ export const assignmentRouter = createTRPCRouter({
       if (!student) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: "Student doesn't exist"
+          message: 'Student not found'
         });
       }
 

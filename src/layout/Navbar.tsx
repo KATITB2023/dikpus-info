@@ -20,12 +20,16 @@ interface Props {
 }
 
 export default function Navbar({ title, titleOnly = false }: Props) {
-  // TODO: ganti link
   const links = [
-    { name: 'Profile', href: '/', icon: <AiOutlineHome size={20} /> },
-    { name: 'Absen', href: '/', icon: <BsPeopleFill size={20} /> },
-    { name: 'Tugas', href: '/', icon: <MdOutlineFolderCopy size={20} /> }
+    { name: 'Profile', href: '/profile', icon: <AiOutlineHome size={20} /> },
+    { name: 'Absen', href: '/attendance', icon: <BsPeopleFill size={20} /> },
+    {
+      name: 'Tugas',
+      href: '/assignment',
+      icon: <MdOutlineFolderCopy size={20} />
+    }
   ];
+  // TODO ganti logo dikpus
 
   return (
     <Flex
