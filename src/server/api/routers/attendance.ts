@@ -13,7 +13,7 @@ export const attendanceRouter = createTRPCRouter({
   }),
 
   setAttendance: studentProcedure
-    .input(z.object({ userId: z.string(), eventId: z.string() }))
+    .input(z.object({ userId: z.string().uuid(), eventId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const student = await ctx.prisma.student.findFirst({
         where: {
@@ -88,7 +88,7 @@ export const attendanceRouter = createTRPCRouter({
   getAttendance: mentorProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: z.string().uuid(),
         tanggal: z.string().optional()
       })
     )
@@ -172,8 +172,8 @@ export const attendanceRouter = createTRPCRouter({
   editAttendance: mentorProcedure
     .input(
       z.object({
-        mentorId: z.string(),
-        studentId: z.string(),
+        mentorId: z.string().uuid(),
+        studentId: z.string().uuid(),
         kehadiran: z.nativeEnum(AttendanceStatus)
       })
     )
