@@ -100,7 +100,7 @@ export default function AssignmentMentorSide() {
           {assignment.map((item) => (
             <Box>
               <Box marginBottom={5}>
-                <Text as='b' fontSize={['3xl', '3xl', '4xl']}>
+                <Text as='b' fontSize={['2xl', '2xl', '3xl']}>
                   {' '}
                   {item.name}{' '}
                 </Text>
@@ -108,7 +108,8 @@ export default function AssignmentMentorSide() {
 
               <Flex
                 justifyContent='space-between'
-                flexDir={['column', 'column', 'row']}
+                flexDir={['column', 'column', 'column', 'column', 'row']}
+                w='80%'
               >
                 <TableContainer>
                   <Table variant='unstyled'>
@@ -117,13 +118,13 @@ export default function AssignmentMentorSide() {
                         <Tr>
                           <Td>
                             {' '}
-                            <Text as='b' fontSize='xl'>
+                            <Text fontWeight='700' fontSize='xl'>
                               {student.name}{' '}
                             </Text>
                           </Td>
                           <Td>
                             {' '}
-                            <Text as='b' fontSize='xl'>
+                            <Text fontWeight='700' fontSize='xl'>
                               Kelompok {student.kelompok}
                             </Text>
                           </Td>
@@ -135,13 +136,26 @@ export default function AssignmentMentorSide() {
                                 colorScheme='teal'
                                 size='md'
                                 width='100%'
+                                textAlign='initial'
                               >
-                                Download
-                                </Button>
-                                ) : (
-                                  <Text>
-                                    tidak mengumpulkan tugas
-                                  </Text>)}
+                                <svg
+                                  width='36'
+                                  height='36'
+                                  viewBox='0 0 48 48'
+                                  fill='none'
+                                  xmlns='http://www.w3.org/2000/svg'
+                                >
+                                  <path
+                                    d='M36 30V36H12V30H8V36C8 38.2 9.8 40 12 40H36C38.2 40 40 38.2 40 36V30H36ZM34 22L31.18 19.18L26 24.34V8H22V24.34L16.82 19.18L14 22L24 32L34 22Z'
+                                    fill='white'
+                                  />
+                                </svg>
+                              </Button>
+                            ) : (
+                              <Text fontWeight='400'>
+                                tidak mengumpulkan tugas
+                              </Text>
+                            )}
                           </Td>
                         </Tr>
                       ))}
@@ -152,7 +166,7 @@ export default function AssignmentMentorSide() {
                 <Box marginLeft={10}>
                   <Button
                     variant='outline'
-                    colorScheme='teal'
+                    bg={'#1C939A'}
                     size='md'
                     width='100%'
                   >
