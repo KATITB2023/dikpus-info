@@ -1,22 +1,8 @@
-import { Flex, Img, Text, TableContainer,Table, Tbody,Tr,Td } from '@chakra-ui/react';
+import { Flex, Img, Text, Button, TableContainer,Table, Input, Tbody,Tr,Td } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { MdEdit } from 'react-icons/md';
-import { string } from 'zod';
+import { EditingModal, Student } from '~/components/profile/EditingModal';
 import PageLayout from '~/layout';
-
-interface Student {
-  id: string;
-  gender: 0 | 1;
-  firstName: string;
-  lastName: string;
-  fakultas: string;
-  jurusan: string;
-  phoneNumber: string;
-  imagePath: string;
-  accepted: boolean;
-  userId: string;
-  mentorId: string;
-}
 
 const DUMMY_STUDENT: Student = {
   id: '13522144',
@@ -34,18 +20,26 @@ const DUMMY_STUDENT: Student = {
 
 export default function Profile() {
   const [student, setStudent] = useState<Student>();
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   useEffect(() => {
+    // TO DO : nembak BE
     setStudent(DUMMY_STUDENT);
-  });
+  },[]);
   if (!student) return null;
 
-  const StudentInformationRow = ({ title, data }: { title: string; data: string }) => {
+  const toggleEditing = () => {
+    setIsEditing(!isEditing);
+  }
+
+  const StudentInformationRow = ({ title, data }: { title: string; data: string | JSX.Element }) => {
     return <Tr>
         <Td w="5em" fontWeight="bold" px="0">{title}</Td>
         <Td>{data}</Td>
     </Tr>
   }
+
+  
   return (
     <PageLayout title='Profile'>
       <Flex px='2em' flexDir='column'>
@@ -56,13 +50,14 @@ export default function Profile() {
               <Text fontSize='2xl' fontWeight='bold'>
                 {student.firstName} {student.lastName}
               </Text>
-              <MdEdit size={24} />
+              <MdEdit size={24} onClick={toggleEditing} cursor="pointer"/>
+              <EditingModal isOpen={isEditing} student={student} setStudent={setStudent} toggleEditing={toggleEditing} />
             </Flex>
             <Text fontSize='lg' mt="1em">{student.id}</Text>
             <TableContainer mt="1em">
                 <Table variant="unstyled">
                     <Tbody>
-                        <StudentInformationRow title="Jenis Kelamin" data={student.gender ? "Laki-laki" : "Perempuan"} />
+                        <StudentInformationRow title="Jenis Kelamin" data={student.gender ? "Perempuan" : "Laki-laki"} />
                         <StudentInformationRow title="Fakultas" data={student.fakultas} />
                         <StudentInformationRow title="Jurusan" data={student.jurusan} />
                         <StudentInformationRow title="Nomor HP" data={student.phoneNumber} />
