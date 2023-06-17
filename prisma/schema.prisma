@@ -30,14 +30,34 @@ model User {
 
 model Mentor {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  group     String   @db.VarChar(1)
-  zoomLink  String
   userId    String   @unique @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  user    User      @relation(fields: [userId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  mentorGroup MentorGroup[]
+}
+
+model MentorGroup {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mentorId  String   @db.Uuid
+  groupId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  mentor Mentor @relation(fields: [mentorId], references: [id])
+  group  Group  @relation(fields: [groupId], references: [id])
+}
+
+model Group {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  group     Int      @unique
+  zoomLink  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
   student Student[]
+  mentor  MentorGroup[]
 }
 
 model Student {
@@ -51,12 +71,12 @@ model Student {
   imagePath   String?
   accepted    Boolean  @default(false)
   userId      String   @unique @db.Uuid
-  mentorId    String   @db.Uuid
+  groupId     String   @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
   user       User                   @relation(fields: [userId], references: [id])
-  mentor     Mentor                 @relation(fields: [mentorId], references: [id])
+  group      Group                  @relation(fields: [groupId], references: [id])
   attendance Attendance[]
   submission AssignmentSubmission[]
 }
