@@ -7,7 +7,8 @@ import {
   Tr,
   Td,
   TableContainer,
-  Button
+  Button,
+  Text
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import PageLayout from '~/layout';
@@ -27,15 +28,15 @@ export default function AssignmentMentorSide() {
   const [assignment, setAssignment] = useState([
     {
       id: 1,
-      name: "Tugas 1",
+      name: "Tugas Mengenali Diri Sendiri",
     },
     {
       id: 2,
-      name: "Tugas 2",
+      name: "Tugas Menjahili Orang",
     },
     {
       id: 3,
-      name: "Tugas 3",
+      name: "Tugas Dikpus Nyusahin",
     },
   ])
 
@@ -99,17 +100,49 @@ export default function AssignmentMentorSide() {
           {assignment.map((item) => (
             <Box>
               <Box marginBottom={5}>
-                <h1> {item.name} </h1>
+                <Text as='b' fontSize={['3xl', '3xl', '4xl']}>
+                  {' '}
+                  {item.name}{' '}
+                </Text>
               </Box>
-              <Flex justifyContent='space-between' flexDir={['column', 'column', 'row']}>
+
+              <Flex
+                justifyContent='space-between'
+                flexDir={['column', 'column', 'row']}
+              >
                 <TableContainer>
                   <Table variant='unstyled'>
                     <Tbody>
                       {students.map((student) => (
                         <Tr>
-                          <Td>{student.name}</Td>
-                          <Td>Kelompok {student.kelompok}</Td>
-                          <Td>{student.isSubmitted ? 'Yes' : 'No'}</Td>
+                          <Td>
+                            {' '}
+                            <Text as='b' fontSize='xl'>
+                              {student.name}{' '}
+                            </Text>
+                          </Td>
+                          <Td>
+                            {' '}
+                            <Text as='b' fontSize='xl'>
+                              Kelompok {student.kelompok}
+                            </Text>
+                          </Td>
+                          <Td>
+                            {' '}
+                            {student.isSubmitted ? (
+                              <Button
+                                variant='unstyled'
+                                colorScheme='teal'
+                                size='md'
+                                width='100%'
+                              >
+                                Download
+                                </Button>
+                                ) : (
+                                  <Text>
+                                    tidak mengumpulkan tugas
+                                  </Text>)}
+                          </Td>
                         </Tr>
                       ))}
                     </Tbody>
