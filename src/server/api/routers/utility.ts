@@ -29,8 +29,8 @@ export const utilityRouter = createTRPCRouter({
         data: {
           title: input.title,
           materialPath: input.materialPath,
-          startTime: input.startTime,
-          endTime: input.endTime
+          startTime: new Date(input.startTime),
+          endTime: new Date(input.endTime)
         }
       });
 
@@ -76,7 +76,7 @@ export const utilityRouter = createTRPCRouter({
         data: {
           title: input.title,
           description: input.description,
-          deadline: input.deadline
+          deadline: new Date(input.deadline)
         }
       });
 
