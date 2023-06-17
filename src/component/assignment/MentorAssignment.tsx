@@ -74,11 +74,6 @@ export default function MentorAssignment() {
   ]);
 
   return (
-    <PageLayout title='Assignment Mentor Side'>
-      <Head>
-        <title>Assignment Mentor Side - KAT ITB 2023</title>
-      </Head>
-
       <Box>
         <Flex gap={10} w={['50%', '40%', '30%', '20%', '15%']}>
           <Select
@@ -175,6 +170,5 @@ export default function MentorAssignment() {
           ))}
         </Flex>
       </Box>
-    </PageLayout>
   );
 }
