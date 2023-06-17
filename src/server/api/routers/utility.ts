@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, mentorProcedure } from '~/server/api/trpc';
 
 const isValidDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -8,7 +8,7 @@ const isValidDate = (dateString: string) => {
 };
 
 export const utilityRouter = createTRPCRouter({
-  addEvent: publicProcedure
+  addEvent: mentorProcedure
     .input(
       z.object({
         title: z.string(),
@@ -39,7 +39,7 @@ export const utilityRouter = createTRPCRouter({
       };
     }),
 
-  addAssignment: publicProcedure
+  addAssignment: mentorProcedure
     .input(
       z.object({
         title: z.string(),
