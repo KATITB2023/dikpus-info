@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { Box } from '@chakra-ui/react';
 import { UserRole } from '@prisma/client';
 import { RedirectLogin } from '~/component/RedirectLogin';
+import MentorAssignment from '~/component/assignment/MentorAssignment';
 
 const Assignment = () => {
   const { data: session, status } = useSession();
@@ -18,7 +19,7 @@ const Assignment = () => {
   return (
     <PageLayout title='Absen'>
       {role === UserRole.MENTOR ? (
-        <Box>Assignment Mentor</Box>
+        <MentorAssignment />
       ) : (
         <Box>Assignment Mentee</Box>
       )}

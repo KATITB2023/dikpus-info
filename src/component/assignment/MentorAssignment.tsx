@@ -12,69 +12,66 @@ import {
 } from '@chakra-ui/react';
 import Head from 'next/head';
 import PageLayout from '~/layout';
-import { useState } from 'react'
-import {api} from '~/utils/api'
+import { useState } from 'react';
+import { api } from '~/utils/api';
 
-export default function AssignmentMentorSide() {
-
-
+export default function MentorAssignment() {
   //dummy data
-  //TODO : change with actual TRPC 
-
+  //TODO : change with actual TRPC
 
   //dummy data still not accurate with the response object
   //will tweak later
-  
+
   const [assignment, setAssignment] = useState([
     {
       id: 1,
-      name: "Tugas Mengenali Diri Sendiri",
+      name: 'Tugas Mengenali Diri Sendiri'
     },
     {
       id: 2,
-      name: "Tugas Menjahili Orang",
+      name: 'Tugas Menjahili Orang'
     },
     {
       id: 3,
-      name: "Tugas Dikpus Nyusahin",
-    },
-  ])
+      name: 'Tugas Dikpus Nyusahin'
+    }
+  ]);
 
   const [group, setGroup] = useState([
     {
       id: 1,
-      name: "Kelompok 1",
+      name: 'Kelompok 1'
     },
     {
       id: 2,
-      name: "Kelompok 2",
+      name: 'Kelompok 2'
     },
     {
       id: 3,
-      name: "Kelompok 3",
-    },
-  ])
+      name: 'Kelompok 3'
+    }
+  ]);
 
   const [students, setStudents] = useState([
     {
       id: 1,
-      name: "Andhika Arta",
-      kelompok: "Z",
-      isSubmitted: true,
+      name: 'Andhika Arta',
+      kelompok: 'Z',
+      isSubmitted: true
     },
     {
       id: 2,
-      name: "Malakan Bakbak",
-      kelompok: "X",
-      isSubmitted: false,
+      name: 'Malakan Bakbak',
+      kelompok: 'X',
+      isSubmitted: false
     },
     {
       id: 3,
-      name: "Testing",
-      kelompok: "Z",
-      isSubmitted: true,
-    },
-  ])
+      name: 'Testing',
+      kelompok: 'Z',
+      isSubmitted: true
+    }
+  ]);
 
   return (
     <PageLayout title='Assignment Mentor Side'>
