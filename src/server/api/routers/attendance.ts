@@ -108,7 +108,10 @@ export const attendanceRouter = createTRPCRouter({
 
       // error handling (kalau gak ada ini yg students gak mau jalan)
       if (!mentor) {
-        throw new Error('Mentor not found');
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Mentor not found'
+        });
       }
 
       // get all student_id
@@ -180,7 +183,7 @@ export const attendanceRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // TODO
       // edit absensi
-      return await ctx.prisma.attendance.update({
+      await ctx.prisma.attendance.update({
         where: {
           id: input.studentId
         },
@@ -188,5 +191,9 @@ export const attendanceRouter = createTRPCRouter({
           status: input.kehadiran
         }
       });
+
+      return {
+        message: 'Edit attendance successful'
+      };
     })
 });
