@@ -4,16 +4,29 @@ import { hash } from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+  const group1 = await prisma.group.create({
+    data: {
+      group: 1,
+      zoomLink: 'ini link zoom'
+    }
+  })
+  console.log(group1)
+
+  const group2 = await prisma.group.create({
+    data: {
+      group: 2,
+      zoomLink: 'ini link zoom'
+    }
+  })
+  console.log(group2)
+
   const user1 = await prisma.user.create({
     data: {
       nim: '13520104',
       passwordHash: await hash('13520104', 10),
       role: 'MENTOR',
       mentor: {
-        create: {
-          group: 'A',
-          zoomLink: 'ini link zoom'
-        }
+        create: {}
       }
     }
   });
@@ -26,16 +39,13 @@ async function main() {
       passwordHash: await hash('13520999', 10),
       role: 'MENTOR',
       mentor: {
-        create: {
-          group: 'B',
-          zoomLink: 'ini link zoom'
-        }
+        create: {}
       }
     }
   });
   console.log(mentor2)
 
-  const mentorId = await prisma.mentor.findFirst({
+  const mentor1Id = await prisma.mentor.findFirst({
     where: {
       userId: user1.id
     },
@@ -44,9 +54,34 @@ async function main() {
     }
   });
 
-  if (!mentorId) {
+  const mentor2Id = await prisma.mentor.findFirst({
+    where: {
+      userId: mentor2.id
+    },
+    select: {
+      id: true
+    }
+  })
+
+  if (!mentor1Id || !mentor2Id) {
     return;
   }
+
+  const mentorGroup1 = await prisma.mentorGroup.create({
+    data: {
+      mentorId: mentor1Id.id,
+      groupId: group1.id,
+    }
+  })
+  console.log(mentorGroup1);
+
+  const mentorGroup2 = await prisma.mentorGroup.create({
+    data: {
+      mentorId: mentor2Id.id,
+      groupId: group2.id,
+    }
+  })
+  console.log(mentorGroup2);
 
   const mentorId2 = await prisma.mentor.findFirst({
     where: {
@@ -74,7 +109,7 @@ async function main() {
           fakultas: 'STEI',
           jurusan: 'Teknik Informatika',
           imagePath: 'ini path',
-          mentorId: mentorId.id
+          groupId: group1.id,
         }
       }
     }
@@ -94,7 +129,7 @@ async function main() {
           fakultas: 'STEI',
           jurusan: 'Teknik Informatika',
           imagePath: 'ini path',
-          mentorId: mentorId.id
+          groupId: group1.id
         }
       }
     }
@@ -114,7 +149,7 @@ async function main() {
           fakultas: 'STEI',
           jurusan: 'Teknik Informatika',
           imagePath: 'ini path',
-          mentorId: mentorId2.id
+          groupId: group2.id
         }
       }
     }
