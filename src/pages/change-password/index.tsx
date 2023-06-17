@@ -1,4 +1,4 @@
-import { Flex, Heading, Box, IconButton, Spacer } from '@chakra-ui/react'
+import { Flex, Heading, Box, IconButton } from '@chakra-ui/react'
 import { FiArrowLeft } from 'react-icons/fi';
 import PageLayout from '~/layout';
 import ChangePasswordForm from '~/components/ChangePasswordForm';
