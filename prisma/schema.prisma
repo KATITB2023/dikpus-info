@@ -130,7 +130,7 @@ model Assignment {
 
 model AssignmentSubmission {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  filePath     String   @db.VarChar(255)
+  filePath     String?  @db.VarChar(255)
   studentId    String   @db.Uuid
   assignmentId String   @db.Uuid
   createdAt    DateTime @default(now())
