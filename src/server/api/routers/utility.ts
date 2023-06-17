@@ -1,11 +1,5 @@
-import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, mentorProcedure } from '~/server/api/trpc';
-
-const isValidDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return !isNaN(Number(date));
-};
 
 export const utilityRouter = createTRPCRouter({
   addEvent: mentorProcedure
@@ -13,47 +7,40 @@ export const utilityRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         materialPath: z.string(),
-        startTime: z.string(),
-        endTime: z.string()
+        startTime: z.coerce.date(),
+        endTime: z.coerce.date()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!isValidDate(input.startTime) || !isValidDate(input.endTime)) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Incorrect date format'
-        });
-      }
-
-      const event = await ctx.prisma.event.create({
-        data: {
-          title: input.title,
-          materialPath: input.materialPath,
-          startTime: new Date(input.startTime),
-          endTime: new Date(input.endTime)
-        }
-      });
-
-      const students = await ctx.prisma.student.findMany({
-        select: {
-          id: true
-        }
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      students.forEach(async (student) => {
-        await ctx.prisma.attendance.create({
+      const [event, students] = await Promise.all([
+        ctx.prisma.event.create({
           data: {
-            date: new Date(Date.now()),
-            studentId: student.id,
-            eventId: event.id
+            title: input.title,
+            materialPath: input.materialPath,
+            startTime: input.startTime,
+            endTime: input.endTime
           }
-        });
-      });
+        }),
+        ctx.prisma.student.findMany({
+          select: {
+            id: true
+          }
+        })
+      ]);
 
-      return {
-        message: 'Event added successfully'
-      };
+      await Promise.all(
+        students.map(async (student) => {
+          await ctx.prisma.attendance.create({
+            data: {
+              date: new Date(),
+              studentId: student.id,
+              eventId: event.id
+            }
+          });
+        })
+      );
+
+      return event;
     }),
 
   addAssignment: mentorProcedure
@@ -61,43 +48,36 @@ export const utilityRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string(),
-        deadline: z.string()
+        deadline: z.coerce.date()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!isValidDate(input.deadline)) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Incorrect date format'
-        });
-      }
-
-      const assigment = await ctx.prisma.assignment.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          deadline: new Date(input.deadline)
-        }
-      });
-
-      const students = await ctx.prisma.student.findMany({
-        select: {
-          id: true
-        }
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      students.forEach(async (student) => {
-        await ctx.prisma.assignmentSubmission.create({
+      const [assigment, students] = await Promise.all([
+        ctx.prisma.assignment.create({
           data: {
-            studentId: student.id,
-            assignmentId: assigment.id
+            title: input.title,
+            description: input.description,
+            deadline: input.deadline
           }
-        });
-      });
+        }),
+        ctx.prisma.student.findMany({
+          select: {
+            id: true
+          }
+        })
+      ]);
 
-      return {
-        message: 'Assignment added successfully'
-      };
+      await Promise.all(
+        students.map(async (student) => {
+          await ctx.prisma.assignmentSubmission.create({
+            data: {
+              studentId: student.id,
+              assignmentId: assigment.id
+            }
+          });
+        })
+      );
+
+      return assigment;
     })
 });
