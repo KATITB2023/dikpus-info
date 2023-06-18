@@ -2,7 +2,8 @@ import axios, { type AxiosProgressEvent } from 'axios';
 
 export enum FolderEnum {
   PROFILE = 'profile',
-  ASSIGNMENT = 'assignment'
+  ASSIGNMENT = 'assignment',
+  MATERIAL = 'material'
 }
 
 export enum AllowableFileTypeEnum {
