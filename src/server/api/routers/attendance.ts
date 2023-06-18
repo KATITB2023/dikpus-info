@@ -1,11 +1,11 @@
-import { TRPCError } from '@trpc/server';
-import { AttendanceStatus } from '@prisma/client';
-import { z } from 'zod';
+import { TRPCError } from "@trpc/server";
+import { AttendanceStatus } from "@prisma/client";
+import { z } from "zod";
 import {
   createTRPCRouter,
   studentProcedure,
   mentorProcedure
-} from '~/server/api/trpc';
+} from "~/server/api/trpc";
 
 export const attendanceRouter = createTRPCRouter({
   getEvents: studentProcedure
@@ -19,8 +19,8 @@ export const attendanceRouter = createTRPCRouter({
 
       if (!student) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Student not found'
+          code: "BAD_REQUEST",
+          message: "Student not found"
         });
       }
 
@@ -51,8 +51,8 @@ export const attendanceRouter = createTRPCRouter({
 
       if (!student) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Student not found'
+          code: "BAD_REQUEST",
+          message: "Student not found"
         });
       }
 
@@ -64,8 +64,8 @@ export const attendanceRouter = createTRPCRouter({
 
       if (!event) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Event not found'
+          code: "BAD_REQUEST",
+          message: "Event not found"
         });
       }
 
@@ -76,10 +76,10 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (attendance && attendance.status === 'HADIR') {
+      if (attendance && attendance.status === "HADIR") {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Attendance already set'
+          code: "BAD_REQUEST",
+          message: "Attendance already set"
         });
       }
 
@@ -92,22 +92,22 @@ export const attendanceRouter = createTRPCRouter({
           },
           data: {
             date: currentTime,
-            status: 'HADIR'
+            status: "HADIR"
           }
         });
 
         return {
-          message: 'Attendance Recorded'
+          message: "Attendance Recorded"
         };
       } else if (currentTime < event.startTime) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Event not yet started'
+          code: "BAD_REQUEST",
+          message: "Event not yet started"
         });
       } else if (currentTime > event.endTime) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Event is finished'
+          code: "BAD_REQUEST",
+          message: "Event is finished"
         });
       }
     }),
@@ -133,8 +133,8 @@ export const attendanceRouter = createTRPCRouter({
       // error handling (kalau gak ada ini yg students gak mau jalan)
       if (!mentor) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Mentor not found'
+          code: "BAD_REQUEST",
+          message: "Mentor not found"
         });
       }
 
@@ -150,8 +150,8 @@ export const attendanceRouter = createTRPCRouter({
 
       if (mentorGroups.length === 0) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Mentor group not found'
+          code: "BAD_REQUEST",
+          message: "Mentor group not found"
         });
       }
 
@@ -169,8 +169,8 @@ export const attendanceRouter = createTRPCRouter({
 
       if (groups.length === 0) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Group not found'
+          code: "BAD_REQUEST",
+          message: "Group not found"
         });
       }
 
@@ -253,7 +253,7 @@ export const attendanceRouter = createTRPCRouter({
       });
 
       return {
-        message: 'Edit attendance successful'
+        message: "Edit attendance successful"
       };
     })
 });

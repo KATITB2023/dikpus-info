@@ -1,5 +1,5 @@
-import { getCsrfToken } from 'next-auth/react';
-import type { GetServerSidePropsContext } from 'next';
+import { getCsrfToken } from "next-auth/react";
+import type { GetServerSidePropsContext } from "next";
 
 interface SignInProps {
   csrfToken: string;

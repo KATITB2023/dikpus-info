@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { createTRPCRouter, mentorProcedure } from '~/server/api/trpc';
+import { z } from "zod";
+import { createTRPCRouter, mentorProcedure } from "~/server/api/trpc";
 
 export const utilityRouter = createTRPCRouter({
   addEvent: mentorProcedure
@@ -40,7 +40,9 @@ export const utilityRouter = createTRPCRouter({
         })
       );
 
-      return event;
+      return {
+        message: "Event added successfully"
+      };
     }),
 
   addAssignment: mentorProcedure
@@ -78,6 +80,8 @@ export const utilityRouter = createTRPCRouter({
         })
       );
 
-      return assigment;
+      return {
+        message: "Assignment added successfully"
+      };
     })
 });

@@ -1,11 +1,11 @@
-import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import {
   createTRPCRouter,
   studentProcedure,
   mentorProcedure,
   protectedProcedure
-} from '~/server/api/trpc';
+} from "~/server/api/trpc";
 
 export const assignmentRouter = createTRPCRouter({
   getAssignmentDescription: studentProcedure
@@ -52,8 +52,8 @@ export const assignmentRouter = createTRPCRouter({
                   }
                 }
               }
-            },
-          },
+            }
+          }
         },
         include: {
           student: {
@@ -65,7 +65,7 @@ export const assignmentRouter = createTRPCRouter({
               group: {
                 select: {
                   id: true,
-                  group: true,
+                  group: true
                 }
               }
             }
@@ -103,8 +103,8 @@ export const assignmentRouter = createTRPCRouter({
 
       if (!student) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Student not found'
+          code: "BAD_REQUEST",
+          message: "Student not found"
         });
       }
 
@@ -119,7 +119,7 @@ export const assignmentRouter = createTRPCRouter({
       });
 
       return {
-        message: 'Upload successful'
+        message: "Upload successful"
       };
     })
 });
