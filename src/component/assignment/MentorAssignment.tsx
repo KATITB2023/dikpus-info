@@ -75,25 +75,42 @@ export default function MentorAssignment() {
     }
   ]);
 
+
   const { data: session } = useSession();
-  const [assignments, setAssignments] = useState(api.assignment.getAssignmentNameList.useQuery().data);
-  const [assignmentResult, setAssignmentResult] = useState(api.assignment.getAssignmentResult.useQuery({userId: session?.user.id ?? ''}).data);
+  const assignments = api.assignment.getAssignmentNameList.useQuery().data;
+  const assignmentResult = api.assignment.getAssignmentResult.useQuery({userId: session?.user.id ?? ''}).data;
+  
   const [selectedAssignment, setSelectedAssignment] = useState('');
+  const [filteredAssignment, setFilteredAssignment] = useState([]);
+
+  const handleSelectAssignment = (e: any) => {
+    setSelectedAssignment(e.target.value);
+  };
 
   useEffect(() => {
-    console.log(assignments);
-  }, [assignments]);
+    //group assignmentResult based on assignmentId
+    const groupedAssignmentResult = assignmentResult?.reduce((acc: any, curr: any) => {
+      if(!acc[curr.assignmentId]){
+        acc[curr.assignmentId] = [];
+      }
+      acc[curr.assignmentId].push(curr);
+      return acc;
+    }
+    ,{});
+  }, [assignments, assignmentResult]);
+
   return (
     <Box>
       <Flex gap={10} w={['50%', '40%', '30%', '20%', '15%']}>
         <Select
-          placeholder='Pilih Kelompok'
+          placeholder='Pilih tugas'
           variant='filled'
           bg={'#1C939A'}
           color={'white'}
+          onChange={handleSelectAssignment}
         >
-          {group.map((item) => (
-            <option value={item.id}>{item.name}</option>
+          {assignments?.map((item) => (
+            <option value={item.title}>{item.title}</option>
           ))}
         </Select>
       </Flex>
