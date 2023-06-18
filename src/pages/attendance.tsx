@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { HiPencil, HiOutlineX, HiOutlineCheck } from 'react-icons/hi';
 import PageLayout from '../layout';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '~/utils/api';
 import { AttendanceStatus } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -24,12 +24,9 @@ import { useSession } from 'next-auth/react';
 import { type AttendanceEvent, attendanceEvents, getEditingArr } from './data';
 
 export const Attendance = () => {
-  /* TODO
-      Value getter for input, and select */
-
   const { data: session, status } = useSession();
   const toast = useToast();
-  // const absenMutation = api.attendance.editAttendance.useMutation();
+  // const attendanceMutation = api.attendance.editAttendance.useMutation();
   // const attendanceQuery = api.attendance.getAttendance.useQuery({
   //   userId: session?.user.id ?? ''
   // });
@@ -37,11 +34,17 @@ export const Attendance = () => {
   // let attendanceList: AttendanceEvent[] | undefined =
   //   attendanceQuery?.data?.event;
   // const eventsList = api.attendance.getEventList.useQuery().data;
-  const [attendanceList, setAttendanceList] =
-    useState<AttendanceEvent[]>(attendanceEvents);
+  const [attendanceList, setAttendanceList] = useState<AttendanceEvent[]>([
+    ...attendanceEvents
+  ]);
   const [editStatus, setEditStatus] = useState<boolean[][]>(
     getEditingArr(attendanceList)
   );
+
+  useEffect(() => {
+    console.log(attendanceList);
+  }, [attendanceList]);
+
   const [eventFilter, setEventFilter] = useState<string>('');
   const [groupFilter, setGroupFilter] = useState<number>(-1);
 
@@ -80,7 +83,6 @@ export const Attendance = () => {
   };
 
   const filterByGroup = (group: number) => {
-    setAttendanceList([...attendanceEvents]);
     let filtered = attendanceList?.map((element) => {
       return {
         ...element,
@@ -95,20 +97,33 @@ export const Attendance = () => {
 
   const handleClickEdit = (index1: number, index2: number) => {
     let temp = [...editStatus];
-    if (temp !== undefined && temp[index1][index2] !== undefined) {
+    if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
       temp[index1][index2] = true;
       setEditStatus(temp);
     }
   };
 
-  const handleClickSave = async (
-    index1: number,
-    index2: number,
-    status: string,
-    alasan?: string
-  ) => {
+  const handleClickSave = async (index1: number, index2: number) => {
     let temp = [...editStatus];
-    if (temp !== undefined && temp[index1][index2] !== undefined) {
+    let alasan = '';
+    let status = '';
+    try {
+      alasan = (
+        document.getElementById(
+          'alasan-' + index1 + '-' + index2
+        ) as HTMLInputElement
+      ).value;
+      status = (
+        document.getElementById(
+          'status-' + index1 + '-' + index2
+        ) as HTMLSelectElement
+      ).value;
+      console.log(`alasan: ${alasan} || status: ${status}`);
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
       temp[index1][index2] = false;
       setEditStatus(temp);
 
@@ -127,14 +142,14 @@ export const Attendance = () => {
       try {
         if (attendanceList === undefined) return;
 
-        // const result = await absenMutation.mutateAsync({
+        // const result = await attendanceMutation.mutateAsync({
         //   attendanceId: attendanceList[index1].attendances[index2].id,
         //   kehadiran: changedStatus
         // });
         const result = { message: 'Success' };
 
         toast({
-          title: 'Success',
+          title: 'Kehadiran berhasil diubah',
           status: 'success',
           description: result?.message,
           duration: 2000,
@@ -158,7 +173,7 @@ export const Attendance = () => {
 
   const handleClickDiscard = (index1: number, index2: number) => {
     let temp = [...editStatus];
-    if (temp !== undefined && temp[index1][index2] !== undefined) {
+    if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
       temp[index1][index2] = false;
       setEditStatus(temp);
     }
@@ -220,11 +235,7 @@ export const Attendance = () => {
                                           background: '#25263E'
                                         }}
                                         onClick={() =>
-                                          handleClickSave(
-                                            index1,
-                                            index2,
-                                            'Tidak Hadir'
-                                          )
+                                          handleClickSave(index1, index2)
                                         }
                                       >
                                         <HiOutlineCheck color='white' />
@@ -268,8 +279,8 @@ export const Attendance = () => {
                                       borderRadius={0}
                                       variant='filled'
                                       bg='#1C939A'
-                                      value={item.status}
-                                      id='status-select'
+                                      id={'status-' + index1 + '-' + index2}
+                                      defaultValue={item.status}
                                     >
                                       <option>Hadir</option>
                                       <option>Izin</option>
@@ -285,6 +296,8 @@ export const Attendance = () => {
                                       <Input
                                         placeholder='Masukkan alasan...'
                                         variant='flushed'
+                                        id={'alasan-' + index1 + '-' + index2}
+                                        defaultValue={'Dummy alasan'}
                                       />
                                     </FormControl>
                                   ) : (

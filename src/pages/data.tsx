@@ -3,6 +3,7 @@ import { AttendanceStatus } from '@prisma/client';
 interface AttendanceEvent {
   attendances: {
     status: AttendanceStatus;
+    // reason?: string; // ini gaada...
     student: {
       group: {
         group: number;
@@ -33,6 +34,7 @@ let attendanceEvents: AttendanceEvent[] = [
       },
       {
         status: AttendanceStatus.IZIN,
+        // reason: 'Sakit',
         student: {
           group: {
             group: 1
@@ -62,6 +64,7 @@ let attendanceEvents: AttendanceEvent[] = [
     attendances: [
       {
         status: AttendanceStatus.IZIN,
+        // reason: 'Sakit',
         student: {
           group: {
             group: 1
