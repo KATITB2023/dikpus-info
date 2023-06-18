@@ -43,7 +43,7 @@ export const assignmentRouter = createTRPCRouter({
               id: input.studentId,
               group: {
                 mentorGroup: {
-                  every: {
+                  some: {
                     mentor: {
                       is: {
                         userId: input.userId
