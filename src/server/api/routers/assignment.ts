@@ -31,48 +31,91 @@ export const assignmentRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const submissionList = await ctx.prisma.assignmentSubmission.findMany({
+      // get mentorId
+      const mentor = await ctx.prisma.mentor.findFirst({
         where: {
-          assignment: {
-            is: {
-              title: input.namaTugas
+          userId: input.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      // error handling if mentor's user id not found
+      if (!mentor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Mentor not found"
+        });
+      }
+
+      const groups = await ctx.prisma.group.findMany({
+        where: {
+          mentorGroup: {
+            some: {
+              mentorId: mentor.id
             }
-          },
-          student: {
-            is: {
-              id: input.studentId,
-              group: {
-                mentorGroup: {
-                  some: {
-                    mentor: {
-                      is: {
-                        userId: input.userId
-                      }
+          }
+        },
+        select: {
+          id: true,
+          group: true
+        }
+      })
+
+      // error handling if group not found
+      if (!groups) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Groups not found"
+        });
+      }
+
+      const groupIds = groups.map((group) => group.id);
+
+      const submissionList = await ctx.prisma.assignment.findMany({
+        where: {
+          title: input.namaTugas,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          submission: {
+            select: {
+              id: true,
+              filePath: true,
+              student: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  fakultas: true,
+                  jurusan: true,
+                  group: {
+                    select: {
+                      id: true,
+                      group: true
                     }
                   }
                 }
               }
             }
           }
-        },
-        include: {
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              userId: true,
-              group: {
-                select: {
-                  id: true,
-                  group: true
-                }
-              }
-            }
-          }
         }
-      });
-      return submissionList;
+      })
+
+      return {
+        submissions: submissionList.map((submission) => {
+          return {
+            ...submission,
+            submission: submission.submission.filter((sub) => 
+              (groupIds.includes(sub.student.group.id))
+              && (input.studentId === undefined || sub.student.id === input.studentId)
+            )
+          }
+        })
+      };
     }),
 
   getAssignmentNameList: protectedProcedure.query(async ({ ctx }) => {

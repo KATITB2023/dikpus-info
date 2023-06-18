@@ -2,14 +2,14 @@ import axios, { type AxiosProgressEvent } from 'axios';
 
 export enum FolderEnum {
   PROFILE = 'profile',
-  ASSIGNMENT = 'assignment'
+  ASSIGNMENT = 'assignment',
+  MATERIAL = 'material'
 }
 
 export enum AllowableFileTypeEnum {
   PDF = 'application/pdf',
   PNG = 'image/png',
-  JPEG = 'image/jpeg',
-  JPG = 'image/jpg'
+  JPEG = 'image/jpeg'
 }
 
 export const uploadFile = async (
