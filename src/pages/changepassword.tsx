@@ -6,12 +6,12 @@ import { signIn, useSession } from "next-auth/react";
 
 export default function ChangePassword() {
   const { status } = useSession();
-  // const hello = api.example.hello.useQuery({ text: 'from tRPC' });
+
   if (status === "unauthenticated") return signIn();
 
   return (
     <>
-     <PageLayout title='Log In - KAT ITB 2023'>
+     <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
         <Flex minH='80vh' align='center' justify='center' direction='column'>
           <Heading>Change Password</Heading>
           <Flex w='550px'>

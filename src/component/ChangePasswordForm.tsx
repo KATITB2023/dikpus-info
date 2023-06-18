@@ -1,10 +1,12 @@
-import { FormControl, FormLabel, FormHelperText, Input, Button, Flex } from '@chakra-ui/react'
+import { FormControl, FormLabel, FormHelperText, Input, Button, Flex, useToast } from '@chakra-ui/react'
 import { useState } from 'react';
 import { useSession } from "next-auth/react";
 import { api } from '~/utils/api';
+import { TRPCClientError } from '@trpc/client';
 
 export default function ChangePasswordForm() {
     const { data: session } = useSession();
+    const toast = useToast();
     const changePassMutation = api.profile.changePass.useMutation();
 
     const [currentPass, setCurrentPass] = useState<string>('');
@@ -17,9 +19,10 @@ export default function ChangePasswordForm() {
 
     const isNewPassError = currentPass === newPass && newPass !== '';
     const isConfirmationPassError = confirmationPass != newPass && confirmationPass !== '';
-    const isError = isNewPassError || isConfirmationPassError;
+    const isError = isNewPassError || isConfirmationPassError || currentPass === '' || newPass === '' || confirmationPass === '';
 
-    const handleSubmitPass = async () => {
+    const handleSubmitPass = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         console.log('submit password');
         try {
             const res = await changePassMutation.mutateAsync({
@@ -28,10 +31,26 @@ export default function ChangePasswordForm() {
               newPass: newPass,
               repeatPass: confirmationPass
             })
-            // TO DO: success toast
-        } catch (error){
-            console.log(error)
-            // TO DO: error toast
+
+            toast({
+                title: 'Success',
+                status: 'success',
+                description: res.message,
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error: unknown){
+            console.log("hmm")
+            if (error instanceof TRPCClientError){
+                console.log(error.message)
+                toast({
+                    title: 'Failed',
+                    status: 'error',
+                    description: error.message,
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
         }
     }
 
@@ -52,7 +71,7 @@ export default function ChangePasswordForm() {
                 {isConfirmationPassError && <FormHelperText color='red'>Confirmation password is different with new password</FormHelperText>}
             </FormControl>
             <Flex justify='center'>
-                <Button colorScheme="teal" type="submit" my={4}  _hover={{ bg: "#72D8BA" }} onClick={() => void handleSubmitPass} isDisabled={isError}>
+                <Button colorScheme="teal" type="submit" my={4}  _hover={{ bg: "#72D8BA" }} onClick={(e) => void handleSubmitPass(e)} isDisabled={isError}>
                     Submit
                 </Button>
             </Flex>

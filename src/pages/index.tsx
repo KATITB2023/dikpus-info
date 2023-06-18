@@ -56,14 +56,14 @@ export default function SignIn({ csrfToken }: SignInProps) {
             <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
             <FormControl my={6}>
                 <FormLabel>NIM</FormLabel>
-                <Input type="text" name="nim" placeholder="NIM" value={userInfo.nim} onChange={({ target }) => setUserInfo({ ...userInfo, nim: target.value })}/>
+                <Input type="text" name="nim" placeholder="NIM" value={userInfo.nim} onChange={({ target }) => setUserInfo({ ...userInfo, nim: target.value })} isRequired/>
             </FormControl>
             <FormControl my={6}>
                 <FormLabel >Password</FormLabel>
-                <Input type="password" name="password" placeholder="Password" value={userInfo.password} onChange={({ target }) => setUserInfo({ ...userInfo, password: target.value })}/>
+                <Input type="password" name="password" placeholder="Password" value={userInfo.password} onChange={({ target }) => setUserInfo({ ...userInfo, password: target.value })} isRequired/>
             </FormControl>
             <Flex justify='center'>
-                <Button colorScheme="teal" type="submit" my={4} onClick={handleLogIn}>
+                <Button colorScheme="teal" type="submit" my={4} onClick={(e) => void handleLogIn(e)}>
                     Submit
                 </Button>
             </Flex>
