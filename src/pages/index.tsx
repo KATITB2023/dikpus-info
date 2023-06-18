@@ -1,4 +1,4 @@
-import { Flex, Heading, Box, FormControl, FormLabel, Input, Button } from '@chakra-ui/react'
+import { Flex, Heading, Box, FormControl, FormLabel, Input, Button, useToast } from '@chakra-ui/react'
 import PageLayout from '~/layout';
 import { UserRole } from "@prisma/client";
 import { useRouter } from 'next/router';
@@ -14,11 +14,22 @@ export default function SignIn({ csrfToken }: SignInProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+  const toast = useToast();
 
   const handleRedirect = () => {
     const role = session?.user.role;
     role === UserRole.MENTOR ? void router.push('/attendance') : void router.push('/profile') 
   };
+
+  const handleError = (message: string) => {
+    toast({
+      title: 'Error',
+      description: `${message}`,
+      status: 'error',
+      duration: 3000,
+      isClosable: true,
+    });
+  }
 
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -30,7 +41,7 @@ export default function SignIn({ csrfToken }: SignInProps) {
       redirect: false,
     });
 
-    if (res?.error) console.log(res?.error);
+    if (res?.error) handleError(res?.error);
     if (res?.url) handleRedirect();
 
     console.log(res);
