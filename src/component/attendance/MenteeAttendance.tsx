@@ -1,4 +1,4 @@
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession } from 'next-auth/react';
 import {
   Table,
   Thead,
@@ -11,14 +11,14 @@ import {
   Flex,
   Text,
   useToast
-} from "@chakra-ui/react";
-import { BiDownload } from "react-icons/bi";
-import { type IconType } from "react-icons/lib";
-import { api } from "~/utils/api";
-import { getDate, getTwoTime, validTime } from "~/utils/date";
-import { FolderEnum } from "~/utils/file";
-import { AttendanceStatus, type Event } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
+} from '@chakra-ui/react';
+import { BiDownload } from 'react-icons/bi';
+import { type IconType } from 'react-icons/lib';
+import { api } from '~/utils/api';
+import { getDate, getTwoTime, validTime } from '~/utils/date';
+import { FolderEnum } from '~/utils/file';
+import { AttendanceStatus, type Event } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 
 interface Attendance {
   status: AttendanceStatus;
@@ -48,7 +48,7 @@ const TableButton = ({
       transition='all 0.2s ease-in-out'
       fontStyle='normal'
       onClick={isDisabled ? undefined : onClick}
-      cursor={isDisabled ? "not-allowed" : "pointer"}
+      cursor={isDisabled ? 'not-allowed' : 'pointer'}
     >
       <Flex
         flexDir='row'
@@ -77,33 +77,32 @@ export const MenteeAttendance = () => {
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
   const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session?.user.id ?? ""
+    userId: session?.user.id ?? ''
   });
 
   const eventList = eventQuery?.data;
-  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Absen"];
+  const tableHeader = ['Tanggal', 'Waktu', 'Topik', 'Materi', 'Absen'];
 
-  if (status === "unauthenticated") return signIn();
+  if (status === 'unauthenticated') return signIn();
 
   const downloadFile = async (filePath: string) => {
-    // TODO ganti folder
     try {
       const { url } = await downloadMutation.mutateAsync({
-        folder: FolderEnum.ASSIGNMENT,
+        folder: FolderEnum.MATERIAL,
         filename: filePath
       });
 
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     } catch (err: unknown) {
       if (!(err instanceof TRPCError)) throw err;
 
       toast({
-        title: "Error",
-        status: "error",
+        title: 'Error',
+        status: 'error',
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: "top"
+        position: 'top'
       });
     }
   };
@@ -111,28 +110,28 @@ export const MenteeAttendance = () => {
   const handleAbsen = async (eventId: string) => {
     try {
       const result = await absenMutation.mutateAsync({
-        userId: session?.user.id ?? "",
+        userId: session?.user.id ?? '',
         eventId
       });
 
       toast({
-        title: "Success",
-        status: "success",
+        title: 'Success',
+        status: 'success',
         description: result?.message,
         duration: 2000,
         isClosable: true,
-        position: "top"
+        position: 'top'
       });
     } catch (err: unknown) {
       if (!(err instanceof TRPCError)) throw err;
 
       toast({
-        title: "Error",
-        status: "error",
+        title: 'Error',
+        status: 'error',
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: "top"
+        position: 'top'
       });
     }
   };
