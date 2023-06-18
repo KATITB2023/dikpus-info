@@ -11,12 +11,11 @@ import {
   Heading,
   FormControl,
   Input,
-  useToast,
-  Text
+  useToast
 } from '@chakra-ui/react';
 import { HiPencil, HiOutlineX, HiOutlineCheck } from 'react-icons/hi';
 import PageLayout from '../layout';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { api } from '~/utils/api';
 import { AttendanceStatus } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -34,71 +33,72 @@ export const Attendance = () => {
   // let attendanceList: AttendanceEvent[] | undefined =
   //   attendanceQuery?.data?.event;
   // const eventsList = api.attendance.getEventList.useQuery().data;
-  const [attendanceList, setAttendanceList] = useState<AttendanceEvent[]>([
-    ...attendanceEvents
+
+  const attendanceList = [...attendanceEvents]; // dummy
+  const [filteredList, setFilteredList] = useState<AttendanceEvent[]>([
+    ...attendanceList
   ]);
   const [editStatus, setEditStatus] = useState<boolean[][]>(
     getEditingArr(attendanceList)
   );
 
-  useEffect(() => {
-    console.log(attendanceList);
-  }, [attendanceList]);
-
   const [eventFilter, setEventFilter] = useState<string>('');
-  const [groupFilter, setGroupFilter] = useState<number>(-1);
+  const [groupFilter, setGroupFilter] = useState<number>(0);
 
   const eventsList = [{ title: 'Event A' }, { title: 'Event B' }];
   const groupList = [1, 2];
 
   const handleSelectEvent = (event: string) => {
-    console.log(`event: ${event}`);
-    setEventFilter(event);
-    console.log(`event filter: ${eventFilter}`);
-    filterAll();
+    setEventFilter((prev) => {
+      console.log(`setan ${event}`);
+      filterAll(groupFilter, event);
+      return event;
+    });
   };
 
   const handleSelectGroup = (group: number) => {
-    setGroupFilter(group);
-    filterAll();
-  };
-
-  const filterAll = () => {
-    setAttendanceList([...attendanceEvents]);
-    if (eventFilter !== '') {
-      filterByEvent(eventFilter);
-    }
-    if (groupFilter !== -1) {
-      filterByGroup(groupFilter);
-    }
-    setEditStatus(getEditingArr(attendanceList));
-  };
-
-  const filterByEvent = (event: string) => {
-    let filtered = attendanceList?.filter(
-      (attendance) => attendance.title === event
-    );
-    setAttendanceList([...filtered]);
-    setEditStatus(getEditingArr(filtered));
-  };
-
-  const filterByGroup = (group: number) => {
-    let filtered = attendanceList?.map((element) => {
-      return {
-        ...element,
-        attendances: element.attendances.filter(
-          (attendance) => attendance.student.group.group === group
-        )
-      };
+    setGroupFilter((prev) => {
+      console.log(`setan2 ${eventFilter}`);
+      filterAll(group, eventFilter);
+      return group;
     });
-    setAttendanceList([...filtered]);
-    setEditStatus(getEditingArr(filtered));
+  };
+
+  const filterAll = (group: number, event: string) => {
+    let filtered;
+    if (event !== '') {
+      filtered = attendanceList?.filter(
+        (attendance) => attendance.title === event
+      );
+      console.log(event);
+      console.log(filtered);
+      setEditStatus(getEditingArr(filtered));
+    } else {
+      filtered = [...attendanceList];
+    }
+    if (group !== 0) {
+      filtered = filtered?.map((element) => {
+        return {
+          ...element,
+          attendances: element.attendances.filter(
+            (attendance) => attendance.student.group.group === group
+          )
+        };
+      });
+      console.log(filtered);
+
+      setEditStatus(getEditingArr(filtered));
+    } else {
+      filtered = [...filtered];
+    }
+    setFilteredList([...filtered]);
+    setEditStatus(getEditingArr(attendanceList));
   };
 
   const handleClickEdit = (index1: number, index2: number) => {
     let temp = [...editStatus];
     if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
-      temp[index1][index2] = true;
+      (temp[index1] as boolean[])[index2] = true;
       setEditStatus(temp);
     }
   };
@@ -124,7 +124,7 @@ export const Attendance = () => {
     }
 
     if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
-      temp[index1][index2] = false;
+      (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
 
       let changedStatus;
@@ -152,7 +152,7 @@ export const Attendance = () => {
           title: 'Kehadiran berhasil diubah',
           status: 'success',
           description: result?.message,
-          duration: 2000,
+          duration: 750,
           isClosable: true,
           position: 'top'
         });
@@ -174,17 +174,22 @@ export const Attendance = () => {
   const handleClickDiscard = (index1: number, index2: number) => {
     let temp = [...editStatus];
     if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
-      temp[index1][index2] = false;
+      (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
     }
-    console.log(`change discarded`);
+    toast({
+      title: 'Change discarded',
+      status: 'error',
+      description: 'Change discarded',
+      duration: 750,
+      isClosable: true,
+      position: 'top'
+    });
   };
 
   return (
     <PageLayout title='Absen'>
       <VStack alignItems='flex-start' spacing={10}>
-        <Text>Event filter: {eventFilter}</Text>
-        <Text>Group filter: {groupFilter}</Text>
         <HStack spacing={10}>
           <Select
             placeholder='Pilih tanggal'
@@ -214,8 +219,8 @@ export const Attendance = () => {
           </Select>
         </HStack>
         <VStack spacing={8} alignItems='flex-start'>
-          {attendanceList
-            ? attendanceList.map((event, index1) => {
+          {filteredList
+            ? filteredList.map((event, index1) => {
                 return (
                   <VStack alignItems='flex-start' spacing={5}>
                     <Heading size='lg'>{event.title}</Heading>
@@ -275,16 +280,15 @@ export const Attendance = () => {
                                 <Td>
                                   {editStatus?.[index1]?.[index2] ? (
                                     <Select
-                                      placeholder='Pilih status'
                                       borderRadius={0}
                                       variant='filled'
                                       bg='#1C939A'
                                       id={'status-' + index1 + '-' + index2}
                                       defaultValue={item.status}
                                     >
-                                      <option>Hadir</option>
-                                      <option>Izin</option>
-                                      <option>Tidak Hadir</option>
+                                      <option>HADIR</option>
+                                      <option>IZIN</option>
+                                      <option>TIDAK_HADIR</option>
                                     </Select>
                                   ) : (
                                     item.status
