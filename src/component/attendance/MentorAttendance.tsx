@@ -22,7 +22,6 @@ import { useSession } from 'next-auth/react';
 
 /* TODO:
     - urus alasan kalo udah ada endpointnya
-    - fetch group list kalo udah ada endpointnya
   */
 
 interface AttendanceData {
@@ -78,7 +77,7 @@ export const MentorAttendance = () => {
   );
   const [eventFilter, setEventFilter] = useState<string>('');
   const [groupFilter, setGroupFilter] = useState<number>(0);
-  const groupList = [1, 2, 3];
+  const [groupList, setGroupList] = useState<number[]>([]);
 
   useEffect(() => {
     attendanceQuery?.data?.event
@@ -88,6 +87,16 @@ export const MentorAttendance = () => {
 
   useEffect(() => {
     setFilteredList([...attendanceList]);
+
+    let temp: number[] = [];
+    attendanceList.forEach((event) => {
+      event.attendances.forEach((attendance) => {
+        if (!temp.includes(attendance.student.group.group)) {
+          temp.push(attendance.student.group.group);
+        }
+      });
+    });
+    setGroupList([...temp]);
   }, [attendanceList]);
 
   useEffect(() => {
@@ -222,7 +231,7 @@ export const MentorAttendance = () => {
       setEditStatus(temp);
     }
     toast({
-      title: 'Change discarded',
+      title: 'Canceled',
       status: 'error',
       description: 'Change discarded',
       duration: 750,
