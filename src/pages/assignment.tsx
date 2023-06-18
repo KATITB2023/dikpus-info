@@ -1,18 +1,15 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-import PageLayout from '~/layout';
-import { useSession } from 'next-auth/react';
-import { Box } from '@chakra-ui/react';
-import { UserRole } from '@prisma/client';
-import { RedirectLogin } from '~/component/RedirectLogin';
-import MentorAssignment from '~/component/assignment/MentorAssignment';
+import { signIn, useSession } from "next-auth/react";
+import { Box } from "@chakra-ui/react";
+import { UserRole } from "@prisma/client";
+import { type NextPage } from "next";
+import PageLayout from "~/layout";
+import MentorAssignment from "~/component/assignment/MentorAssignment";
 
-const Assignment = () => {
+
+const Assignment: NextPage = () => {
   const { data: session, status } = useSession();
 
-  if (!session && status !== 'loading') {
-    // pake useRouter next gabisa idk why
-    return <RedirectLogin />;
-  }
+  if (status === "unauthenticated") return signIn();
 
   const role = session?.user.role;
 

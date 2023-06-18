@@ -79,7 +79,7 @@ export default function MentorAssignment() {
   const [assignments, setAssignments] = useState(api.assignment.getAssignmentNameList.useQuery().data);
   const [assignmentResult, setAssignmentResult] = useState(api.assignment.getAssignmentResult.useQuery({userId: session?.user.id ?? ''}).data);
   const [selectedAssignment, setSelectedAssignment] = useState('');
-  
+
   useEffect(() => {
     console.log(assignments);
   }, [assignments]);

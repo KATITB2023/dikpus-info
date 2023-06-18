@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from "next-auth/react";
 import {
   Table,
   Thead,
@@ -14,13 +11,14 @@ import {
   Flex,
   Text,
   useToast
-} from '@chakra-ui/react';
-import { BiDownload } from 'react-icons/bi';
-import { type IconType } from 'react-icons/lib';
-import { api } from '~/utils/api';
-import { getDate, getTwoTime, validTime } from '~/utils/date';
-import { FolderEnum } from '~/utils/file';
-import { AttendanceStatus, type Event } from '@prisma/client';
+} from "@chakra-ui/react";
+import { BiDownload } from "react-icons/bi";
+import { type IconType } from "react-icons/lib";
+import { api } from "~/utils/api";
+import { getDate, getTwoTime, validTime } from "~/utils/date";
+import { FolderEnum } from "~/utils/file";
+import { AttendanceStatus, type Event } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -37,7 +35,7 @@ const TableButton = ({
   icon?: IconType;
   text: string;
   bg: string;
-  onClick?: any;
+  onClick?: () => void;
   isDisabled?: boolean;
 }) => {
   const TableIcon = icon || (() => null);
@@ -50,7 +48,7 @@ const TableButton = ({
       transition='all 0.2s ease-in-out'
       fontStyle='normal'
       onClick={isDisabled ? undefined : onClick}
-      cursor={isDisabled ? 'not-allowed' : 'pointer'}
+      cursor={isDisabled ? "not-allowed" : "pointer"}
     >
       <Flex
         flexDir='row'
@@ -74,16 +72,18 @@ const TableButton = ({
 };
 
 export const MenteeAttendance = () => {
-  const { data: session } = useSession();
   const toast = useToast();
+  const { data: session, status } = useSession();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
-  const tableHeader = ['Tanggal', 'Waktu', 'Topik', 'Materi', 'Absen'];
-  const eventList: Attendance[] | undefined = api.attendance.getEvents.useQuery(
-    {
-      userId: session?.user.id ?? ''
-    }
-  ).data;
+  const eventQuery = api.attendance.getEvents.useQuery({
+    userId: session?.user.id ?? ""
+  });
+
+  const eventList = eventQuery?.data;
+  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Absen"];
+
+  if (status === "unauthenticated") return signIn();
 
   const downloadFile = async (filePath: string) => {
     // TODO ganti folder
@@ -93,15 +93,17 @@ export const MenteeAttendance = () => {
         filename: filePath
       });
 
-      window.open(url, '_blank');
-    } catch (err: any) {
+      window.open(url, "_blank");
+    } catch (err: unknown) {
+      if (!(err instanceof TRPCError)) throw err;
+
       toast({
-        title: 'Error',
-        status: 'error',
+        title: "Error",
+        status: "error",
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
     }
   };
@@ -109,26 +111,28 @@ export const MenteeAttendance = () => {
   const handleAbsen = async (eventId: string) => {
     try {
       const result = await absenMutation.mutateAsync({
-        userId: session?.user.id ?? '',
+        userId: session?.user.id ?? "",
         eventId
       });
 
       toast({
-        title: 'Success',
-        status: 'success',
+        title: "Success",
+        status: "success",
         description: result?.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (!(err instanceof TRPCError)) throw err;
+
       toast({
-        title: 'Error',
-        status: 'error',
+        title: "Error",
+        status: "error",
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
     }
   };
@@ -171,7 +175,7 @@ export const MenteeAttendance = () => {
                       icon={BiDownload}
                       text='Download'
                       bg='#1C939A'
-                      onClick={() => downloadFile(item.event.materialPath)}
+                      onClick={() => void downloadFile(item.event.materialPath)}
                     />
                   </Td>
                   <Td>
@@ -184,7 +188,7 @@ export const MenteeAttendance = () => {
                       <TableButton
                         text='Tandai Hadir'
                         bg='#1C939A'
-                        onClick={() => handleAbsen(item.event.id)}
+                        onClick={() => void handleAbsen(item.event.id)}
                       />
                     ) : (
                       <TableButton text={waktu} bg='#E8553E' isDisabled />
