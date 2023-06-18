@@ -57,8 +57,7 @@ export const storageRouter = createTRPCRouter({
         contentType: z.union([
           z.literal(AllowableFileTypeEnum.PDF),
           z.literal(AllowableFileTypeEnum.PNG),
-          z.literal(AllowableFileTypeEnum.JPEG),
-          z.literal(AllowableFileTypeEnum.JPG)
+          z.literal(AllowableFileTypeEnum.JPEG)
         ])
       })
     )
