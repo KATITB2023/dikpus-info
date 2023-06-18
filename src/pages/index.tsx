@@ -1,28 +1,73 @@
-// import Head from 'next/head';
-// import { api } from '~/utils/api';
-import { Flex, Heading, Box } from '@chakra-ui/react'
+import { Flex, Heading, Box, FormControl, FormLabel, Input, Button } from '@chakra-ui/react'
 import PageLayout from '~/layout';
-import LoginForm from '~/components/LoginForm';
+import { UserRole } from "@prisma/client";
+import { useRouter } from 'next/router';
+import { getCsrfToken, signIn, useSession } from "next-auth/react";
+import type { GetServerSidePropsContext } from "next";
+import { useState } from 'react';
 
-export default function Home() {
-  // const hello = api.example.hello.useQuery({ text: 'from tRPC' });
+interface SignInProps {
+  csrfToken: string;
+}
 
+export default function SignIn({ csrfToken }: SignInProps) {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+
+  const handleRedirect = () => {
+    const role = session?.user.role;
+    role === UserRole.MENTOR ? void router.push('/attendance') : void router.push('/profile') 
+  };
+
+  const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    const res = await signIn("credentials", {
+      nim: userInfo.nim,
+      password: userInfo.password,
+      csrfToken: csrfToken,
+      redirect: false,
+    });
+
+    if (res?.error) console.log(res?.error);
+    if (res?.url) handleRedirect();
+
+    console.log(res);
+  };
+  
   return (
-    <>
-     <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
-        <Flex minH='80vh' align='center' justify='center' direction='column'>
-          <Heading>Diklat Terpusat</Heading>
-          <Box width='450px'>
-            <LoginForm/>
-          </Box>
-        </Flex>
-      </PageLayout>
-    </>
+    <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
+      <Flex minH='80vh' align='center' justify='center' direction='column'>
+        <Heading>Diklat Terpusat</Heading>
+        <Box width='450px'>
+          <form>
+            <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
+            <FormControl my={6}>
+                <FormLabel>NIM</FormLabel>
+                <Input type="text" name="nim" placeholder="NIM" value={userInfo.nim} onChange={({ target }) => setUserInfo({ ...userInfo, nim: target.value })}/>
+            </FormControl>
+            <FormControl my={6}>
+                <FormLabel >Password</FormLabel>
+                <Input type="password" name="password" placeholder="Password" value={userInfo.password} onChange={({ target }) => setUserInfo({ ...userInfo, password: target.value })}/>
+            </FormControl>
+            <Flex justify='center'>
+                <Button colorScheme="teal" type="submit" my={4} onClick={handleLogIn}>
+                    Submit
+                </Button>
+            </Flex>
+          </form>
+        </Box>
+      </Flex>
+    </PageLayout>
   );
 }
-// import { Button } from "@chakra-ui/react";
-// import { signIn } from "next-auth/react";
 
-// export default function Home() {
-//   return <Button onClick={() => void signIn()}>Sign in</Button>;
-// }
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const csrfToken = await getCsrfToken(context);
+  return {
+    props: {
+      csrfToken
+    }
+  };
+}
