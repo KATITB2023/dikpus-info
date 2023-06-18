@@ -1,7 +1,12 @@
 import { FormControl, FormLabel, FormHelperText, Input, Button, Flex } from '@chakra-ui/react'
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useSession } from "next-auth/react";
+import { api } from '~/utils/api';
 
 export default function ChangePasswordForm() {
+    const { data: session } = useSession();
+    const changePassMutation = api.profile.changePass.useMutation();
+
     const [currentPass, setCurrentPass] = useState<string>('');
     const [newPass, setNewPass] = useState<string>('');
     const [confirmationPass, setConfirmationPass] = useState<string>('');
@@ -14,9 +19,20 @@ export default function ChangePasswordForm() {
     const isConfirmationPassError = confirmationPass != newPass && confirmationPass !== '';
     const isError = isNewPassError || isConfirmationPassError;
 
-    const handleSubmitPass: React.MouseEventHandler<HTMLButtonElement> = () => {
-        // TO DO
+    const handleSubmitPass = async () => {
         console.log('submit password');
+        try {
+            const res = await changePassMutation.mutateAsync({
+              userId: session?.user.id ?? '',
+              curPass: currentPass,
+              newPass: newPass,
+              repeatPass: confirmationPass
+            })
+            // TO DO: success toast
+        } catch (error){
+            console.log(error)
+            // TO DO: error toast
+        }
     }
 
     return (
@@ -36,7 +52,7 @@ export default function ChangePasswordForm() {
                 {isConfirmationPassError && <FormHelperText color='red'>Confirmation password is different with new password</FormHelperText>}
             </FormControl>
             <Flex justify='center'>
-                <Button colorScheme="teal" type="submit" my={4}  _hover={{ bg: "#72D8BA" }} onClick={handleSubmitPass} isDisabled={isError}>
+                <Button colorScheme="teal" type="submit" my={4}  _hover={{ bg: "#72D8BA" }} onClick={() => void handleSubmitPass} isDisabled={isError}>
                     Submit
                 </Button>
             </Flex>

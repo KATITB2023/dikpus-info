@@ -1,10 +1,13 @@
 import { Flex, Heading, Box, IconButton } from '@chakra-ui/react'
 import { FiArrowLeft } from 'react-icons/fi';
 import PageLayout from '~/layout';
-import ChangePasswordForm from '~/components/ChangePasswordForm';
+import ChangePasswordForm from '~/component/ChangePasswordForm';
+import { signIn, useSession } from "next-auth/react";
 
 export default function ChangePassword() {
+  const { status } = useSession();
   // const hello = api.example.hello.useQuery({ text: 'from tRPC' });
+  if (status === "unauthenticated") return signIn();
 
   return (
     <>
