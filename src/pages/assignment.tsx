@@ -1,14 +1,13 @@
-import PageLayout from "~/layout";
 import { signIn, useSession } from "next-auth/react";
 import { Box } from "@chakra-ui/react";
 import { UserRole } from "@prisma/client";
+import { type NextPage } from "next";
+import PageLayout from "~/layout";
 
-const Assignment = () => {
+const Assignment: NextPage = () => {
   const { data: session, status } = useSession();
 
-  if (status === "unauthenticated") {
-    return signIn();
-  }
+  if (status === "unauthenticated") return signIn();
 
   const role = session?.user.role;
 

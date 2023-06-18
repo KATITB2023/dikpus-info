@@ -33,20 +33,19 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string().uuid(),
-        profile_url: z.string().optional(),
+        profileURL: z.string().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
         phoneNumber: z.string().optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // return input
       await ctx.prisma.student.update({
         where: {
           userId: input.userId
         },
         data: {
-          imagePath: input.profile_url,
+          imagePath: input.profileURL,
           firstName: input.firstName,
           lastName: input.lastName,
           phoneNumber: input.phoneNumber

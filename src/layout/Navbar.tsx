@@ -7,12 +7,12 @@ import {
   MenuItem,
   MenuList,
   Text
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { AiOutlineHome } from 'react-icons/ai';
-import { BsPeopleFill } from 'react-icons/bs';
-import { MdOutlineFolderCopy } from 'react-icons/md';
-import { RxHamburgerMenu } from 'react-icons/rx';
+} from "@chakra-ui/react";
+import Link from "next/link";
+import { AiOutlineHome } from "react-icons/ai";
+import { BsPeopleFill } from "react-icons/bs";
+import { MdOutlineFolderCopy } from "react-icons/md";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 interface Props {
   title: string;
@@ -21,11 +21,11 @@ interface Props {
 
 export default function Navbar({ title, titleOnly = false }: Props) {
   const links = [
-    { name: 'Profile', href: '/profile', icon: <AiOutlineHome size={20} /> },
-    { name: 'Absen', href: '/attendance', icon: <BsPeopleFill size={20} /> },
+    { name: "Profile", href: "/profile", icon: <AiOutlineHome size={20} /> },
+    { name: "Absen", href: "/attendance", icon: <BsPeopleFill size={20} /> },
     {
-      name: 'Tugas',
-      href: '/assignment',
+      name: "Tugas",
+      href: "/assignment",
       icon: <MdOutlineFolderCopy size={20} />
     }
   ];
@@ -63,7 +63,7 @@ export default function Navbar({ title, titleOnly = false }: Props) {
                     <MenuItem
                       bg='#1C939A'
                       w='100%'
-                      _hover={{ opacity: 0.7, bg: '#12122E' }}
+                      _hover={{ opacity: 0.7, bg: "#12122E" }}
                       transition='all 0.2s ease-in-out'
                     >
                       <Flex

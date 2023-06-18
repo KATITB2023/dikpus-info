@@ -83,8 +83,8 @@ export const attendanceRouter = createTRPCRouter({
         });
       }
 
-      const currentTime = new Date(Date.now());
-      if (currentTime > event.startTime && currentTime < event.endTime) {
+      const currentTime = new Date();
+      if (currentTime >= event.startTime && currentTime <= event.endTime) {
         await ctx.prisma.attendance.updateMany({
           where: {
             studentId: student.id,
@@ -99,12 +99,16 @@ export const attendanceRouter = createTRPCRouter({
         return {
           message: "Attendance Recorded"
         };
-      } else if (currentTime < event.startTime) {
+      }
+
+      if (currentTime < event.startTime) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Event not yet started"
         });
-      } else if (currentTime > event.endTime) {
+      }
+
+      if (currentTime > event.endTime) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Event is finished"
@@ -120,7 +124,7 @@ export const attendanceRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      // get mentor_id
+      // get mentorId
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {
           userId: input.userId
@@ -174,7 +178,7 @@ export const attendanceRouter = createTRPCRouter({
         });
       }
 
-      // get all student_id
+      // get all studentId
       const students = await ctx.prisma.student.findMany({
         where: {
           groupId: {
