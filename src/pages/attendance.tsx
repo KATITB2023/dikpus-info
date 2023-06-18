@@ -10,190 +10,297 @@ import {
   TableContainer,
   Heading,
   FormControl,
-  Input
+  Input,
+  useToast,
+  Text
 } from '@chakra-ui/react';
 import { HiPencil, HiOutlineX, HiOutlineCheck } from 'react-icons/hi';
 import PageLayout from '../layout';
+import { useState } from 'react';
+import { api } from '~/utils/api';
+import { AttendanceStatus } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { useSession } from 'next-auth/react';
+import { type AttendanceEvent, attendanceEvents, getEditingArr } from './data';
 
 export const Attendance = () => {
-  // usestate bla bla
+  /* TODO
+      Value getter for input, and select */
 
-  let days = [
-    '1 Januari 2023',
-    '2 Januari 2023',
-    '3 Januari 2023',
-    '4 Januari 2023'
-  ];
+  const { data: session, status } = useSession();
+  const toast = useToast();
+  // const absenMutation = api.attendance.editAttendance.useMutation();
+  // const attendanceQuery = api.attendance.getAttendance.useQuery({
+  //   userId: session?.user.id ?? ''
+  // });
 
-  let groups = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N'
-  ];
+  // let attendanceList: AttendanceEvent[] | undefined =
+  //   attendanceQuery?.data?.event;
+  // const eventsList = api.attendance.getEventList.useQuery().data;
+  const [attendanceList, setAttendanceList] =
+    useState<AttendanceEvent[]>(attendanceEvents);
+  const [editStatus, setEditStatus] = useState<boolean[][]>(
+    getEditingArr(attendanceList)
+  );
+  const [eventFilter, setEventFilter] = useState<string>('');
+  const [groupFilter, setGroupFilter] = useState<number>(-1);
 
-  let isi = [
-    {
-      nama: 'nama 1',
-      kelompok: 'A',
-      status: 'Hadir',
-      alasan: ''
-    },
-    {
-      nama: 'nama 2',
-      kelompok: 'B',
-      status: 'Izin',
-      alasan: 'Sakit'
-    },
-    {
-      nama: 'nama 3',
-      kelompok: 'C',
-      status: 'Tidak Hadir',
-      alasan: ''
-    },
-    {
-      nama: 'nama 4',
-      kelompok: 'D',
-      status: 'Hadir',
-      alasan: ''
+  const eventsList = [{ title: 'Event A' }, { title: 'Event B' }];
+  const groupList = [1, 2];
+
+  const handleSelectEvent = (event: string) => {
+    console.log(`event: ${event}`);
+    setEventFilter(event);
+    console.log(`event filter: ${eventFilter}`);
+    filterAll();
+  };
+
+  const handleSelectGroup = (group: number) => {
+    setGroupFilter(group);
+    filterAll();
+  };
+
+  const filterAll = () => {
+    setAttendanceList([...attendanceEvents]);
+    if (eventFilter !== '') {
+      filterByEvent(eventFilter);
     }
-  ];
+    if (groupFilter !== -1) {
+      filterByGroup(groupFilter);
+    }
+    setEditStatus(getEditingArr(attendanceList));
+  };
+
+  const filterByEvent = (event: string) => {
+    let filtered = attendanceList?.filter(
+      (attendance) => attendance.title === event
+    );
+    setAttendanceList([...filtered]);
+    setEditStatus(getEditingArr(filtered));
+  };
+
+  const filterByGroup = (group: number) => {
+    setAttendanceList([...attendanceEvents]);
+    let filtered = attendanceList?.map((element) => {
+      return {
+        ...element,
+        attendances: element.attendances.filter(
+          (attendance) => attendance.student.group.group === group
+        )
+      };
+    });
+    setAttendanceList([...filtered]);
+    setEditStatus(getEditingArr(filtered));
+  };
+
+  const handleClickEdit = (index1: number, index2: number) => {
+    let temp = [...editStatus];
+    if (temp !== undefined && temp[index1][index2] !== undefined) {
+      temp[index1][index2] = true;
+      setEditStatus(temp);
+    }
+  };
+
+  const handleClickSave = async (
+    index1: number,
+    index2: number,
+    status: string,
+    alasan?: string
+  ) => {
+    let temp = [...editStatus];
+    if (temp !== undefined && temp[index1][index2] !== undefined) {
+      temp[index1][index2] = false;
+      setEditStatus(temp);
+
+      let changedStatus;
+      switch (status) {
+        case 'Hadir':
+          changedStatus = AttendanceStatus.HADIR;
+          break;
+        case 'Izin':
+          changedStatus = AttendanceStatus.IZIN;
+          break;
+        default:
+          changedStatus = AttendanceStatus.TIDAK_HADIR;
+      }
+
+      try {
+        if (attendanceList === undefined) return;
+
+        // const result = await absenMutation.mutateAsync({
+        //   attendanceId: attendanceList[index1].attendances[index2].id,
+        //   kehadiran: changedStatus
+        // });
+        const result = { message: 'Success' };
+
+        toast({
+          title: 'Success',
+          status: 'success',
+          description: result?.message,
+          duration: 2000,
+          isClosable: true,
+          position: 'top'
+        });
+      } catch (err: unknown) {
+        if (!(err instanceof TRPCError)) throw err;
+
+        toast({
+          title: 'Error',
+          status: 'error',
+          description: err.message,
+          duration: 2000,
+          isClosable: true,
+          position: 'top'
+        });
+      }
+    }
+  };
+
+  const handleClickDiscard = (index1: number, index2: number) => {
+    let temp = [...editStatus];
+    if (temp !== undefined && temp[index1][index2] !== undefined) {
+      temp[index1][index2] = false;
+      setEditStatus(temp);
+    }
+    console.log(`change discarded`);
+  };
 
   return (
     <PageLayout title='Absen'>
       <VStack alignItems='flex-start' spacing={10}>
+        <Text>Event filter: {eventFilter}</Text>
+        <Text>Group filter: {groupFilter}</Text>
         <HStack spacing={10}>
           <Select
             placeholder='Pilih tanggal'
             borderRadius={0}
             variant='filled'
             bg='#1C939A'
+            onChange={(e) => handleSelectEvent(e.target.value)}
           >
-            {days.map((day) => {
-              return <option>{day}</option>;
-            })}
+            {eventsList
+              ? eventsList.map((event) => {
+                  return <option>{event.title}</option>;
+                })
+              : null}
           </Select>
           <Select
             placeholder='Pilih kelompok'
             borderRadius={0}
             variant='filled'
             bg='#1C939A'
+            onChange={(e) => handleSelectGroup(Number(e.target.value))}
           >
-            {groups.map((group) => {
-              return <option>{group}</option>;
-            })}
+            {groupList
+              ? groupList.map((group) => {
+                  return <option>{group}</option>;
+                })
+              : null}
           </Select>
         </HStack>
-        <VStack spacing={8}>
-          {days.map((day) => {
-            return (
-              <VStack alignItems='flex-start' spacing={5}>
-                <Heading size='lg'>{day}</Heading>
-                <TableContainer>
-                  <Table variant='unstyled'>
-                    <Tbody>
-                      {isi.map((item) => {
-                        return (
-                          <Tr>
-                            <Td>
-                              <Button
-                                variant='ghost'
-                                borderRadius={0}
-                                _hover={{
-                                  background: '#25263E'
-                                }}
-                              >
-                                <HiPencil color='white' />
-                              </Button>
-                            </Td>
-                            <Td>{item.nama}</Td>
-                            <Td>Kelompok {item.kelompok}</Td>
-                            <Td>{item.status}</Td>
-                            <Td>{item.alasan}</Td>
-                          </Tr>
-                        );
-                      })}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </VStack>
-            );
-          })}
-        </VStack>
-        <VStack spacing={8}>
-          {days.map((day) => {
-            return (
-              <VStack alignItems='flex-start' spacing={5}>
-                <Heading size='lg'>{day}</Heading>
-                <TableContainer>
-                  <Table variant='unstyled'>
-                    <Tbody>
-                      {isi.map((item) => {
-                        return (
-                          <Tr>
-                            <Td>
-                              <HStack spacing={0}>
-                                <Button
-                                  variant='ghost'
-                                  borderRadius={0}
-                                  _hover={{
-                                    background: '#25263E'
-                                  }}
-                                >
-                                  <HiOutlineCheck color='white' />
-                                </Button>
-                                <Button
-                                  variant='ghost'
-                                  borderRadius={0}
-                                  _hover={{
-                                    background: '#761300'
-                                  }}
-                                >
-                                  <HiOutlineX color='white' />
-                                </Button>
-                              </HStack>
-                            </Td>
-                            <Td>{item.nama}</Td>
-                            <Td>Kelompok {item.kelompok}</Td>
-                            <Td>
-                              <Select
-                                placeholder='Pilih status'
-                                borderRadius={0}
-                                variant='filled'
-                                bg='#1C939A'
-                              >
-                                <option>Hadir</option>
-                                <option>Izin</option>
-                                <option>Tidak Hadir</option>
-                              </Select>
-                            </Td>
-                            <Td>
-                              <FormControl isRequired>
-                                <Input
-                                  placeholder='Masukkan alasan...'
-                                  variant='flushed'
-                                />
-                              </FormControl>
-                            </Td>
-                          </Tr>
-                        );
-                      })}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </VStack>
-            );
-          })}
+        <VStack spacing={8} alignItems='flex-start'>
+          {attendanceList
+            ? attendanceList.map((event, index1) => {
+                return (
+                  <VStack alignItems='flex-start' spacing={5}>
+                    <Heading size='lg'>{event.title}</Heading>
+                    <TableContainer>
+                      <Table variant='unstyled'>
+                        <Tbody>
+                          {event.attendances.map((item, index2) => {
+                            return (
+                              <Tr>
+                                <Td key={index2}>
+                                  {editStatus?.[index1]?.[index2] ? (
+                                    <>
+                                      <Button
+                                        variant='ghost'
+                                        borderRadius={0}
+                                        _hover={{
+                                          background: '#25263E'
+                                        }}
+                                        onClick={() =>
+                                          handleClickSave(
+                                            index1,
+                                            index2,
+                                            'Tidak Hadir'
+                                          )
+                                        }
+                                      >
+                                        <HiOutlineCheck color='white' />
+                                      </Button>
+                                      <Button
+                                        variant='ghost'
+                                        borderRadius={0}
+                                        _hover={{
+                                          background: '#761300'
+                                        }}
+                                        onClick={() =>
+                                          handleClickDiscard(index1, index2)
+                                        }
+                                      >
+                                        <HiOutlineX color='white' />
+                                      </Button>{' '}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        variant='ghost'
+                                        borderRadius={0}
+                                        _hover={{
+                                          background: '#25263E'
+                                        }}
+                                        onClick={() =>
+                                          handleClickEdit(index1, index2)
+                                        }
+                                      >
+                                        <HiPencil color='white' />
+                                      </Button>
+                                    </>
+                                  )}
+                                </Td>
+                                <Td>{item.studentId}</Td>
+                                <Td>Kelompok {item.student.group.group}</Td>
+                                <Td>
+                                  {editStatus?.[index1]?.[index2] ? (
+                                    <Select
+                                      placeholder='Pilih status'
+                                      borderRadius={0}
+                                      variant='filled'
+                                      bg='#1C939A'
+                                      value={item.status}
+                                      id='status-select'
+                                    >
+                                      <option>Hadir</option>
+                                      <option>Izin</option>
+                                      <option>Tidak Hadir</option>
+                                    </Select>
+                                  ) : (
+                                    item.status
+                                  )}
+                                </Td>
+                                <Td>
+                                  {editStatus?.[index1]?.[index2] ? (
+                                    <FormControl isRequired>
+                                      <Input
+                                        placeholder='Masukkan alasan...'
+                                        variant='flushed'
+                                      />
+                                    </FormControl>
+                                  ) : (
+                                    'Dummy alasan'
+                                  )}
+                                </Td>
+                              </Tr>
+                            );
+                          })}
+                        </Tbody>
+                      </Table>
+                    </TableContainer>
+                  </VStack>
+                );
+              })
+            : null}
         </VStack>
       </VStack>
     </PageLayout>
