@@ -1,18 +1,18 @@
 // Imports
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import {
   BasicTracerProvider,
   BatchSpanProcessor,
   ConsoleSpanExporter,
   SimpleSpanProcessor,
   TraceIdRatioBasedSampler
-} from '@opentelemetry/sdk-trace-base';
-import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks';
-import * as api from '@opentelemetry/api';
-import { PrismaInstrumentation } from '@prisma/instrumentation';
-import { Resource } from '@opentelemetry/resources';
-import { env } from '~/env.mjs';
+} from "@opentelemetry/sdk-trace-base";
+import { AsyncHooksContextManager } from "@opentelemetry/context-async-hooks";
+import * as api from "@opentelemetry/api";
+import { PrismaInstrumentation } from "@prisma/instrumentation";
+import { Resource } from "@opentelemetry/resources";
+import { env } from "~/env.mjs";
 
 // Export the tracing
 export const otelSetup = () => {
@@ -26,16 +26,16 @@ export const otelSetup = () => {
   const provider = new BasicTracerProvider({
     // Sampling with set percentage of traces in production
     sampler: new TraceIdRatioBasedSampler(
-      env.NODE_ENV === 'production' ? env.SAMPLER_RATIO : 1
+      env.NODE_ENV === "production" ? env.SAMPLER_RATIO : 1
     ),
     resource: new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: 'test-tracing-service',
-      [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0'
+      [SemanticResourceAttributes.SERVICE_NAME]: "dikpus-tracing-service",
+      [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0"
     })
   });
 
   // Configure how spans are processed and exported
-  if (env.NODE_ENV === 'production') {
+  if (env.NODE_ENV === "production") {
     provider.addSpanProcessor(new BatchSpanProcessor(consoleExporter));
   } else {
     provider.addSpanProcessor(new SimpleSpanProcessor(consoleExporter));
@@ -44,7 +44,7 @@ export const otelSetup = () => {
   // Register your auto-instrumentors
   registerInstrumentations({
     tracerProvider: provider,
-    instrumentations: [new PrismaInstrumentation()]
+    instrumentations: [new PrismaInstrumentation({ middleware: true })]
   });
 
   // Register the provider
