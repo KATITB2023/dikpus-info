@@ -3,6 +3,7 @@ import { Box } from "@chakra-ui/react";
 import { UserRole } from "@prisma/client";
 import { type NextPage } from "next";
 import PageLayout from "~/layout";
+import AssignmentMenteeSidePage from "~/component/assignment/assignment-mentee-side";
 
 const Assignment: NextPage = () => {
   const { data: session, status } = useSession();
@@ -12,11 +13,11 @@ const Assignment: NextPage = () => {
   const role = session?.user.role;
 
   return (
-    <PageLayout title='Absen'>
+    <PageLayout title='Tugas'>
       {role === UserRole.MENTOR ? (
         <Box>Assignment Mentor</Box>
       ) : (
-        <Box>Assignment Mentee</Box>
+        <AssignmentMenteeSidePage></AssignmentMenteeSidePage>
       )}
     </PageLayout>
   );

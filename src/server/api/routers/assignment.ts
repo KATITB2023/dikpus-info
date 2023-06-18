@@ -11,13 +11,40 @@ export const assignmentRouter = createTRPCRouter({
   getAssignmentDescription: studentProcedure
     .input(
       z.object({
+        userId: z.string().uuid(),
         namaTugas: z.string().optional()
       })
     )
     .query(async ({ ctx, input }) => {
+      const student = await ctx.prisma.student.findFirst({
+        where: {
+          userId: input.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!student) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Student not found"
+        });
+      }
+
       return await ctx.prisma.assignment.findMany({
         where: {
           title: input.namaTugas
+        },
+        include: {
+          submission: {
+            where: {
+              studentId: student.id
+            },
+            select: {
+              filePath: true
+            }
+          }
         }
       });
     }),

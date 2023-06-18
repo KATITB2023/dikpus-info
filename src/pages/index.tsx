@@ -1,9 +1,18 @@
-import { Flex, Heading, Box, FormControl, FormLabel, Input, Button, useToast } from '@chakra-ui/react'
+import {
+  Flex,
+  Heading,
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  useToast
+} from '@chakra-ui/react';
 import PageLayout from '~/layout';
-import { UserRole } from "@prisma/client";
+import { UserRole } from '@prisma/client';
 import { useRouter } from 'next/router';
-import { getCsrfToken, signIn, useSession } from "next-auth/react";
-import type { GetServerSidePropsContext } from "next";
+import { getCsrfToken, signIn, useSession } from 'next-auth/react';
+import type { GetServerSidePropsContext } from 'next';
 import { useState } from 'react';
 
 interface SignInProps {
@@ -13,12 +22,14 @@ interface SignInProps {
 export default function SignIn({ csrfToken }: SignInProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+  const [userInfo, setUserInfo] = useState({ nim: '', password: '' });
   const toast = useToast();
 
   const handleRedirect = () => {
     const role = session?.user.role;
-    role === UserRole.MENTOR ? void router.push('/attendance') : void router.push('/profile') 
+    role === UserRole.MENTOR
+      ? void router.push('/attendance')
+      : void router.push('/profile');
   };
 
   const handleError = (message: string) => {
@@ -27,18 +38,18 @@ export default function SignIn({ csrfToken }: SignInProps) {
       description: `${message}`,
       status: 'error',
       duration: 3000,
-      isClosable: true,
+      isClosable: true
     });
-  }
+  };
 
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    const res = await signIn("credentials", {
+    const res = await signIn('credentials', {
       nim: userInfo.nim,
       password: userInfo.password,
       csrfToken: csrfToken,
-      redirect: false,
+      redirect: false
     });
 
     if (res?.error) handleError(res?.error);
@@ -46,7 +57,7 @@ export default function SignIn({ csrfToken }: SignInProps) {
 
     console.log(res);
   };
-  
+
   return (
     <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
@@ -55,17 +66,40 @@ export default function SignIn({ csrfToken }: SignInProps) {
           <form>
             <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
             <FormControl my={6}>
-                <FormLabel>NIM</FormLabel>
-                <Input type="text" name="nim" placeholder="NIM" value={userInfo.nim} onChange={({ target }) => setUserInfo({ ...userInfo, nim: target.value })} isRequired/>
+              <FormLabel>NIM</FormLabel>
+              <Input
+                type='text'
+                name='nim'
+                placeholder='NIM'
+                value={userInfo.nim}
+                onChange={({ target }) =>
+                  setUserInfo({ ...userInfo, nim: target.value })
+                }
+                isRequired
+              />
             </FormControl>
             <FormControl my={6}>
-                <FormLabel >Password</FormLabel>
-                <Input type="password" name="password" placeholder="Password" value={userInfo.password} onChange={({ target }) => setUserInfo({ ...userInfo, password: target.value })} isRequired/>
+              <FormLabel>Password</FormLabel>
+              <Input
+                type='password'
+                name='password'
+                placeholder='Password'
+                value={userInfo.password}
+                onChange={({ target }) =>
+                  setUserInfo({ ...userInfo, password: target.value })
+                }
+                isRequired
+              />
             </FormControl>
             <Flex justify='center'>
-                <Button colorScheme="teal" type="submit" my={4} onClick={(e) => void handleLogIn(e)}>
-                    Submit
-                </Button>
+              <Button
+                colorScheme='teal'
+                type='submit'
+                my={4}
+                onClick={(e) => void handleLogIn(e)}
+              >
+                Submit
+              </Button>
             </Flex>
           </form>
         </Box>
