@@ -1,11 +1,5 @@
-import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
-import { createTRPCRouter, mentorProcedure } from '~/server/api/trpc';
-
-const isValidDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return !isNaN(Number(date));
-};
+import { z } from "zod";
+import { createTRPCRouter, mentorProcedure } from "~/server/api/trpc";
 
 export const utilityRouter = createTRPCRouter({
   addEvent: mentorProcedure
@@ -13,29 +7,41 @@ export const utilityRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         materialPath: z.string(),
-        startTime: z.string(),
-        endTime: z.string()
+        startTime: z.coerce.date(),
+        endTime: z.coerce.date()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!isValidDate(input.startTime) || !isValidDate(input.endTime)) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Incorrect date format'
-        });
-      }
+      const [event, students] = await Promise.all([
+        ctx.prisma.event.create({
+          data: {
+            title: input.title,
+            materialPath: input.materialPath,
+            startTime: input.startTime,
+            endTime: input.endTime
+          }
+        }),
+        ctx.prisma.student.findMany({
+          select: {
+            id: true
+          }
+        })
+      ]);
 
-      await ctx.prisma.event.create({
-        data: {
-          title: input.title,
-          materialPath: input.materialPath,
-          startTime: new Date(input.startTime),
-          endTime: new Date(input.endTime)
-        }
-      });
+      await Promise.all(
+        students.map(async (student) => {
+          await ctx.prisma.attendance.create({
+            data: {
+              date: new Date(),
+              studentId: student.id,
+              eventId: event.id
+            }
+          });
+        })
+      );
 
       return {
-        message: 'Event added successfully'
+        message: "Event added successfully"
       };
     }),
 
@@ -44,27 +50,38 @@ export const utilityRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string(),
-        deadline: z.string()
+        deadline: z.coerce.date()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!isValidDate(input.deadline)) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Incorrect date format'
-        });
-      }
+      const [assigment, students] = await Promise.all([
+        ctx.prisma.assignment.create({
+          data: {
+            title: input.title,
+            description: input.description,
+            deadline: input.deadline
+          }
+        }),
+        ctx.prisma.student.findMany({
+          select: {
+            id: true
+          }
+        })
+      ]);
 
-      await ctx.prisma.assignment.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          deadline: new Date(input.deadline)
-        }
-      });
+      await Promise.all(
+        students.map(async (student) => {
+          await ctx.prisma.assignmentSubmission.create({
+            data: {
+              studentId: student.id,
+              assignmentId: assigment.id
+            }
+          });
+        })
+      );
 
       return {
-        message: 'Assignment added successfully'
+        message: "Assignment added successfully"
       };
     })
 });

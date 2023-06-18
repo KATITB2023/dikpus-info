@@ -20,7 +20,7 @@ export default function PageLayout({ title, children }: Props) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
       >
-        <Box minH='100vh' px={12} pt={5}>
+        <Box px={12} py={5}>
           {children}
         </Box>
       </motion.div>

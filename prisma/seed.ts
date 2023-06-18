@@ -1,207 +1,235 @@
-import { PrismaClient } from '@prisma/client';
-import { hash } from 'bcrypt';
+import { type Group, PrismaClient, type User } from "@prisma/client";
+import { hash } from "bcrypt";
 
 const prisma = new PrismaClient();
 
+const students = [
+  {
+    nim: "13520001",
+    passwordHash: "13520001",
+    firstName: "Talha",
+    lastName: "Rodgers",
+    fakultas: "STEI",
+    jurusan: "Teknik Informatika"
+  },
+  {
+    nim: "13520002",
+    passwordHash: "13520002",
+    firstName: "Emil",
+    lastName: "Holloway",
+    fakultas: "STEI",
+    jurusan: "Sistem dan Teknologi Informasi"
+  },
+  {
+    nim: "13520003",
+    passwordHash: "13520003",
+    firstName: "Valerie",
+    lastName: "Conley",
+    fakultas: "STEI",
+    jurusan: "Teknik  Biomedis"
+  },
+  {
+    nim: "13520004",
+    passwordHash: "13520004",
+    firstName: "Christine",
+    lastName: "Hendrix",
+    fakultas: "FSRD",
+    jurusan: "Desain Interior"
+  },
+  {
+    nim: "13520005",
+    passwordHash: "13520005",
+    firstName: "Felix",
+    lastName: "Wiley",
+    fakultas: "FSRD",
+    jurusan: "DKV"
+  },
+  {
+    nim: "13520006",
+    passwordHash: "13520006",
+    firstName: "Leyton",
+    lastName: "Tyler",
+    fakultas: "FTMD",
+    jurusan: "Teknik Mesin"
+  },
+  {
+    nim: "13520007",
+    passwordHash: "13520007",
+    firstName: "Caitlin",
+    lastName: "Holman",
+    fakultas: "FTTM",
+    jurusan: "Teknik Geofisika"
+  },
+  {
+    nim: "13520008",
+    passwordHash: "13520008",
+    firstName: "Sahar",
+    lastName: "Montoya",
+    fakultas: "FTTM",
+    jurusan: "Teknik Perminyakan"
+  },
+  {
+    nim: "13520009",
+    passwordHash: "13520009",
+    firstName: "Kayne",
+    lastName: "Walker",
+    fakultas: "FTSL",
+    jurusan: "Teknik Sipil"
+  },
+  {
+    nim: "13520010",
+    passwordHash: "13520010",
+    firstName: "Tanya",
+    lastName: "Shelton",
+    fakultas: "FTI",
+    jurusan: "Teknik Fisika"
+  }
+];
+
+const mentors = [
+  {
+    nim: "13520100",
+    passwordHash: "13520100"
+  },
+  {
+    nim: "13520101",
+    passwordHash: "13520101"
+  },
+  {
+    nim: "13520102",
+    passwordHash: "13520102"
+  },
+  {
+    nim: "13520103",
+    passwordHash: "13520103"
+  },
+  {
+    nim: "13520104",
+    passwordHash: "13520104"
+  }
+];
+
+const groups = [
+  {
+    group: 1,
+    zoomLink: "http://zoom-kelompok-1"
+  },
+  {
+    group: 2,
+    zoomLink: "http://zoom-kelompok-2"
+  },
+  {
+    group: 3,
+    zoomLink: "http://zoom-kelompok-3"
+  }
+];
+
 async function main() {
-  const user1 = await prisma.user.create({
-    data: {
-      nim: '13520104',
-      passwordHash: await hash('13520104', 10),
-      role: 'MENTOR',
-      mentor: {
-        create: {
-          group: 'A',
-          zoomLink: 'ini link zoom'
-        }
-      }
-    }
-  });
+  const getRandomInt = (max: number) => {
+    return Math.floor(Math.random() * max);
+  };
 
-  console.log(user1);
+  const groupsData: Group[] = await Promise.all(
+    groups.map(
+      async (group) =>
+        await prisma.group.create({
+          data: {
+            group: group.group,
+            zoomLink: group.zoomLink
+          }
+        })
+    )
+  );
 
-  const mentor2 = await prisma.user.create({
-    data: {
-      nim: '13520999',
-      passwordHash: await hash('13520999', 10),
-      role: 'MENTOR',
-      mentor: {
-        create: {
-          group: 'B',
-          zoomLink: 'ini link zoom'
-        }
-      }
-    }
-  });
-  console.log(mentor2)
+  const studentsData: User[] = await Promise.all(
+    students.map(
+      async (student) =>
+        await prisma.user.create({
+          data: {
+            nim: student.nim,
+            passwordHash: await hash(student.passwordHash, 10),
+            role: "STUDENT",
+            student: {
+              create: {
+                firstName: student.firstName,
+                lastName: student.lastName,
+                fakultas: student.fakultas,
+                jurusan: student.jurusan,
+                groupId: groupsData[getRandomInt(3)]!.id
+              }
+            }
+          }
+        })
+    )
+  );
 
-  const mentorId = await prisma.mentor.findFirst({
-    where: {
-      userId: user1.id
-    },
+  const mentorsData: User[] = await Promise.all(
+    mentors.map(
+      async (mentor) =>
+        await prisma.user.create({
+          data: {
+            nim: mentor.nim,
+            passwordHash: await hash(mentor.passwordHash, 10),
+            role: "MENTOR",
+            mentor: {
+              create: {}
+            }
+          }
+        })
+    )
+  );
+
+  const groupIds = await prisma.group.findMany({
     select: {
       id: true
     }
   });
 
-  if (!mentorId) {
-    return;
-  }
-
-  const mentorId2 = await prisma.mentor.findFirst({
-    where: {
-      userId: mentor2.id
-    },
+  const mentorIds = await prisma.mentor.findMany({
     select: {
       id: true
     }
   });
 
-  if (!mentorId2) {
-    return;
-  }
-
-  const user2 = await prisma.user.create({
+  const mentorGroup1 = await prisma.mentorGroup.create({
     data: {
-      nim: '13520080',
-      passwordHash: await hash('13520080', 10),
-      role: 'STUDENT',
-      student: {
-        create: {
-          gender: 'MALE',
-          firstName: 'Jason',
-          lastName: 'Kanggara',
-          fakultas: 'STEI',
-          jurusan: 'Teknik Informatika',
-          imagePath: 'ini path',
-          mentorId: mentorId.id
-        }
-      }
+      mentorId: mentorIds[0]!.id,
+      groupId: groupIds[0]!.id
     }
   });
-  console.log(user2);
+  console.log(mentorGroup1);
 
-  const user3 = await prisma.user.create({
+  const mentorGroup2 = await prisma.mentorGroup.create({
     data: {
-      nim: '13520000',
-      passwordHash: await hash('13520000', 10),
-      role: 'STUDENT',
-      student: {
-        create: {
-          gender: 'MALE',
-          firstName: 'Bob',
-          lastName: 'Kanggara',
-          fakultas: 'STEI',
-          jurusan: 'Teknik Informatika',
-          imagePath: 'ini path',
-          mentorId: mentorId.id
-        }
-      }
+      mentorId: mentorIds[1]!.id,
+      groupId: groupIds[0]!.id
     }
   });
-  console.log(user3)
+  console.log(mentorGroup2);
 
-  const user4 = await prisma.user.create({
+  const mentorGroup3 = await prisma.mentorGroup.create({
     data: {
-      nim: '13521000',
-      passwordHash: await hash('13521000', 10),
-      role: 'STUDENT',
-      student: {
-        create: {
-          gender: 'MALE',
-          firstName: 'Bab',
-          lastName: 'Kanggara',
-          fakultas: 'STEI',
-          jurusan: 'Teknik Informatika',
-          imagePath: 'ini path',
-          mentorId: mentorId2.id
-        }
-      }
+      mentorId: mentorIds[2]!.id,
+      groupId: groupIds[1]!.id
     }
   });
-  console.log(user4)
+  console.log(mentorGroup3);
 
-  const event = await prisma.event.create({
+  const mentorGroup4 = await prisma.mentorGroup.create({
     data: {
-      title: 'Event 1',
-      materialPath: 'ini path ke material',
-      startTime: new Date(2023, 5, 16, 10, 0, 0),
-      endTime: new Date(2023, 5, 16, 12, 0, 0)
+      mentorId: mentorIds[3]!.id,
+      groupId: groupIds[2]!.id
     }
   });
-  console.log(event);
+  console.log(mentorGroup4);
 
-  const assignment1 = await prisma.assignment.create({
+  const mentorGroup5 = await prisma.mentorGroup.create({
     data: {
-      title: 'Test Assignment',
-      description: 'Sebuah description',
-      deadline: new Date(2023, 5, 30, 10, 0, 0),
+      mentorId: mentorIds[4]!.id,
+      groupId: groupIds[2]!.id
     }
-  })
-
-  const assignment2 = await prisma.assignment.create({
-    data: {
-      title: 'Test Assignment 2',
-      description: 'Sebuah description',
-      deadline: new Date(2023, 6, 30, 10, 0, 0),
-    }
-  })
-
-  const student = await prisma.student.findFirst({
-    where: {
-      userId: user2.id
-    }
-  })
-
-  const student2 = await prisma.student.findFirst({
-    where: {
-      userId: user3.id
-    }
-  })
-
-  const student3 = await prisma.student.findFirst({
-    where: {
-      userId: user4.id
-    }
-  })
-
-  if (student && student2 && student3) {
-    const assignmentSubmission = await prisma.assignmentSubmission.createMany({
-      data: [
-        {
-          filePath: "hello.pdf",
-          studentId: student.id,
-          assignmentId: assignment1.id,
-        },
-        {
-          filePath: "helloworld.pdf",
-          studentId: student.id,
-          assignmentId: assignment2.id,
-        },
-        {
-          filePath: "helloworld2.pdf",
-          studentId: student2.id,
-          assignmentId: assignment2.id,
-        },
-        {
-          filePath: "helloworld3.pdf",
-          studentId: student2.id,
-          assignmentId: assignment2.id,
-        },
-        {
-          filePath: "helloworld4.pdf",
-          studentId: student3.id,
-          assignmentId: assignment2.id,
-        },
-        {
-          filePath: "helloworld5.pdf",
-          studentId: student3.id,
-          assignmentId: assignment2.id,
-        },
-      ]
-    })
-    console.log(assignmentSubmission)
-  }
+  });
+  console.log(mentorGroup5);
 }
 
 main()
