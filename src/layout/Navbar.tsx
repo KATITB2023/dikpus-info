@@ -19,7 +19,8 @@ interface Props {
   titleOnly?: boolean;
 }
 
-export default function Navbar({ title, titleOnly = false }: Props) {
+export default function Navbar({ title, titleOnly }: Props) {
+  // TODO: ganti link
   const links = [
     { name: "Profile", href: "/profile", icon: <AiOutlineHome size={20} /> },
     { name: "Absen", href: "/attendance", icon: <BsPeopleFill size={20} /> },
