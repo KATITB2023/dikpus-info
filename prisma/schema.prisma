@@ -3,7 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["jsonProtocol", "metrics", "tracing"]
+  previewFeatures = ["jsonProtocol", "metrics", "tracing", "extendedWhereUnique"]
   binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -30,33 +30,52 @@ model User {
 
 model Mentor {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  group     String   @db.VarChar(1)
-  zoomLink  String
   userId    String   @unique @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  user    User      @relation(fields: [userId], references: [id])
-  student Student[]
+  user        User          @relation(fields: [userId], references: [id])
+  mentorGroup MentorGroup[]
+}
+
+model MentorGroup {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mentorId  String   @db.Uuid
+  groupId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  mentor Mentor @relation(fields: [mentorId], references: [id])
+  group  Group  @relation(fields: [groupId], references: [id])
+}
+
+model Group {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  group     Int      @unique
+  zoomLink  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  student     Student[]
+  mentorGroup MentorGroup[]
 }
 
 model Student {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   gender      Gender?
   firstName   String   @db.VarChar(50)
-  lastName    String   @db.VarChar(50)
+  lastName    String?  @db.VarChar(50)
   fakultas    String   @db.VarChar(50)
-  jurusan     String   @db.VarChar(50)
   phoneNumber String?  @unique @db.VarChar(15)
   imagePath   String?
   accepted    Boolean  @default(false)
   userId      String   @unique @db.Uuid
-  mentorId    String   @db.Uuid
+  groupId     String   @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
   user       User                   @relation(fields: [userId], references: [id])
-  mentor     Mentor                 @relation(fields: [mentorId], references: [id])
+  group      Group                  @relation(fields: [groupId], references: [id])
   attendance Attendance[]
   submission AssignmentSubmission[]
 }
@@ -110,7 +129,7 @@ model Assignment {
 
 model AssignmentSubmission {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  filePath     String   @db.VarChar(255)
+  filePath     String?  @db.VarChar(255)
   studentId    String   @db.Uuid
   assignmentId String   @db.Uuid
   createdAt    DateTime @default(now())
@@ -118,13 +137,6 @@ model AssignmentSubmission {
 
   student    Student    @relation(fields: [studentId], references: [id])
   assignment Assignment @relation(fields: [assignmentId], references: [id])
-}
-
-model Example {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  message   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum UserRole {

@@ -1,12 +1,14 @@
-import { z } from 'zod';
+import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
+import sanitize from "sanitize-filename";
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure
-} from '~/server/api/trpc';
-import { storage } from '~/server/storage';
-import { env } from '~/env.mjs';
-import { FolderEnum } from '~/utils/file';
+} from "~/server/api/trpc";
+import { AllowableFileTypeEnum, FolderEnum } from "~/utils/file";
+import { bucket } from "~/server/bucket";
+import { env } from "~/env.mjs";
 
 export const storageRouter = createTRPCRouter({
   generateURLForDownload: publicProcedure
@@ -14,23 +16,33 @@ export const storageRouter = createTRPCRouter({
       z.object({
         folder: z.union([
           z.literal(FolderEnum.PROFILE),
-          z.literal(FolderEnum.ASSIGNMENT)
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
         ]),
         filename: z.string()
       })
     )
     .mutation(async ({ input }) => {
-      const bucketname = env.BUCKET_NAME;
-      const bucket = storage.bucket(bucketname);
+      await bucket.setCorsConfiguration([
+        {
+          maxAgeSeconds: env.BUCKET_CORS_EXPIRATION_TIME,
+          method: ["GET", "PUT", "DELETE"],
+          origin: ["*"],
+          responseHeader: ["Content-Type"]
+        }
+      ]);
+
       const ref = bucket.file(`${input.folder}/${input.filename}`);
 
       const [url] = await ref.getSignedUrl({
-        version: 'v4',
-        action: 'read',
+        version: "v4",
+        action: "read",
         expires: Date.now() + env.URL_EXPIRATION_TIME
       });
 
-      return url;
+      return {
+        url
+      };
     }),
 
   generateURLForUpload: protectedProcedure
@@ -38,24 +50,77 @@ export const storageRouter = createTRPCRouter({
       z.object({
         folder: z.union([
           z.literal(FolderEnum.PROFILE),
-          z.literal(FolderEnum.ASSIGNMENT)
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
         ]),
         filename: z.string(),
-        contentType: z.string().optional()
+        contentType: z.union([
+          z.literal(AllowableFileTypeEnum.PDF),
+          z.literal(AllowableFileTypeEnum.PNG),
+          z.literal(AllowableFileTypeEnum.JPEG)
+        ])
       })
     )
     .mutation(async ({ input }) => {
-      const bucketname = env.BUCKET_NAME;
-      const bucket = storage.bucket(bucketname);
-      const ref = bucket.file(`${input.folder}/${input.filename}`);
+      const fileUUID = uuidv4();
+      const sanitizedFileName = sanitize(input.filename);
+      const sanitizedFilename = `${fileUUID}-${sanitizedFileName}`;
+
+      await bucket.setCorsConfiguration([
+        {
+          maxAgeSeconds: env.BUCKET_CORS_EXPIRATION_TIME,
+          method: ["GET", "PUT", "DELETE"],
+          origin: ["*"],
+          responseHeader: ["Content-Type"]
+        }
+      ]);
+
+      const ref = bucket.file(`${input.folder}/${sanitizedFilename}`);
 
       const [url] = await ref.getSignedUrl({
-        version: 'v4',
-        action: 'write',
+        version: "v4",
+        action: "write",
         expires: Date.now() + env.URL_EXPIRATION_TIME,
         contentType: input.contentType
       });
 
-      return url;
+      return {
+        url,
+        sanitizedFilename
+      };
+    }),
+
+  generateURLForDelete: protectedProcedure
+    .input(
+      z.object({
+        folder: z.union([
+          z.literal(FolderEnum.PROFILE),
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
+        ]),
+        filename: z.string()
+      })
+    )
+    .mutation(async ({ input }) => {
+      await bucket.setCorsConfiguration([
+        {
+          maxAgeSeconds: env.BUCKET_CORS_EXPIRATION_TIME,
+          method: ["GET", "PUT", "DELETE"],
+          origin: ["*"],
+          responseHeader: ["Content-Type"]
+        }
+      ]);
+
+      const ref = bucket.file(`${input.folder}/${input.filename}`);
+
+      const [url] = await ref.getSignedUrl({
+        version: "v4",
+        action: "delete",
+        expires: Date.now() + env.URL_EXPIRATION_TIME
+      });
+
+      return {
+        url
+      };
     })
 });

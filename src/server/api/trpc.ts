@@ -7,6 +7,7 @@
  * need to use are documented accordingly near the end.
  */
 
+import { UserRole } from "@prisma/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
@@ -42,7 +43,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
-    tracer,
+    tracer
   };
 };
 
@@ -59,7 +60,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const session = await getServerAuthSession({ req, res });
 
   return createInnerTRPCContext({
-    session,
+    session
   });
 };
 
@@ -78,11 +79,10 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null
+      }
     };
-  },
+  }
 });
 
 /**
@@ -119,8 +119,8 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   return next({
     ctx: {
       // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
+      session: { ...ctx.session, user: ctx.session.user }
+    }
   });
 });
 
@@ -131,7 +131,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  * @see https://trpc.io/docs/middleware
  */
 const isMentor = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
-  if (ctx.session.user.role !== "MENTOR") {
+  if (ctx.session.user.role !== UserRole.MENTOR) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
@@ -144,7 +144,7 @@ const isMentor = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
  * @see https://trpc.io/docs/middleware
  */
 const isStudent = enforceUserIsAuthed.unstable_pipe(({ ctx, next }) => {
-  if (ctx.session.user.role !== "STUDENT") {
+  if (ctx.session.user.role !== UserRole.STUDENT) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
