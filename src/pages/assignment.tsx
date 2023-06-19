@@ -5,6 +5,7 @@ import { type NextPage } from "next";
 import PageLayout from "~/layout";
 import MentorAssignment from "~/component/assignment/MentorAssignment";
 
+import AssignmentMenteeSidePage from "~/component/assignment/assignment-mentee-side";
 
 const Assignment: NextPage = () => {
   const { data: session, status } = useSession();
@@ -14,11 +15,11 @@ const Assignment: NextPage = () => {
   const role = session?.user.role;
 
   return (
-    <PageLayout title='Absen'>
+    <PageLayout title='Tugas'>
       {role === UserRole.MENTOR ? (
         <MentorAssignment />
       ) : (
-        <Box>Assignment Mentee</Box>
+        <AssignmentMenteeSidePage></AssignmentMenteeSidePage>
       )}
     </PageLayout>
   );

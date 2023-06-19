@@ -9,8 +9,7 @@ export enum FolderEnum {
 export enum AllowableFileTypeEnum {
   PDF = 'application/pdf',
   PNG = 'image/png',
-  JPEG = 'image/jpeg',
-  JPG = 'image/jpg'
+  JPEG = 'image/jpeg'
 }
 
 export const uploadFile = async (

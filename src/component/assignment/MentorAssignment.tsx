@@ -88,15 +88,7 @@ export default function MentorAssignment() {
   };
 
   useEffect(() => {
-    //group assignmentResult based on assignmentId
-    const groupedAssignmentResult = assignmentResult?.reduce((acc: any, curr: any) => {
-      if(!acc[curr.assignmentId]){
-        acc[curr.assignmentId] = [];
-      }
-      acc[curr.assignmentId].push(curr);
-      return acc;
-    }
-    ,{});
+    console.log()
   }, [assignments, assignmentResult]);
 
   return (

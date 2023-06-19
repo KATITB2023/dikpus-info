@@ -11,13 +11,40 @@ export const assignmentRouter = createTRPCRouter({
   getAssignmentDescription: studentProcedure
     .input(
       z.object({
+        userId: z.string().uuid(),
         namaTugas: z.string().optional()
       })
     )
     .query(async ({ ctx, input }) => {
+      const student = await ctx.prisma.student.findFirst({
+        where: {
+          userId: input.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!student) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Student not found"
+        });
+      }
+
       return await ctx.prisma.assignment.findMany({
         where: {
           title: input.namaTugas
+        },
+        include: {
+          submission: {
+            where: {
+              studentId: student.id
+            },
+            select: {
+              filePath: true
+            }
+          }
         }
       });
     }),
@@ -41,7 +68,7 @@ export const assignmentRouter = createTRPCRouter({
         }
       });
 
-      // error handling (kalau gak ada ini yg students gak mau jalan)
+      // error handling if mentor's user id not found
       if (!mentor) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -49,85 +76,53 @@ export const assignmentRouter = createTRPCRouter({
         });
       }
 
-      // get mentor group
-      const mentorGroups = await ctx.prisma.mentorGroup.findMany({
-        where: {
-          mentorId: mentor.id
-        },
-        select: {
-          groupId: true
-        }
-      });
-
-      if (mentorGroups.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Mentor group not found"
-        });
-      }
-
       const groups = await ctx.prisma.group.findMany({
         where: {
-          id: {
-            in: mentorGroups.map((mentorGroup) => mentorGroup.groupId)
+          mentorGroup: {
+            some: {
+              mentorId: mentor.id
+            }
           }
         },
         select: {
           id: true,
           group: true
         }
-      });
+      })
 
-      if (groups.length === 0) {
+      // error handling if group not found
+      if (!groups) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Group not found"
+          message: "Groups not found"
         });
       }
 
-      // get all studentId
-      const students = await ctx.prisma.student.findMany({
+      const groupIds = groups.map((group) => group.id);
+
+      const submissionList = await ctx.prisma.assignment.findMany({
         where: {
-          groupId: {
-            in: groups.map((group) => group.id)
-          },
-          id: input.studentId
+          title: input.namaTugas,
         },
         select: {
-          id: true
-        }
-      });
-
-      const studentIds = students.map((student) => student.id);
-
-      const events = await ctx.prisma.event.findMany({
-        select: {
+          id: true,
           title: true,
-          startTime: true,
-          endTime: true,
-          attendances: {
+          description: true,
+          submission: {
             select: {
               id: true,
-              status: true,
-              studentId: true,
-              eventId: true,
+              filePath: true,
               student: {
                 select: {
+                  id: true,
                   firstName: true,
                   lastName: true,
+                  fakultas: true,
+                  jurusan: true,
                   group: {
                     select: {
+                      id: true,
                       group: true
-                    }
-                  },
-                  submission: {
-                    select: {
-                      filePath: true,
-                      assignment: {
-                        select: {
-                          title: true,
-                        }
-                      }
                     }
                   }
                 }
@@ -138,25 +133,16 @@ export const assignmentRouter = createTRPCRouter({
       })
 
       return {
-        event: events.map((event) => {
+        submissions: submissionList.map((submission) => {
           return {
-            ...event,
-            attendances: event.attendances.filter((attendance) =>
-              studentIds.includes(attendance.studentId)
-            ).map((attendance) => {
-              return {
-                ...attendance,
-                student: {
-                  ...attendance.student,
-                  submission: input.namaTugas ? attendance.student.submission.filter((sub) => 
-                    sub.assignment.title === input.namaTugas
-                  ) : attendance.student.submission
-                }
-              }
-            })
+            ...submission,
+            submission: submission.submission.filter((sub) => 
+              (groupIds.includes(sub.student.group.id))
+              && (input.studentId === undefined || sub.student.id === input.studentId)
+            )
           }
         })
-      }
+      };
     }),
 
   getAssignmentNameList: protectedProcedure.query(async ({ ctx }) => {
