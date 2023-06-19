@@ -111,7 +111,10 @@ const TableRow = ({
       const link = document.createElement("a");
 
       link.href = window.URL.createObjectURL(blob);
-      link.download = "Materi " + attendance.event.title;
+      link.download =
+        "Materi " +
+        attendance.event.title +
+        filePath.slice(filePath.lastIndexOf("."));
       link.click();
 
       URL.revokeObjectURL(link.href);
