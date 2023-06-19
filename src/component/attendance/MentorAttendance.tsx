@@ -62,11 +62,12 @@ function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
   return editingArr;
 }
 
-export const MentorAttendance = ({ session }: { session: Session }) => {
+export const MentorAttendance = () => {
   const toast = useToast();
+  const { data: session } = useSession();
   const attendanceMutation = api.attendance.editAttendance.useMutation();
   const attendanceQuery = api.attendance.getAttendance.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
   const eventsList = api.attendance.getEventList.useQuery().data;
 

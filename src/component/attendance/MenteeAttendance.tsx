@@ -21,7 +21,6 @@ import { getDate, getTwoTime, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { Session } from "next-auth";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -198,9 +197,10 @@ const TableRow = ({
   );
 };
 
-export const MenteeAttendance = ({ session }: { session: Session }) => {
+export const MenteeAttendance = () => {
+  const { data: session } = useSession();
   const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
 
   const eventList = eventQuery?.data;
@@ -226,7 +226,7 @@ export const MenteeAttendance = ({ session }: { session: Session }) => {
               return (
                 <TableRow
                   attendance={item}
-                  userId={session.user.id}
+                  userId={session?.user.id ?? ""}
                   key={index}
                 />
               );

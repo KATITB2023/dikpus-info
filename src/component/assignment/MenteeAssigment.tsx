@@ -295,10 +295,11 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   );
 }
 
-export default function MenteeAssigment({ session }: { session: Session }) {
+export default function MenteeAssigment() {
+  const { data: session } = useSession();
   const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   }).data;
 
   const handleFilterAssignment = (e: any) => {
@@ -383,7 +384,7 @@ export default function MenteeAssigment({ session }: { session: Session }) {
             <Box key={index}>
               <AssignmentBox
                 tugas={item}
-                userId={session.user.id}
+                userId={session?.user.id ?? ""}
               ></AssignmentBox>
             </Box>
           );

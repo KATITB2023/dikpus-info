@@ -10,9 +10,10 @@ import {
 import { useState } from "react";
 import { api } from "~/utils/api";
 import { TRPCClientError } from "@trpc/client";
-import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
-export default function ChangePasswordForm({ session }: { session: Session }) {
+export default function ChangePasswordForm() {
+  const { data: session } = useSession();
   const toast = useToast();
   const changePassMutation = api.profile.changePass.useMutation();
 
@@ -44,7 +45,7 @@ export default function ChangePasswordForm({ session }: { session: Session }) {
     console.log("submit password");
     try {
       const res = await changePassMutation.mutateAsync({
-        userId: session.user.id,
+        userId: session?.user.id ?? "",
         curPass: currentPass,
         newPass: newPass,
         repeatPass: confirmationPass

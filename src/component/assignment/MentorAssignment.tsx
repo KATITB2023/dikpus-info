@@ -20,11 +20,14 @@ import { TRPCError } from "@trpc/server";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "~/component/assignment/DownloadIcon";
 import { FolderEnum } from "~/utils/file";
+import { useSession } from "next-auth/react";
 
-export default function MentorAssignment({ session }: { session: Session }) {
+export default function MentorAssignment() {
+  const { data: session } = useSession();
+
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
 
   const assignmentList = assignmentListQuery.data;
