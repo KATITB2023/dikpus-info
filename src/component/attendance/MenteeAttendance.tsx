@@ -20,8 +20,7 @@ import { api } from "~/utils/api";
 import { getDate, getTwoTime, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
-import { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -112,15 +111,18 @@ const TableRow = ({
       const link = document.createElement("a");
 
       link.href = window.URL.createObjectURL(blob);
-      link.download = "Materi " + attendance.event.title;
+      link.download =
+        "Materi " +
+        attendance.event.title +
+        filePath.slice(filePath.lastIndexOf("."));
       link.click();
 
       URL.revokeObjectURL(link.href);
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,
@@ -150,10 +152,10 @@ const TableRow = ({
       setAlreadyAbsen(true);
       setStats("Hadir");
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,
@@ -198,9 +200,10 @@ const TableRow = ({
   );
 };
 
-export const MenteeAttendance = ({ session }: { session: Session }) => {
+export const MenteeAttendance = () => {
+  const { data: session } = useSession();
   const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
 
   const eventList = eventQuery?.data;
@@ -226,7 +229,7 @@ export const MenteeAttendance = ({ session }: { session: Session }) => {
               return (
                 <TableRow
                   attendance={item}
-                  userId={session.user.id}
+                  userId={session?.user.id ?? ""}
                   key={index}
                 />
               );

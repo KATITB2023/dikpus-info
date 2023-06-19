@@ -9,16 +9,28 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@prisma/client";
+import { useRouter } from "next/router";
 import { TRPCClientError } from "@trpc/client";
-import { Session } from "next-auth";
 
-export default function ChangePasswordForm({ session }: { session: Session }) {
+export default function ChangePasswordForm() {
+  const { data: session } = useSession();
   const toast = useToast();
+  const router = useRouter();
   const changePassMutation = api.profile.changePass.useMutation();
 
   const [currentPass, setCurrentPass] = useState<string>("");
   const [newPass, setNewPass] = useState<string>("");
   const [confirmationPass, setConfirmationPass] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleRedirect = () => {
+    const role = session?.user.role;
+    role === UserRole.MENTOR
+      ? void router.push("/attendance")
+      : void router.push("/assignment");
+  };
 
   const handleCurrentPassChange: React.ChangeEventHandler<HTMLInputElement> = (
     e
@@ -41,10 +53,10 @@ export default function ChangePasswordForm({ session }: { session: Session }) {
 
   const handleSubmitPass = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("submit password");
+    setLoading(true);
     try {
       const res = await changePassMutation.mutateAsync({
-        userId: session.user.id,
+        userId: session?.user.id ?? "",
         curPass: currentPass,
         newPass: newPass,
         repeatPass: confirmationPass
@@ -54,22 +66,25 @@ export default function ChangePasswordForm({ session }: { session: Session }) {
         title: "Success",
         status: "success",
         description: res.message,
-        duration: 3000,
-        isClosable: true
+        duration: 2000,
+        isClosable: true,
+        position: "top"
       });
+
+      handleRedirect();
     } catch (error: unknown) {
-      console.log("hmm");
-      if (error instanceof TRPCClientError) {
-        console.log(error.message);
-        toast({
-          title: "Failed",
-          status: "error",
-          description: error.message,
-          duration: 3000,
-          isClosable: true
-        });
-      }
+      if (!(error instanceof TRPCClientError)) throw error;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: error.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
     }
+    setLoading(false);
   };
 
   return (
@@ -119,6 +134,7 @@ export default function ChangePasswordForm({ session }: { session: Session }) {
           _hover={{ bg: "#72D8BA" }}
           onClick={(e) => void handleSubmitPass(e)}
           isDisabled={isError}
+          isLoading={loading}
         >
           Submit
         </Button>

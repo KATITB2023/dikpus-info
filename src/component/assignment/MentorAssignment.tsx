@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -12,19 +13,25 @@ import {
   Td,
   TableContainer,
   Button,
-  Text
+  Text,
+  useToast
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { Session } from "next-auth";
-import { TRPCError } from "@trpc/server";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "~/component/assignment/DownloadIcon";
 import { FolderEnum } from "~/utils/file";
+import { useSession } from "next-auth/react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import { TRPCClientError } from "@trpc/client";
 
-export default function MentorAssignment({ session }: { session: Session }) {
+export default function MentorAssignment() {
+  const { data: session } = useSession();
+  const toast = useToast();
+
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
 
   const assignmentList = assignmentListQuery.data;
@@ -53,7 +60,12 @@ export default function MentorAssignment({ session }: { session: Session }) {
     setSelectedAssignment(e.target.value);
   };
 
-  const downloadFile = async (filePath: string) => {
+  const downloadFile = async (
+    title: string,
+    firstName: string,
+    lastName: string | null,
+    filePath: string
+  ) => {
     try {
       const { url } = await generateURLForDownload.mutateAsync({
         folder: FolderEnum.ASSIGNMENT,
@@ -66,7 +78,9 @@ export default function MentorAssignment({ session }: { session: Session }) {
 
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = filePath;
+      link.download = `${title} ${firstName} ${
+        lastName ? lastName : ""
+      }${filePath.slice(filePath.lastIndexOf("."))}`;
 
       document.body.appendChild(link);
       link.click();
@@ -74,7 +88,16 @@ export default function MentorAssignment({ session }: { session: Session }) {
       URL.revokeObjectURL(blobUrl);
       document.body.removeChild(link);
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: err.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
     }
   };
 
@@ -84,11 +107,40 @@ export default function MentorAssignment({ session }: { session: Session }) {
   ) => {
     // might be bad , soalnya nunggu satu satu.
     // kalo mentor banyak banget download bareng problem
+    const zip = new JSZip();
+    let count = 0;
+    const zipFileName = submissions.title + ".zip";
+    const filesUrl: string[] = [];
+    const fileNames: string[] = [];
     for (const submission of submissions.submission) {
       if (submission.filePath) {
-        await downloadFile(submission.filePath);
+        // await downloadFile(submission.filePath);
+        const { url } = await generateURLForDownload.mutateAsync({
+          folder: FolderEnum.ASSIGNMENT,
+          filename: submission.filePath
+        });
+        filesUrl.push(url);
+        fileNames.push(
+          `${submissions.title} ${submission.student.firstName} ${
+            submission.student.lastName ? submission.student.lastName : ""
+          }${submission.filePath.slice(submission.filePath.lastIndexOf("."))}`
+        );
       }
     }
+
+    filesUrl.forEach(async function (url, i) {
+      console.log(i);
+      const name = fileNames[i];
+      const file = await fetch(url);
+      const fileBlob = await file.blob();
+      zip.file(name!, fileBlob, { binary: true });
+      count++;
+      if (count === filesUrl.length) {
+        void zip.generateAsync({ type: "blob" }).then((content) => {
+          saveAs(content, zipFileName);
+        });
+      }
+    });
   };
 
   return (
@@ -100,6 +152,15 @@ export default function MentorAssignment({ session }: { session: Session }) {
           bg={"#1C939A"}
           color={"white"}
           onChange={handleSelectAssignment}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {assignmentList && assignmentList.length > 0
             ? assignmentList.map((assignment, index) => (
@@ -152,8 +213,17 @@ export default function MentorAssignment({ session }: { session: Session }) {
                                 <Button
                                   bg='#1C939A'
                                   onClick={() =>
-                                    downloadFile(submission.filePath!)
+                                    downloadFile(
+                                      submissions.title,
+                                      submission.student.firstName,
+                                      submission.student.lastName,
+                                      submission.filePath!
+                                    )
                                   }
+                                  _hover={{
+                                    opacity: 0.8
+                                  }}
+                                  transition='all 0.2s ease-in-out'
                                 >
                                   <DownloadIcon />
                                 </Button>
@@ -178,6 +248,10 @@ export default function MentorAssignment({ session }: { session: Session }) {
                     width='100%'
                     marginTop={[5, 5, 5, 5, 0]}
                     onClick={() => batchDownload(submissions)}
+                    _hover={{
+                      opacity: 0.8
+                    }}
+                    transition='all 0.2s ease-in-out'
                   >
                     {"Download Semua"}
                     <DownloadIcon />

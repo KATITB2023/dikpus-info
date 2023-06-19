@@ -10,6 +10,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import { prisma } from "~/server/db";
 import type { UserRole } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -97,14 +98,18 @@ export const authOptions: NextAuthOptions = {
         // You can also use the `req` object to access additional parameters
         // return { id: 1, name: "J Smith", email: "jsmith@example" };
         if (!credentials) {
-          throw new Error("No credentials");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Credentials not provided"
+          });
         }
 
         const { nim, password } = credentials;
         if (!nim || !password) {
-          throw new Error(
-            `Invalid credentials Nim: ${nim} Password: ${password}`
-          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "NIM or password not provided"
+          });
         }
 
         const user = await prisma.user.findUnique({
@@ -113,12 +118,18 @@ export const authOptions: NextAuthOptions = {
           }
         });
         if (!user) {
-          throw new Error("User hasn't registered yet");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User not found"
+          });
         }
 
         const isValid = await compare(password, user.passwordHash);
         if (!isValid) {
-          throw new Error("Invalid password");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Password is incorrect"
+          });
         }
 
         return {

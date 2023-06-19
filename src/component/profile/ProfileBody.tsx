@@ -8,6 +8,7 @@ import {
   Tr,
   Td
 } from "@chakra-ui/react";
+import { Student } from "@prisma/client";
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,13 +20,24 @@ interface ProfileBodyProps {
   id: string;
 }
 
+interface ModifiedStudent extends Student {
+  group?: {
+    id: string;
+    zoomLink: string;
+  };
+  user?: {
+    id: string;
+    nim: string;
+  };
+}
+
 export default function ProfileBody({ id }: ProfileBodyProps) {
   const profileQuery = api.profile.getProfile.useQuery({ userId: id });
   const { status } = useSession();
 
   if (status === "unauthenticated") return signIn();
 
-  const student = profileQuery.data;
+  const student = profileQuery.data as ModifiedStudent;
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -53,7 +65,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
       </Tr>
     );
   };
-
+  console.log(student);
   return (
     <Flex px='2em' flexDir='column'>
       <Flex mt='2em' justifyContent='center'>
@@ -92,7 +104,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
             />
           </Flex>
           <Text fontSize='lg' mt='1em'>
-            {student.nim}
+            {student.user && student.user.nim}
           </Text>
           <TableContainer mt='1em'>
             <Table variant='unstyled'>
@@ -114,7 +126,18 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
                   title='Kelompok Mentoring'
                   data={student.mentorId}
                 />
-                <StudentInformationRow title='Link Zoom' data={<Link href={student.group?.zoomLink}>{student.group?.zoomLink}</Link>} />
+                <StudentInformationRow
+                  title='Link Zoom'
+                  data={
+                    student.group ? (
+                      <Link href={student.group.zoomLink}>
+                        {student.group?.zoomLink}
+                      </Link>
+                    ) : (
+                      "Belum ada data"
+                    )
+                  }
+                />
               </Tbody>
             </Table>
           </TableContainer>

@@ -11,7 +11,7 @@ import {
 import PageLayout from "~/layout";
 import { UserRole } from "@prisma/client";
 import { useRouter } from "next/router";
-import { getCsrfToken, getSession, signIn, useSession } from "next-auth/react";
+import { getCsrfToken, signIn, useSession } from "next-auth/react";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType
@@ -19,11 +19,12 @@ import type {
 import { useState } from "react";
 
 export default function SignIn({
-  csrfToken,
-  session
+  csrfToken
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { data: session } = useSession();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const handleRedirect = () => {
@@ -38,13 +39,15 @@ export default function SignIn({
       title: "Error",
       description: `${message}`,
       status: "error",
-      duration: 3000,
-      isClosable: true
+      duration: 2000,
+      isClosable: true,
+      position: "top"
     });
   };
 
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const res = await signIn("credentials", {
       nim: userInfo.nim,
@@ -55,7 +58,12 @@ export default function SignIn({
 
     if (res?.error) handleError(res?.error);
     if (res?.url) handleRedirect();
+    setLoading(false);
   };
+
+  if (session) {
+    handleRedirect();
+  }
 
   return (
     <PageLayout title='Log In' titleOnly={true}>
@@ -96,6 +104,7 @@ export default function SignIn({
                 type='submit'
                 my={4}
                 onClick={(e) => void handleLogIn(e)}
+                isLoading={loading}
               >
                 Submit
               </Button>
@@ -109,12 +118,9 @@ export default function SignIn({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const csrfToken = await getCsrfToken(context);
-  const session = await getSession(context);
-
   return {
     props: {
-      csrfToken,
-      session
+      csrfToken
     }
   };
 }

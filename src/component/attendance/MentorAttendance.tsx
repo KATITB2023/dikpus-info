@@ -17,9 +17,8 @@ import { HiPencil, HiOutlineX, HiOutlineCheck } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import { AttendanceStatus } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
 import { useSession } from "next-auth/react";
-import { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
 interface AttendanceReason {
   reason?: string | null;
@@ -29,7 +28,7 @@ interface AttendanceData {
   status: AttendanceStatus;
   student: {
     firstName: string;
-    lastName: string;
+    lastName: string | null;
     group: {
       group: number;
     };
@@ -62,11 +61,12 @@ function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
   return editingArr;
 }
 
-export const MentorAttendance = ({ session }: { session: Session }) => {
+export const MentorAttendance = () => {
   const toast = useToast();
+  const { data: session } = useSession();
   const attendanceMutation = api.attendance.editAttendance.useMutation();
   const attendanceQuery = api.attendance.getAttendance.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
   const eventsList = api.attendance.getEventList.useQuery().data;
 
@@ -211,12 +211,18 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
             index2
           ] as AttendanceData
         ).status = changedStatus;
+
+        (
+          (temp[index1] as AttendanceEvent).attendances[
+            index2
+          ] as AttendanceData
+        ).reason = { reason: alasan };
         setFilteredList(temp);
       } catch (err: unknown) {
-        if (!(err instanceof TRPCError)) throw err;
+        if (!(err instanceof TRPCClientError)) throw err;
 
         toast({
-          title: "Error",
+          title: "Failed",
           status: "error",
           description: err.message,
           duration: 2000,
@@ -252,6 +258,15 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectEvent(e.target.value)}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {eventsList
             ? eventsList.map((event, index: number) => {
@@ -265,6 +280,15 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectGroup(Number(e.target.value))}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {groupList
             ? groupList.map((group, index: number) => {
@@ -334,7 +358,9 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
                                   </>
                                 )}
                               </Td>
-                              <Td>{`${item.student.firstName} ${item.student.lastName}`}</Td>
+                              <Td>{`${item.student.firstName} ${
+                                item.student.lastName ?? ""
+                              }`}</Td>
                               <Td>Kelompok {item.student.group.group}</Td>
                               <Td>
                                 {editStatus?.[index1]?.[index2] ? (
@@ -344,6 +370,15 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
                                     bg='#1C939A'
                                     id={`status-${index1}-${index2}`}
                                     defaultValue={item.status}
+                                    transition='all 0.2s ease-in-out'
+                                    _hover={{
+                                      opacity: 0.8
+                                    }}
+                                    css={{
+                                      option: {
+                                        background: "#1C939A"
+                                      }
+                                    }}
                                   >
                                     <option>HADIR</option>
                                     <option>IZIN</option>
@@ -364,7 +399,7 @@ export const MentorAttendance = ({ session }: { session: Session }) => {
                                     />
                                   </FormControl>
                                 ) : (
-                                  item.reason?.reason ?? ""
+                                  item.reason?.reason
                                 )}
                               </Td>
                             </Tr>
