@@ -7,13 +7,13 @@ import {
   Input,
   Button,
   useToast
-} from '@chakra-ui/react';
-import PageLayout from '~/layout';
-import { UserRole } from '@prisma/client';
-import { useRouter } from 'next/router';
-import { getCsrfToken, signIn, useSession } from 'next-auth/react';
-import type { GetServerSidePropsContext } from 'next';
-import { useState } from 'react';
+} from "@chakra-ui/react";
+import PageLayout from "~/layout";
+import { UserRole } from "@prisma/client";
+import { useRouter } from "next/router";
+import { getCsrfToken, signIn, useSession } from "next-auth/react";
+import type { GetServerSidePropsContext } from "next";
+import { useState } from "react";
 
 interface SignInProps {
   csrfToken: string;
@@ -22,21 +22,21 @@ interface SignInProps {
 export default function SignIn({ csrfToken }: SignInProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [userInfo, setUserInfo] = useState({ nim: '', password: '' });
+  const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
   const toast = useToast();
 
   const handleRedirect = () => {
     const role = session?.user.role;
     role === UserRole.MENTOR
-      ? void router.push('/attendance')
-      : void router.push('/assignment');
+      ? void router.push("/attendance")
+      : void router.push("/assignment");
   };
 
   const handleError = (message: string) => {
     toast({
-      title: 'Error',
+      title: "Error",
       description: `${message}`,
-      status: 'error',
+      status: "error",
       duration: 3000,
       isClosable: true
     });
@@ -45,11 +45,11 @@ export default function SignIn({ csrfToken }: SignInProps) {
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    const res = await signIn('credentials', {
+    const res = await signIn("credentials", {
       nim: userInfo.nim,
       password: userInfo.password,
-      csrfToken: csrfToken,
-      redirect: false
+      redirect: false,
+      csrfToken
     });
 
     if (res?.error) handleError(res?.error);
@@ -57,7 +57,7 @@ export default function SignIn({ csrfToken }: SignInProps) {
   };
 
   return (
-    <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
+    <PageLayout title='Log In' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
         <Heading>Diklat Terpusat</Heading>
         <Box width='450px'>
