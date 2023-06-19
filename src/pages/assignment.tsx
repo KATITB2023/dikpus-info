@@ -1,5 +1,4 @@
 import { signIn, useSession } from "next-auth/react";
-import { Box } from "@chakra-ui/react";
 import { UserRole } from "@prisma/client";
 import { type NextPage } from "next";
 import PageLayout from "~/layout";
@@ -19,7 +18,7 @@ const Assignment: NextPage = () => {
       {role === UserRole.MENTOR ? (
         <MentorAssignment />
       ) : (
-        <AssignmentMenteeSidePage></AssignmentMenteeSidePage>
+        <AssignmentMenteeSidePage />
       )}
     </PageLayout>
   );

@@ -88,7 +88,7 @@ export const assignmentRouter = createTRPCRouter({
           id: true,
           group: true
         }
-      })
+      });
 
       // error handling if group not found
       if (!groups) {
@@ -102,7 +102,7 @@ export const assignmentRouter = createTRPCRouter({
 
       const submissionList = await ctx.prisma.assignment.findMany({
         where: {
-          title: input.namaTugas,
+          title: input.namaTugas
         },
         select: {
           id: true,
@@ -130,17 +130,19 @@ export const assignmentRouter = createTRPCRouter({
             }
           }
         }
-      })
+      });
 
       return {
         submissions: submissionList.map((submission) => {
           return {
             ...submission,
-            submission: submission.submission.filter((sub) => 
-              (groupIds.includes(sub.student.group.id))
-              && (input.studentId === undefined || sub.student.id === input.studentId)
+            submission: submission.submission.filter(
+              (sub) =>
+                groupIds.includes(sub.student.group.id) &&
+                (input.studentId === undefined ||
+                  sub.student.id === input.studentId)
             )
-          }
+          };
         })
       };
     }),

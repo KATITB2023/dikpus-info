@@ -7,9 +7,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { api } from '~/utils/api';
-import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { api } from "~/utils/api";
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import {
   Box,
   Flex,
@@ -22,11 +22,11 @@ import {
   Icon,
   useToast,
   Progress
-} from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
-import { MdOutlineFileUpload } from 'react-icons/md';
-import { FolderEnum, AllowableFileTypeEnum, uploadFile } from '~/utils/file';
-import { TRPCError } from '@trpc/server';
+} from "@chakra-ui/react";
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import { MdOutlineFileUpload } from "react-icons/md";
+import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
+import { TRPCError } from "@trpc/server";
 
 function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const toast = useToast();
@@ -94,34 +94,34 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
 
     try {
       const result = await uploadMutation.mutateAsync({
-        assignmentId: tugas.id ?? '',
+        assignmentId: tugas.id ?? "",
         userId,
         fileUrl: sanitizedFilename
       });
       toast({
-        title: 'Success',
-        status: 'success',
+        title: "Success",
+        status: "success",
         description: result?.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
 
-      document.getElementById(tugas.id)!.style.border = '2px solid #069154';
-      document.getElementById(tugas.id)!.style.background = '#E6FEED';
-      document.getElementById(tugas.id)!.style.color = '#069154';
-      document.getElementById(tugas.id)!.innerHTML = 'Sudah terkumpul';
-      document.getElementById(`drag-drop-${tugas.id}`)!.style.display = 'none';
+      document.getElementById(tugas.id)!.style.border = "2px solid #069154";
+      document.getElementById(tugas.id)!.style.background = "#E6FEED";
+      document.getElementById(tugas.id)!.style.color = "#069154";
+      document.getElementById(tugas.id)!.innerHTML = "Sudah terkumpul";
+      document.getElementById(`drag-drop-${tugas.id}`)!.style.display = "none";
     } catch (err) {
       if (!(err instanceof TRPCError)) throw err;
 
       toast({
-        title: 'Error',
-        status: 'error',
+        title: "Error",
+        status: "error",
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
     }
 
@@ -129,54 +129,54 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
     setLoading(false);
   };
   return (
-    <Flex flexDir={'column'} id={tugas.title} display={''}>
+    <Flex flexDir={"column"} id={tugas.title} display={""}>
       <Flex
         flexDir='row'
         justifyContent='space-between'
         alignItems='bottom'
-        paddingTop={'45px'}
+        paddingTop={"45px"}
       >
-        <Flex flexDir='column' alignItems='left' marginRight={'30px'}>
-          <Text fontSize={'40px'} fontWeight={'700'} maxW={1200}>
+        <Flex flexDir='column' alignItems='left' marginRight={"30px"}>
+          <Text fontSize={"40px"} fontWeight={"700"} maxW={1200}>
             {tugas.title}
           </Text>
-          <Text fontSize={'20px'} fontWeight={'400'} maxW={1200}>
+          <Text fontSize={"20px"} fontWeight={"400"} maxW={1200}>
             {tugas.description}
           </Text>
         </Flex>
-        <Flex flexDir='column' alignItems='left' alignSelf={'flex-end'}>
-          <Box display={'inline-flex'} justifyItems='left' alignItems='bottom'>
-            <Text fontSize={'20px'} fontWeight={'700'} marginBottom={5}>
-              Deadline :{' '}
-              {tugas.deadline?.toLocaleString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
+        <Flex flexDir='column' alignItems='left' alignSelf={"flex-end"}>
+          <Box display={"inline-flex"} justifyItems='left' alignItems='bottom'>
+            <Text fontSize={"20px"} fontWeight={"700"} marginBottom={5}>
+              Deadline :{" "}
+              {tugas.deadline?.toLocaleString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
               })}
             </Text>
           </Box>
-          <Box display={'inline-flex'} justifyItems='left'>
-            <Text fontSize={'12px'} fontWeight={'700'}>
+          <Box display={"inline-flex"} justifyItems='left'>
+            <Text fontSize={"12px"} fontWeight={"700"}>
               Status :
             </Text>
             <Text
               id={tugas.id}
-              fontSize={'12px'}
-              fontWeight={'700'}
-              justifyContent={'center'}
-              alignContent={'center'}
-              margin={'0px 0px 0px 15px'}
-              borderRadius={'12px'}
-              padding={'0px 30px'}
-              color={!isRed ? '#069154' : '#F43518'}
-              background={!isRed ? '#E6FEED' : '#FEE9E6'}
-              border={!isRed ? '2px solid #069154' : '2px solid #F43518'}
+              fontSize={"12px"}
+              fontWeight={"700"}
+              justifyContent={"center"}
+              alignContent={"center"}
+              margin={"0px 0px 0px 15px"}
+              borderRadius={"12px"}
+              padding={"0px 30px"}
+              color={!isRed ? "#069154" : "#F43518"}
+              background={!isRed ? "#E6FEED" : "#FEE9E6"}
+              border={!isRed ? "2px solid #069154" : "2px solid #F43518"}
             >
               {pastDeadline
-                ? 'Tidak mengumpulkan'
+                ? "Tidak mengumpulkan"
                 : submitted
-                ? 'Sudah terkumpul'
-                : 'Belum terkumpul'}
+                ? "Sudah terkumpul"
+                : "Belum terkumpul"}
             </Text>
           </Box>
         </Flex>
@@ -188,58 +188,58 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         onDragLeave={handleDragLeave}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        display={submitted ? 'none' : 'flex'}
+        display={submitted ? "none" : "flex"}
       >
         <Flex
           background={
-            'linear-gradient(180deg, rgba(28, 147, 154, 0.1) 0%, rgba(28, 147, 154, 0.069) 100%);'
+            "linear-gradient(180deg, rgba(28, 147, 154, 0.1) 0%, rgba(28, 147, 154, 0.069) 100%);"
           }
-          margin={'32.5px 0px 0px 0%'}
-          justifyContent={'center'}
-          alignItems={'center'}
-          height={'300px'}
-          width={'100%'}
-          borderRadius={'16px'}
-          border={'1px dashed #1C939A'}
-          flexDir={'column'}
+          margin={"32.5px 0px 0px 0%"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          height={"300px"}
+          width={"100%"}
+          borderRadius={"16px"}
+          border={"1px dashed #1C939A"}
+          flexDir={"column"}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           style={{
-            background: isDragActive ? '#117584' : 'none',
-            border: isDragActive ? '2px dashed #1C939A' : '1px dashed #1C939A'
+            background: isDragActive ? "#117584" : "none",
+            border: isDragActive ? "2px dashed #1C939A" : "1px dashed #1C939A"
           }}
         >
           <MdOutlineFileUpload
-            size={'70px'}
+            size={"70px"}
             color='117584'
           ></MdOutlineFileUpload>
-          <Text fontSize={'20px'} fontWeight={'400'} color={'#1C939A'}>
+          <Text fontSize={"20px"} fontWeight={"400"} color={"#1C939A"}>
             Drag & Drop your files here
           </Text>
           <Text
-            fontSize={'20px'}
-            fontWeight={'400'}
-            color={'#1C939A'}
-            py={'10px'}
+            fontSize={"20px"}
+            fontWeight={"400"}
+            color={"#1C939A"}
+            py={"10px"}
           >
             OR
           </Text>
           <input
             type='file'
             onChange={handleFileChange}
-            style={{ display: 'none' }}
+            style={{ display: "none" }}
             id={`browse-files-${tugas.title}`}
           />
           <Button
-            padding={'0px 40px 0px 40px'}
-            backgroundColor={'#1C939A'}
-            color={'white'}
-            filter={'drop-shadow(0px 8px 16px rgba(28, 147, 154, 0.74));'}
-            fontWeight={'normal'}
-            _hover={{ background: '#117584' }}
-            cursor={'pointer'}
+            padding={"0px 40px 0px 40px"}
+            backgroundColor={"#1C939A"}
+            color={"white"}
+            filter={"drop-shadow(0px 8px 16px rgba(28, 147, 154, 0.74));"}
+            fontWeight={"normal"}
+            _hover={{ background: "#117584" }}
+            cursor={"pointer"}
             onClick={() => void uploadFileButton(tugas.title)}
           >
             Browse Files
@@ -249,41 +249,41 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
           <Progress size='sm' isIndeterminate bg='transparent' mt={5} />
         ) : (
           <>
-            <Text mt={3} key={file ? file.name : ''}>
-              {file ? `File: ${file.name}` : ''}
+            <Text mt={3} key={file ? file.name : ""}>
+              {file ? `File: ${file.name}` : ""}
             </Text>
             <Flex
               className={tugas.title}
-              justifyContent={'flex-end'}
-              marginTop={'18px'}
-              marginBottom={'18px'}
-              visibility={submitted || pastDeadline ? 'hidden' : 'visible'}
+              justifyContent={"flex-end"}
+              marginTop={"18px"}
+              marginBottom={"18px"}
+              visibility={submitted || pastDeadline ? "hidden" : "visible"}
             >
-              {' '}
+              {" "}
               <Button
-                padding={'0px 40px 0px 20px'}
-                backgroundColor={'#1C939A'}
-                color={'white'}
-                fontWeight={'normal'}
-                _hover={{ background: '#117584' }}
-                cursor={'pointer'}
+                padding={"0px 40px 0px 20px"}
+                backgroundColor={"#1C939A"}
+                color={"white"}
+                fontWeight={"normal"}
+                _hover={{ background: "#117584" }}
+                cursor={"pointer"}
                 borderRadius={0}
                 onClick={() => void handleOnClick()}
               >
                 <Text
-                  marginRight={'10px'}
-                  marginTop={'2px'}
-                  marginBottom={'2px'}
-                  fontSize={'24px'}
+                  marginRight={"10px"}
+                  marginTop={"2px"}
+                  marginBottom={"2px"}
+                  fontSize={"24px"}
                 >
-                  Upload{' '}
+                  Upload{" "}
                 </Text>
                 <Icon
                   as={MdOutlineFileUpload}
                   w={10}
                   h={10}
-                  marginRight={'-30px'}
-                  color={'white'}
+                  marginRight={"-30px"}
+                  color={"white"}
                 />
               </Button>
             </Flex>
@@ -298,7 +298,7 @@ export default function AssignmentMenteeSidePage() {
   const { data: session } = useSession();
   const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
-    userId: session?.user.id ?? ''
+    userId: session?.user.id ?? ""
   }).data;
 
   const handleFilterAssignment = (e: any) => {
@@ -306,16 +306,16 @@ export default function AssignmentMenteeSidePage() {
   };
 
   const filterAssignment = (title: string) => {
-    if (title === 'all') {
+    if (title === "all") {
       assignmentsDetails?.map((item) => {
-        document.getElementById(item.title)!.style.display = '';
+        document.getElementById(item.title)!.style.display = "";
       });
     } else {
       assignmentsDetails?.map((item) => {
         if (item.title === title) {
-          document.getElementById(item.title)!.style.display = '';
+          document.getElementById(item.title)!.style.display = "";
         } else {
-          document.getElementById(item.title)!.style.display = 'none';
+          document.getElementById(item.title)!.style.display = "none";
         }
       });
     }
@@ -328,13 +328,13 @@ export default function AssignmentMenteeSidePage() {
           <Menu>
             <MenuButton
               as={Button}
-              margin={'3rem 0rem 0px 0px'}
-              padding={'0px 5px 0px 0px'}
-              background={'#1C939A'}
-              borderRadius={'0px'}
-              variant={'unstyled'}
-              _hover={{ bg: '#117584' }}
-              fontWeight={'medium'}
+              margin={"3rem 0rem 0px 0px"}
+              padding={"0px 5px 0px 0px"}
+              background={"#1C939A"}
+              borderRadius={"0px"}
+              variant={"unstyled"}
+              _hover={{ bg: "#117584" }}
+              fontWeight={"medium"}
             >
               <Flex
                 flexDir='row'
@@ -344,7 +344,7 @@ export default function AssignmentMenteeSidePage() {
                 px={2}
               >
                 <Text fontSize='20px'>Pilih tugas</Text>
-                <ChevronDownIcon fontSize={'20px'} />
+                <ChevronDownIcon fontSize={"20px"} />
               </Flex>
             </MenuButton>
             <MenuList bg='#1C939A' border='none' borderRadius='xl' py={3}>
@@ -352,9 +352,9 @@ export default function AssignmentMenteeSidePage() {
                 name='all'
                 bg='#1C939A'
                 w='100%'
-                _hover={{ opacity: 0.7, bg: '#12122E' }}
+                _hover={{ opacity: 0.7, bg: "#12122E" }}
                 transition='all 0.2s ease-in-out'
-                px={'20px'}
+                px={"20px"}
                 onClick={handleFilterAssignment}
               >
                 Semua tugas
@@ -366,9 +366,9 @@ export default function AssignmentMenteeSidePage() {
                     name={item.title}
                     bg='#1C939A'
                     w='100%'
-                    _hover={{ opacity: 0.7, bg: '#12122E' }}
+                    _hover={{ opacity: 0.7, bg: "#12122E" }}
                     transition='all 0.2s ease-in-out'
-                    px={'20px'}
+                    px={"20px"}
                     onClick={handleFilterAssignment}
                   >
                     {item.title}
@@ -383,7 +383,7 @@ export default function AssignmentMenteeSidePage() {
             <Box key={index}>
               <AssignmentBox
                 tugas={item}
-                userId={session?.user.id ?? ''}
+                userId={session?.user.id ?? ""}
               ></AssignmentBox>
             </Box>
           );

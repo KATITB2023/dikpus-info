@@ -12,7 +12,7 @@ import {
   Button,
   Text
 } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "./DownloadIcon";
@@ -21,15 +21,37 @@ import { TRPCError } from "@trpc/server";
 
 export default function MentorAssignment() {
   const { data: session } = useSession();
-  const assignments = api.assignment.getAssignmentNameList.useQuery().data;
-  const assignmentResult = api.assignment.getAssignmentResult.useQuery({
-    userId: session?.user.id ?? ""
-  }).data;
-  const generateURLForDownload =
-    api.storage.generateURLForDownload.useMutation();
-  const [selectedAssignment, setSelectedAssignment] = useState("");
+
+  if (!session) return signIn();
+
+  const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
+  const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
+    userId: session.user.id
+  });
+
+  if (!assignmentListQuery.data || !assignmentResultQuery.data) return null;
+
+  const assignmentList = assignmentListQuery.data;
+  const assignmentResult = assignmentResultQuery.data;
+
+  const [selectedAssignment, setSelectedAssignment] = useState<string>();
   const [filteredAssignment, setFilteredAssignment] =
     useState<RouterOutputs["assignment"]["getAssignmentResult"]>();
+  const generateURLForDownload =
+    api.storage.generateURLForDownload.useMutation();
+
+  useEffect(() => {
+    if (assignmentResult) {
+      if (selectedAssignment) {
+        const filtered = assignmentResult.submissions.filter(
+          (item) => item.title === selectedAssignment
+        );
+        setFilteredAssignment({ submissions: filtered });
+      } else {
+        setFilteredAssignment(assignmentResult);
+      }
+    }
+  }, [assignmentList, assignmentResult, selectedAssignment]);
 
   const handleSelectAssignment = (e: any) => {
     setSelectedAssignment(e.target.value);
@@ -60,29 +82,18 @@ export default function MentorAssignment() {
     }
   };
 
-  //batch download file
-  const batchDownload = async (item: any) => {
+  // batch download file
+  const batchDownload = async (
+    submissions: RouterOutputs["assignment"]["getAssignmentResult"]["submissions"][number]
+  ) => {
     // might be bad , soalnya nunggu satu satu.
     // kalo mentor banyak banget download bareng problem
-    for (let i = 0; i < item.submission.length; i++) {
-      if (item.submission[i].filePath) {
-        await downloadFile(item.submission[i].filePath);
+    for (const submission of submissions.submission) {
+      if (submission.filePath) {
+        await downloadFile(submission.filePath);
       }
     }
   };
-
-  useEffect(() => {
-    if (assignmentResult) {
-      if (selectedAssignment != "") {
-        const filtered = assignmentResult.submissions.filter(
-          (item) => item.title === selectedAssignment
-        );
-        setFilteredAssignment({ submissions: filtered });
-      } else {
-        setFilteredAssignment(assignmentResult);
-      }
-    }
-  }, [assignments, assignmentResult, selectedAssignment]);
 
   return (
     <Box>
@@ -94,21 +105,19 @@ export default function MentorAssignment() {
           color={"white"}
           onChange={handleSelectAssignment}
         >
-          {assignments?.map((item, index: number) => (
-            <option key={index} value={item.title}>
-              {item.title}
-            </option>
+          {assignmentList.map((assignment) => (
+            <option value={assignment.title}>{assignment.title}</option>
           ))}
         </Select>
       </Flex>
 
       <Flex flexDir={"column"} marginTop={10} gap='20'>
-        {filteredAssignment?.submissions.map((item, index: number) => (
-          <Box key={index}>
+        {filteredAssignment?.submissions.map((submissions) => (
+          <Box>
             <Box marginBottom={5}>
               <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
                 {" "}
-                {item.title}{" "}
+                {submissions.title}{" "}
               </Text>
             </Box>
 
@@ -120,8 +129,8 @@ export default function MentorAssignment() {
               <TableContainer>
                 <Table variant='unstyled'>
                   <Tbody>
-                    {item.submission.map((submission, index: number) => (
-                      <Tr key={index}>
+                    {submissions.submission.map((submission) => (
+                      <Tr>
                         <Td>
                           {" "}
                           <Text fontWeight='700' fontSize='xl'>
@@ -166,7 +175,7 @@ export default function MentorAssignment() {
                   size='md'
                   width='100%'
                   marginTop={[5, 5, 5, 5, 0]}
-                  onClick={() => void batchDownload(item)}
+                  onClick={() => batchDownload(submissions)}
                 >
                   {"Download Semua"}
                   <DownloadIcon />
