@@ -5,7 +5,7 @@ import ChangePasswordForm from "~/component/ChangePasswordForm";
 
 export default function ChangePassword() {
   return (
-    <PageLayout title='Change Password' titleOnly={true}>
+    <PageLayout title='Password' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
         <Heading>Change Password</Heading>
         <Flex w='550px'>

@@ -24,6 +24,7 @@ export default function SignIn({
   const { data: session } = useSession();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const handleRedirect = () => {
@@ -38,13 +39,15 @@ export default function SignIn({
       title: "Error",
       description: `${message}`,
       status: "error",
-      duration: 3000,
-      isClosable: true
+      duration: 2000,
+      isClosable: true,
+      position: "top"
     });
   };
 
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const res = await signIn("credentials", {
       nim: userInfo.nim,
@@ -55,6 +58,7 @@ export default function SignIn({
 
     if (res?.error) handleError(res?.error);
     if (res?.url) handleRedirect();
+    setLoading(false);
   };
 
   if (session) {
@@ -100,6 +104,7 @@ export default function SignIn({
                 type='submit'
                 my={4}
                 onClick={(e) => void handleLogIn(e)}
+                disabled={loading}
               >
                 Submit
               </Button>

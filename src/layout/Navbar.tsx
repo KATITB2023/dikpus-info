@@ -11,7 +11,11 @@ import {
 import Link from "next/link";
 import { AiOutlineHome } from "react-icons/ai";
 import { BsPeopleFill } from "react-icons/bs";
-import { MdOutlineFolderCopy, MdOutlineLogout } from "react-icons/md";
+import {
+  MdOutlineFolderCopy,
+  MdOutlineLogout,
+  MdPassword
+} from "react-icons/md";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { signOut, useSession } from "next-auth/react";
 
@@ -32,6 +36,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         name: "Tugas",
         href: "/assignment",
         icon: <MdOutlineFolderCopy size={20} />
+      },
+      {
+        name: "Password",
+        href: "/changepassword",
+        icon: <MdPassword size={20} />
       }
     ],
     MENTOR: [
@@ -40,6 +49,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         name: "Tugas",
         href: "/assignment",
         icon: <MdOutlineFolderCopy size={20} />
+      },
+      {
+        name: "Password",
+        href: "/changepassword",
+        icon: <MdPassword size={20} />
       }
     ]
   };
