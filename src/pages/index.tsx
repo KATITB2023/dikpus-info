@@ -11,7 +11,7 @@ import {
 import PageLayout from "~/layout";
 import { UserRole } from "@prisma/client";
 import { useRouter } from "next/router";
-import { getCsrfToken, signIn, useSession } from "next-auth/react";
+import { getCsrfToken, getSession, signIn, useSession } from "next-auth/react";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType
@@ -19,10 +19,10 @@ import type {
 import { useState } from "react";
 
 export default function SignIn({
-  csrfToken
+  csrfToken,
+  session
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
   const toast = useToast();
 
@@ -109,9 +109,12 @@ export default function SignIn({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const csrfToken = await getCsrfToken(context);
+  const session = await getSession(context);
+
   return {
     props: {
-      csrfToken
+      csrfToken,
+      session
     }
   };
 }
