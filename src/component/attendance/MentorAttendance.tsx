@@ -212,6 +212,12 @@ export const MentorAttendance = () => {
             index2
           ] as AttendanceData
         ).status = changedStatus;
+
+        (
+          (temp[index1] as AttendanceEvent).attendances[
+            index2
+          ] as AttendanceData
+        ).reason = { reason: alasan };
         setFilteredList(temp);
       } catch (err: unknown) {
         if (!(err instanceof TRPCError)) throw err;
@@ -253,6 +259,15 @@ export const MentorAttendance = () => {
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectEvent(e.target.value)}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {eventsList
             ? eventsList.map((event, index: number) => {
@@ -266,6 +281,15 @@ export const MentorAttendance = () => {
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectGroup(Number(e.target.value))}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {groupList
             ? groupList.map((group, index: number) => {
@@ -345,6 +369,15 @@ export const MentorAttendance = () => {
                                     bg='#1C939A'
                                     id={`status-${index1}-${index2}`}
                                     defaultValue={item.status}
+                                    transition='all 0.2s ease-in-out'
+                                    _hover={{
+                                      opacity: 0.8
+                                    }}
+                                    css={{
+                                      option: {
+                                        background: "#1C939A"
+                                      }
+                                    }}
                                   >
                                     <option>HADIR</option>
                                     <option>IZIN</option>
@@ -365,7 +398,7 @@ export const MentorAttendance = () => {
                                     />
                                   </FormControl>
                                 ) : (
-                                  item.reason?.reason ?? ""
+                                  item.reason?.reason
                                 )}
                               </Td>
                             </Tr>

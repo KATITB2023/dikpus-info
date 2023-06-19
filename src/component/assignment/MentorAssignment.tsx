@@ -103,6 +103,15 @@ export default function MentorAssignment() {
           bg={"#1C939A"}
           color={"white"}
           onChange={handleSelectAssignment}
+          transition='all 0.2s ease-in-out'
+          _hover={{
+            opacity: 0.8
+          }}
+          css={{
+            option: {
+              background: "#1C939A"
+            }
+          }}
         >
           {assignmentList && assignmentList.length > 0
             ? assignmentList.map((assignment, index) => (
@@ -157,6 +166,10 @@ export default function MentorAssignment() {
                                   onClick={() =>
                                     downloadFile(submission.filePath!)
                                   }
+                                  _hover={{
+                                    opacity: 0.8
+                                  }}
+                                  transition='all 0.2s ease-in-out'
                                 >
                                   <DownloadIcon />
                                 </Button>
@@ -181,6 +194,10 @@ export default function MentorAssignment() {
                     width='100%'
                     marginTop={[5, 5, 5, 5, 0]}
                     onClick={() => batchDownload(submissions)}
+                    _hover={{
+                      opacity: 0.8
+                    }}
+                    transition='all 0.2s ease-in-out'
                   >
                     {"Download Semua"}
                     <DownloadIcon />
