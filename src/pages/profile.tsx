@@ -1,5 +1,5 @@
 import { signIn, useSession } from 'next-auth/react';
-import ProfileBody from '~/components/profile/ProfileBody';
+import ProfileBody from '~/component/profile/ProfileBody';
 import PageLayout from '~/layout';
 
 export default function Profile() {
@@ -16,7 +16,7 @@ export default function Profile() {
 
   return (
     <PageLayout title='Profile'>
-      <ProfileBody id={id} role={role} />
+      <ProfileBody id={id} />
     </PageLayout>
   );
 }
