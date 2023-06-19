@@ -118,7 +118,6 @@ export const assignmentRouter = createTRPCRouter({
                   firstName: true,
                   lastName: true,
                   fakultas: true,
-                  jurusan: true,
                   group: {
                     select: {
                       id: true,

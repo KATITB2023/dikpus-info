@@ -7,9 +7,9 @@ import MentorAssignment from "~/component/assignment/MentorAssignment";
 import AssignmentMenteeSidePage from "~/component/assignment/assignment-mentee-side";
 
 const Assignment: NextPage = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
-  if (status === "unauthenticated") return signIn();
+  if (!session) return signIn();
 
   const role = session?.user.role;
 
