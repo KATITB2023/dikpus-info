@@ -20,10 +20,12 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState, useRef } from 'react';
 import { set } from 'zod';
+import { api } from '~/utils/api';
+import { FolderEnum, AllowableFileTypeEnum, uploadFile } from '~/utils/file';
 
 export interface Student {
   id: string;
-  gender: 0 | 1;
+  gender: string
   firstName: string;
   lastName: string;
   fakultas: string;
@@ -51,14 +53,32 @@ export const EditingModal = ({
   const [firstName, setFirstName] = useState<string>(student.firstName);
   const [lastName, setLastName] = useState<string>(student.lastName);
   const [phoneNumber, setPhoneNumber] = useState<string>(student.phoneNumber);
+  const profileMutation = api.profile.editProfile.useMutation();
+  const generateURLForUpload = api.storage.generateURLForUpload.useMutation()
 
-  const [isEditingProfilePic, setIsEditingProfilePic] =
+  const [isEditingProfilePic, setIsEditingProfilePic] = 
     useState<boolean>(false);
   const profilePicRef = useRef<HTMLInputElement>(null);
   const [profilePic, setProfilePic] = useState<File | null>(null);
 
-  const save = () => {
-    // TODO : Integrasi BE
+
+  const save = async () => {
+    if (!profilePic) return
+    const {url: uploadURL,sanitizedFilename} = await  generateURLForUpload.mutateAsync({
+      folder: FolderEnum.PROFILE,
+      filename: `${student.id}.png`,
+      contentType: AllowableFileTypeEnum.PNG
+    })
+
+    await uploadFile(uploadURL, profilePic,AllowableFileTypeEnum.PNG)
+
+    profileMutation.mutate({
+      userId: student.id,
+      firstName,
+      lastName,
+      phoneNumber,
+      profile_url: uploadURL
+    })
 
     setStudent({
       ...student,
@@ -66,7 +86,7 @@ export const EditingModal = ({
       lastName,
       phoneNumber,
       imagePath: profilePic
-        ? URL.createObjectURL(profilePic)
+        ? uploadURL
         : student.imagePath
     });
     toggleEditing();
@@ -153,7 +173,7 @@ export const EditingModal = ({
               display='none'
             />
             <Button mt='1em' variant='ghost' onClick={profilePicClicker}>
-              Ubah Foto Profil
+              Unggah Foto Profil
             </Button>
           </Flex>
         </ModalBody>
