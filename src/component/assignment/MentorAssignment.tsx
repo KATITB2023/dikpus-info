@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Box,
   Flex,
@@ -12,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "./DownloadIcon";
 import { FolderEnum } from "~/utils/file";
 import { TRPCError } from "@trpc/server";
@@ -26,9 +28,8 @@ export default function MentorAssignment() {
   const generateURLForDownload =
     api.storage.generateURLForDownload.useMutation();
   const [selectedAssignment, setSelectedAssignment] = useState("");
-  const [filteredAssignment, setFilteredAssignment] = useState<
-    RouterOutputs["assignment"]["getAssignmentResult"]
-  >();
+  const [filteredAssignment, setFilteredAssignment] =
+    useState<RouterOutputs["assignment"]["getAssignmentResult"]>();
 
   const handleSelectAssignment = (e: any) => {
     setSelectedAssignment(e.target.value);
@@ -60,15 +61,15 @@ export default function MentorAssignment() {
   };
 
   //batch download file
-  const batchDownload = async (item : any) => {
-    // might be bad , soalnya nunggu satu satu. 
+  const batchDownload = async (item: any) => {
+    // might be bad , soalnya nunggu satu satu.
     // kalo mentor banyak banget download bareng problem
     for (let i = 0; i < item.submission.length; i++) {
       if (item.submission[i].filePath) {
         await downloadFile(item.submission[i].filePath);
       }
     }
-  }
+  };
 
   useEffect(() => {
     if (assignmentResult) {
@@ -93,15 +94,17 @@ export default function MentorAssignment() {
           color={"white"}
           onChange={handleSelectAssignment}
         >
-          {assignments?.map((item) => (
-            <option value={item.title}>{item.title}</option>
+          {assignments?.map((item, index: number) => (
+            <option key={index} value={item.title}>
+              {item.title}
+            </option>
           ))}
         </Select>
       </Flex>
 
       <Flex flexDir={"column"} marginTop={10} gap='20'>
-        {filteredAssignment?.submissions.map((item) => (
-          <Box>
+        {filteredAssignment?.submissions.map((item, index: number) => (
+          <Box key={index}>
             <Box marginBottom={5}>
               <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
                 {" "}
@@ -117,8 +120,8 @@ export default function MentorAssignment() {
               <TableContainer>
                 <Table variant='unstyled'>
                   <Tbody>
-                    {item.submission.map((submission) => (
-                      <Tr>
+                    {item.submission.map((submission, index: number) => (
+                      <Tr key={index}>
                         <Td>
                           {" "}
                           <Text fontWeight='700' fontSize='xl'>
@@ -130,13 +133,14 @@ export default function MentorAssignment() {
                         <Td>
                           {" "}
                           <Text fontWeight='700' fontSize='xl'>
-                            {"Kelompok " + submission.student.group.group}
+                            {`Kelompok ${submission.student.group.group}`}
                           </Text>
                         </Td>
                         <Td>
                           {" "}
                           {submission.filePath ? (
                             <Button
+                              bg='#1C939A'
                               onClick={() =>
                                 void downloadFile(submission.filePath!)
                               }
@@ -157,12 +161,12 @@ export default function MentorAssignment() {
 
               <Box marginLeft={10}>
                 <Button
-                  variant='outline'
+                  color='white'
                   bg={"#1C939A"}
                   size='md'
                   width='100%'
                   marginTop={[5, 5, 5, 5, 0]}
-                  onClick={() => batchDownload(item)}
+                  onClick={() => void batchDownload(item)}
                 >
                   {"Download Semua"}
                   <DownloadIcon />
