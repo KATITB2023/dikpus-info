@@ -20,15 +20,15 @@ import { AttendanceStatus } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { useSession } from 'next-auth/react';
 
-/* TODO:
-    - urus alasan kalo udah ada endpointnya
-    - ganti studentId ke studentnama
-  */
+interface AttendanceReason {
+  reason?: string | null;
+}
 
 interface AttendanceData {
   status: AttendanceStatus;
-  // reason?: string; // ini gaada...
   student: {
+    firstName: string;
+    lastName: string;
     group: {
       group: number;
     };
@@ -36,6 +36,7 @@ interface AttendanceData {
   studentId: string;
   id: string;
   eventId: string;
+  reason?: AttendanceReason | null;
 }
 
 interface AttendanceEvent {
@@ -61,7 +62,7 @@ function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
 }
 
 export const MentorAttendance = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const toast = useToast();
 
   const attendanceMutation = api.attendance.editAttendance.useMutation();
@@ -105,14 +106,14 @@ export const MentorAttendance = () => {
   }, [filteredList]);
 
   const handleSelectEvent = (event: string) => {
-    setEventFilter((prev) => {
+    setEventFilter(() => {
       filterAll(groupFilter, event);
       return event;
     });
   };
 
   const handleSelectGroup = (group: number) => {
-    setGroupFilter((prev) => {
+    setGroupFilter(() => {
       filterAll(group, eventFilter);
       return group;
     });
@@ -192,14 +193,15 @@ export const MentorAttendance = () => {
               index2
             ] as AttendanceData
           ).id,
-          kehadiran: changedStatus
+          kehadiran: changedStatus,
+          reason: alasan
         });
 
         toast({
           title: 'Success',
           status: 'success',
           description: result?.message,
-          duration: 750,
+          duration: 2000,
           isClosable: true,
           position: 'top'
         });
@@ -236,7 +238,7 @@ export const MentorAttendance = () => {
       title: 'Canceled',
       status: 'error',
       description: 'Change discarded',
-      duration: 750,
+      duration: 2000,
       isClosable: true,
       position: 'top'
     });
@@ -333,7 +335,7 @@ export const MentorAttendance = () => {
                                   </>
                                 )}
                               </Td>
-                              <Td>{item.studentId}</Td>
+                              <Td>{`${item.student.firstName} ${item.student.lastName}`}</Td>
                               <Td>Kelompok {item.student.group.group}</Td>
                               <Td>
                                 {editStatus?.[index1]?.[index2] ? (
@@ -359,11 +361,11 @@ export const MentorAttendance = () => {
                                       placeholder='Masukkan alasan...'
                                       variant='flushed'
                                       id={`alasan-${index1}-${index2}`}
-                                      defaultValue={'Dummy alasan'}
+                                      defaultValue={item.reason?.reason ?? ''}
                                     />
                                   </FormControl>
                                 ) : (
-                                  'Dummy alasan'
+                                  item.reason?.reason ?? ''
                                 )}
                               </Td>
                             </Tr>
