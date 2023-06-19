@@ -1,4 +1,5 @@
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import {
   Table,
   Thead,
@@ -10,7 +11,8 @@ import {
   Button,
   Flex,
   Text,
-  useToast
+  useToast,
+  Spinner
 } from '@chakra-ui/react';
 import { BiDownload } from 'react-icons/bi';
 import { type IconType } from 'react-icons/lib';
@@ -44,11 +46,11 @@ const TableButton = ({
     <Button
       bg={bg}
       borderRadius={0}
-      _hover={isDisabled ? { bg: bg } : { opacity: 0.8 }}
+      _hover={isDisabled || !onClick ? { bg: bg } : { opacity: 0.8 }}
       transition='all 0.2s ease-in-out'
       fontStyle='normal'
       onClick={isDisabled ? undefined : onClick}
-      cursor={isDisabled ? 'not-allowed' : 'pointer'}
+      cursor={isDisabled ? 'not-allowed' : !onClick ? 'default' : 'pointer'}
     >
       <Flex
         flexDir='row'
@@ -71,19 +73,31 @@ const TableButton = ({
   );
 };
 
-export const MenteeAttendance = () => {
+const TableRow = ({
+  attendance,
+  userId
+}: {
+  attendance: Attendance;
+  userId: string;
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [alreadyAbsen, setAlreadyAbsen] = useState(
+    attendance.status === AttendanceStatus.HADIR ||
+      attendance.status === AttendanceStatus.IZIN
+  );
+  const [stats, setStats] = useState(attendance.status.toLowerCase());
   const toast = useToast();
-  const { data: session, status } = useSession();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
-  const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session?.user.id ?? ''
-  });
-
-  const eventList = eventQuery?.data;
-  const tableHeader = ['Tanggal', 'Waktu', 'Topik', 'Materi', 'Absen'];
-
-  if (status === 'unauthenticated') return signIn();
+  const tanggal = getDate(attendance.event.startTime);
+  const waktu = getTwoTime(
+    attendance.event.startTime,
+    attendance.event.endTime
+  );
+  const canAbsen = validTime(
+    attendance.event.startTime,
+    attendance.event.endTime
+  );
 
   const downloadFile = async (filePath: string) => {
     try {
@@ -108,9 +122,10 @@ export const MenteeAttendance = () => {
   };
 
   const handleAbsen = async (eventId: string) => {
+    setLoading(true);
     try {
       const result = await absenMutation.mutateAsync({
-        userId: session?.user.id ?? '',
+        userId,
         eventId
       });
 
@@ -122,6 +137,9 @@ export const MenteeAttendance = () => {
         isClosable: true,
         position: 'top'
       });
+
+      setAlreadyAbsen(true);
+      setStats('Hadir');
     } catch (err: unknown) {
       if (!(err instanceof TRPCError)) throw err;
 
@@ -134,7 +152,51 @@ export const MenteeAttendance = () => {
         position: 'top'
       });
     }
+    setLoading(false);
   };
+
+  return (
+    <Tr>
+      <Td>{tanggal}</Td>
+      <Td>{waktu}</Td>
+      <Td>{attendance.event.title}</Td>
+      <Td>
+        <TableButton
+          icon={BiDownload}
+          text='Download'
+          bg='#1C939A'
+          onClick={() => void downloadFile(attendance.event.materialPath)}
+        />
+      </Td>
+      <Td>
+        {alreadyAbsen ? (
+          <TableButton text={stats} bg='transparent' />
+        ) : canAbsen ? (
+          loading ? (
+            <Spinner color='#1C939A' />
+          ) : (
+            <TableButton
+              text='Tandai Hadir'
+              bg='#1C939A'
+              onClick={() => void handleAbsen(attendance.event.id)}
+            />
+          )
+        ) : (
+          <TableButton text={waktu} bg='#E8553E' isDisabled />
+        )}
+      </Td>
+    </Tr>
+  );
+};
+
+export const MenteeAttendance = () => {
+  const { data: session } = useSession();
+  const eventQuery = api.attendance.getEvents.useQuery({
+    userId: session?.user.id ?? ''
+  });
+
+  const eventList = eventQuery?.data;
+  const tableHeader = ['Tanggal', 'Waktu', 'Topik', 'Materi', 'Absen'];
 
   return (
     <TableContainer>
@@ -150,52 +212,13 @@ export const MenteeAttendance = () => {
         </Thead>
         <Tbody>
           {eventList && eventList?.length > 0 ? (
-            eventList.map((item: Attendance, index: number) => {
-              const tanggal = getDate(item.event.startTime);
-              const waktu = getTwoTime(
-                item.event.startTime,
-                item.event.endTime
-              );
-              const alreadyAbsen =
-                item.status === AttendanceStatus.HADIR ||
-                item.status === AttendanceStatus.IZIN;
-              const canAbsen = validTime(
-                item.event.startTime,
-                item.event.endTime
-              );
-
-              return (
-                <Tr key={index}>
-                  <Td>{tanggal}</Td>
-                  <Td>{waktu}</Td>
-                  <Td>{item.event.title}</Td>
-                  <Td>
-                    <TableButton
-                      icon={BiDownload}
-                      text='Download'
-                      bg='#1C939A'
-                      onClick={() => void downloadFile(item.event.materialPath)}
-                    />
-                  </Td>
-                  <Td>
-                    {alreadyAbsen ? (
-                      <TableButton
-                        text={item.status.toLowerCase()}
-                        bg='transparent'
-                      />
-                    ) : canAbsen ? (
-                      <TableButton
-                        text='Tandai Hadir'
-                        bg='#1C939A'
-                        onClick={() => void handleAbsen(item.event.id)}
-                      />
-                    ) : (
-                      <TableButton text={waktu} bg='#E8553E' isDisabled />
-                    )}
-                  </Td>
-                </Tr>
-              );
-            })
+            eventList.map((item: Attendance, index: number) => (
+              <TableRow
+                attendance={item}
+                userId={session?.user.id ?? ''}
+                key={index}
+              />
+            ))
           ) : (
             <Tr>
               <Td colSpan={5} textAlign='center'>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -19,7 +20,8 @@ import {
   MenuItem,
   Button,
   Icon,
-  useToast
+  useToast,
+  Progress
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { MdOutlineFileUpload } from 'react-icons/md';
@@ -30,6 +32,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const toast = useToast();
   const [isDragActive, setIsDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
   const generateURLMutation = api.storage.generateURLForUpload.useMutation();
   const uploadMutation = api.assignment.updateSubmission.useMutation();
   const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
@@ -70,13 +73,14 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
     setFile(file);
   };
 
-  const uploadFileButton = () => {
-    document.getElementById('browse-files')?.click();
+  const uploadFileButton = (title: string) => {
+    document.getElementById(`browse-files-${title}`)?.click();
   };
 
   const handleOnClick = async () => {
     if (!file) return;
 
+    setLoading(true);
     const { url: uploadURL, sanitizedFilename } =
       await generateURLMutation.mutateAsync({
         folder: FolderEnum.ASSIGNMENT,
@@ -102,6 +106,12 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         isClosable: true,
         position: 'top'
       });
+
+      document.getElementById(tugas.id)!.style.border = '2px solid #069154';
+      document.getElementById(tugas.id)!.style.background = '#E6FEED';
+      document.getElementById(tugas.id)!.style.color = '#069154';
+      document.getElementById(tugas.id)!.innerHTML = 'Sudah terkumpul';
+      document.getElementById(`drag-drop-${tugas.id}`)!.style.display = 'none';
     } catch (err) {
       if (!(err instanceof TRPCError)) throw err;
 
@@ -116,6 +126,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
     }
 
     setFile(null);
+    setLoading(false);
   };
   return (
     <Flex flexDir={'column'} id={tugas.title} display={''}>
@@ -171,11 +182,13 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         </Flex>
       </Flex>
       <Flex
+        id={`drag-drop-${tugas.id}`}
         flexDir='column'
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
+        display={submitted ? 'none' : 'flex'}
       >
         <Flex
           background={
@@ -217,7 +230,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             type='file'
             onChange={handleFileChange}
             style={{ display: 'none' }}
-            id='browse-files'
+            id={`browse-files-${tugas.title}`}
           />
           <Button
             padding={'0px 40px 0px 40px'}
@@ -227,47 +240,55 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             fontWeight={'normal'}
             _hover={{ background: '#117584' }}
             cursor={'pointer'}
-            onClick={uploadFileButton}
+            onClick={() => void uploadFileButton(tugas.title)}
           >
             Browse Files
           </Button>
         </Flex>
-        <Text key={file ? file.name : ''}>{file ? file.name : ''}</Text>
-        <Flex
-          className={tugas.title}
-          justifyContent={'flex-end'}
-          marginTop={'18px'}
-          marginBottom={'18px'}
-          visibility={submitted || pastDeadline ? 'hidden' : 'visible'}
-        >
-          {' '}
-          <Button
-            padding={'0px 40px 0px 20px'}
-            backgroundColor={'#1C939A'}
-            color={'white'}
-            fontWeight={'normal'}
-            _hover={{ background: '#117584' }}
-            cursor={'pointer'}
-            borderRadius={0}
-            onClick={() => void handleOnClick()}
-          >
-            <Text
-              marginRight={'10px'}
-              marginTop={'2px'}
-              marginBottom={'2px'}
-              fontSize={'24px'}
-            >
-              Upload{' '}
+        {loading ? (
+          <Progress size='sm' isIndeterminate bg='transparent' mt={5} />
+        ) : (
+          <>
+            <Text mt={3} key={file ? file.name : ''}>
+              {file ? `File: ${file.name}` : ''}
             </Text>
-            <Icon
-              as={MdOutlineFileUpload}
-              w={10}
-              h={10}
-              marginRight={'-30px'}
-              color={'white'}
-            />
-          </Button>
-        </Flex>
+            <Flex
+              className={tugas.title}
+              justifyContent={'flex-end'}
+              marginTop={'18px'}
+              marginBottom={'18px'}
+              visibility={submitted || pastDeadline ? 'hidden' : 'visible'}
+            >
+              {' '}
+              <Button
+                padding={'0px 40px 0px 20px'}
+                backgroundColor={'#1C939A'}
+                color={'white'}
+                fontWeight={'normal'}
+                _hover={{ background: '#117584' }}
+                cursor={'pointer'}
+                borderRadius={0}
+                onClick={() => void handleOnClick()}
+              >
+                <Text
+                  marginRight={'10px'}
+                  marginTop={'2px'}
+                  marginBottom={'2px'}
+                  fontSize={'24px'}
+                >
+                  Upload{' '}
+                </Text>
+                <Icon
+                  as={MdOutlineFileUpload}
+                  w={10}
+                  h={10}
+                  marginRight={'-30px'}
+                  color={'white'}
+                />
+              </Button>
+            </Flex>
+          </>
+        )}
       </Flex>
     </Flex>
   );
@@ -299,72 +320,83 @@ export default function AssignmentMenteeSidePage() {
       });
     }
   };
+
+  if (assignments && assignments.length > 0) {
+    return (
+      <>
+        <Flex>
+          <Menu>
+            <MenuButton
+              as={Button}
+              margin={'3rem 0rem 0px 0px'}
+              padding={'0px 5px 0px 0px'}
+              background={'#1C939A'}
+              borderRadius={'0px'}
+              variant={'unstyled'}
+              _hover={{ bg: '#117584' }}
+              fontWeight={'medium'}
+            >
+              <Flex
+                flexDir='row'
+                justifyContent='space-between'
+                alignItems='center'
+                w='150px'
+                px={2}
+              >
+                <Text fontSize='20px'>Pilih tugas</Text>
+                <ChevronDownIcon fontSize={'20px'} />
+              </Flex>
+            </MenuButton>
+            <MenuList bg='#1C939A' border='none' borderRadius='xl' py={3}>
+              <MenuItem
+                name='all'
+                bg='#1C939A'
+                w='100%'
+                _hover={{ opacity: 0.7, bg: '#12122E' }}
+                transition='all 0.2s ease-in-out'
+                px={'20px'}
+                onClick={handleFilterAssignment}
+              >
+                Semua tugas
+              </MenuItem>
+              {assignments?.map((item: any, index: number) => {
+                return (
+                  <MenuItem
+                    key={index}
+                    name={item.title}
+                    bg='#1C939A'
+                    w='100%'
+                    _hover={{ opacity: 0.7, bg: '#12122E' }}
+                    transition='all 0.2s ease-in-out'
+                    px={'20px'}
+                    onClick={handleFilterAssignment}
+                  >
+                    {item.title}
+                  </MenuItem>
+                );
+              })}
+            </MenuList>
+          </Menu>
+        </Flex>
+        {assignmentsDetails?.map((item: any, index: number) => {
+          return (
+            <Box key={index}>
+              <AssignmentBox
+                tugas={item}
+                userId={session?.user.id ?? ''}
+              ></AssignmentBox>
+            </Box>
+          );
+        })}
+      </>
+    );
+  }
+
   return (
     <>
-      <Flex>
-        <Menu>
-          <MenuButton
-            as={Button}
-            margin={'3rem 0rem 0px 0px'}
-            padding={'0px 5px 0px 0px'}
-            background={'#1C939A'}
-            borderRadius={'0px'}
-            variant={'unstyled'}
-            _hover={{ bg: '#117584' }}
-            fontWeight={'medium'}
-          >
-            <Flex
-              flexDir='row'
-              justifyContent='space-between'
-              alignItems='center'
-              w='150px'
-              px={2}
-            >
-              <Text fontSize='20px'>Pilih tugas</Text>
-              <ChevronDownIcon fontSize={'20px'} />
-            </Flex>
-          </MenuButton>
-          <MenuList bg='#1C939A' border='none' borderRadius='xl' py={3}>
-            <MenuItem
-              name='all'
-              bg='#1C939A'
-              w='100%'
-              _hover={{ opacity: 0.7, bg: '#12122E' }}
-              transition='all 0.2s ease-in-out'
-              px={'20px'}
-              onClick={handleFilterAssignment}
-            >
-              Semua tugas
-            </MenuItem>
-            {assignments?.map((item: any, index: number) => {
-              return (
-                <MenuItem
-                  key={index}
-                  name={item.title}
-                  bg='#1C939A'
-                  w='100%'
-                  _hover={{ opacity: 0.7, bg: '#12122E' }}
-                  transition='all 0.2s ease-in-out'
-                  px={'20px'}
-                  onClick={handleFilterAssignment}
-                >
-                  {item.title}
-                </MenuItem>
-              );
-            })}
-          </MenuList>
-        </Menu>
-      </Flex>
-      {assignmentsDetails?.map((item: any, index: number) => {
-        return (
-          <Box key={index}>
-            <AssignmentBox
-              tugas={item}
-              userId={session?.user.id ?? ''}
-            ></AssignmentBox>
-          </Box>
-        );
-      })}
+      <Text textAlign='center'>
+        Yeay, untuk sekarang kamu tidak memiliki tugas yang harus dikerjakan
+      </Text>
     </>
   );
 }

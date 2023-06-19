@@ -54,8 +54,6 @@ export default function SignIn({ csrfToken }: SignInProps) {
 
     if (res?.error) handleError(res?.error);
     if (res?.url) handleRedirect();
-
-    console.log(res);
   };
 
   return (
