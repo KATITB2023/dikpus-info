@@ -11,9 +11,9 @@ import {
 import Link from "next/link";
 import { AiOutlineHome } from "react-icons/ai";
 import { BsPeopleFill } from "react-icons/bs";
-import { MdOutlineFolderCopy } from "react-icons/md";
+import { MdOutlineFolderCopy, MdOutlineLogout } from "react-icons/md";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 interface Props {
   title: string;
@@ -94,6 +94,24 @@ export default function Navbar({ title, titleOnly }: Props) {
                   </Link>
                 );
               })}
+              <MenuItem
+                bg='#1C939A'
+                w='100%'
+                _hover={{ bg: "#2FC1AD" }}
+                transition='all 0.2s ease-in-out'
+                onClick={() => void signOut()}
+              >
+                <Flex
+                  flexDir='row'
+                  justifyContent='space-between'
+                  alignItems='center'
+                  w='100%'
+                  px={2}
+                >
+                  <Text fontSize='xl'>Log Out</Text>
+                  <MdOutlineLogout size={20} />
+                </Flex>
+              </MenuItem>
             </MenuList>
           </Menu>
         </HStack>

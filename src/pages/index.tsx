@@ -57,6 +57,10 @@ export default function SignIn({
     if (res?.url) handleRedirect();
   };
 
+  if (session) {
+    handleRedirect();
+  }
+
   return (
     <PageLayout title='Log In' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
