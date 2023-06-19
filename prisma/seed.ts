@@ -1,5 +1,4 @@
-import { PrismaClient, UserRole } from "@prisma/client";
-import { hash } from "bcrypt";
+import { PrismaClient } from "@prisma/client";
 import { parse } from "csv-parse";
 import path from "path";
 import fs from "fs";
