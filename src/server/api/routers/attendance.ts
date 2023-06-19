@@ -205,11 +205,18 @@ export const attendanceRouter = createTRPCRouter({
               eventId: true,
               student: {
                 select: {
+                  firstName: true,
+                  lastName: true,
                   group: {
                     select: {
                       group: true
                     }
                   }
+                }
+              },
+              reason: {
+                select: {
+                  reason: true
                 }
               }
             }
@@ -241,13 +248,12 @@ export const attendanceRouter = createTRPCRouter({
     .input(
       z.object({
         attendanceId: z.string().uuid(),
-        kehadiran: z.nativeEnum(AttendanceStatus)
+        kehadiran: z.nativeEnum(AttendanceStatus),
+        reason: z.string().optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO
-      // edit absensi
-      await ctx.prisma.attendance.update({
+      const attendance = await ctx.prisma.attendance.update({
         where: {
           id: input.attendanceId
         },
@@ -255,6 +261,20 @@ export const attendanceRouter = createTRPCRouter({
           status: input.kehadiran
         }
       });
+
+      if (input.kehadiran !== "HADIR" && !input.reason) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please provide a reason"
+        });
+      } else {
+        await ctx.prisma.attendanceReason.create({
+          data: {
+            attendanceId: attendance.id,
+            reason: input.reason
+          }
+        });
+      }
 
       return {
         message: "Edit attendance successful"
