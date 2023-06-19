@@ -61,6 +61,8 @@ export default function MentorAssignment() {
 
   //batch download file
   const batchDownload = async (item : any) => {
+    // might be bad , soalnya nunggu satu satu. 
+    // kalo mentor banyak banget download bareng problem
     for (let i = 0; i < item.submission.length; i++) {
       if (item.submission[i].filePath) {
         await downloadFile(item.submission[i].filePath);
