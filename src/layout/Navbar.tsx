@@ -7,12 +7,13 @@ import {
   MenuItem,
   MenuList,
   Text
-} from "@chakra-ui/react";
-import Link from "next/link";
-import { AiOutlineHome } from "react-icons/ai";
-import { BsPeopleFill } from "react-icons/bs";
-import { MdOutlineFolderCopy } from "react-icons/md";
-import { RxHamburgerMenu } from "react-icons/rx";
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { AiOutlineHome } from 'react-icons/ai';
+import { BsPeopleFill } from 'react-icons/bs';
+import { MdOutlineFolderCopy } from 'react-icons/md';
+import { RxHamburgerMenu } from 'react-icons/rx';
+import { useSession } from 'next-auth/react';
 
 interface Props {
   title: string;
@@ -20,16 +21,28 @@ interface Props {
 }
 
 export default function Navbar({ title, titleOnly }: Props) {
-  // TODO: ganti link
-  const links = [
-    { name: "Profile", href: "/profile", icon: <AiOutlineHome size={20} /> },
-    { name: "Absen", href: "/attendance", icon: <BsPeopleFill size={20} /> },
-    {
-      name: "Tugas",
-      href: "/assignment",
-      icon: <MdOutlineFolderCopy size={20} />
-    }
-  ];
+  const { data: session } = useSession();
+  const role = session?.user?.role ?? 'MENTOR';
+
+  const links = {
+    STUDENT: [
+      { name: 'Profile', href: '/profile', icon: <AiOutlineHome size={20} /> },
+      { name: 'Absen', href: '/attendance', icon: <BsPeopleFill size={20} /> },
+      {
+        name: 'Tugas',
+        href: '/assignment',
+        icon: <MdOutlineFolderCopy size={20} />
+      }
+    ],
+    MENTOR: [
+      { name: 'Absen', href: '/attendance', icon: <BsPeopleFill size={20} /> },
+      {
+        name: 'Tugas',
+        href: '/assignment',
+        icon: <MdOutlineFolderCopy size={20} />
+      }
+    ]
+  };
   // TODO ganti logo dikpus
 
   return (
@@ -58,13 +71,13 @@ export default function Navbar({ title, titleOnly }: Props) {
               <RxHamburgerMenu size={24} />
             </MenuButton>
             <MenuList bg='#1C939A' border='none' borderRadius='xl' py={3}>
-              {links.map((link, idx) => {
+              {links[role].map((link, idx) => {
                 return (
                   <Link href={link.href} key={idx}>
                     <MenuItem
                       bg='#1C939A'
                       w='100%'
-                      _hover={{ opacity: 0.7, bg: "#12122E" }}
+                      _hover={{ opacity: 0.7, bg: '#12122E' }}
                       transition='all 0.2s ease-in-out'
                     >
                       <Flex

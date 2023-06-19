@@ -106,7 +106,15 @@ const TableRow = ({
         filename: filePath
       });
 
-      window.open(url, '_blank');
+      const file = await fetch(url);
+      const blob = await file.blob();
+      const link = document.createElement('a');
+
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'Materi ' + attendance.event.title;
+      link.click();
+
+      URL.revokeObjectURL(link.href);
     } catch (err: unknown) {
       if (!(err instanceof TRPCError)) throw err;
 

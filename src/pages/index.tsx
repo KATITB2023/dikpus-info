@@ -21,7 +21,7 @@ interface SignInProps {
 
 export default function SignIn({ csrfToken }: SignInProps) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState({ nim: '', password: '' });
   const toast = useToast();
 
@@ -29,7 +29,7 @@ export default function SignIn({ csrfToken }: SignInProps) {
     const role = session?.user.role;
     role === UserRole.MENTOR
       ? void router.push('/attendance')
-      : void router.push('/profile');
+      : void router.push('/assignment');
   };
 
   const handleError = (message: string) => {
