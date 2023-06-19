@@ -26,8 +26,7 @@ import {
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
-import { TRPCError } from "@trpc/server";
-import { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
 function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const toast = useToast();
@@ -113,11 +112,11 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
       document.getElementById(tugas.id)!.style.color = "#069154";
       document.getElementById(tugas.id)!.innerHTML = "Sudah terkumpul";
       document.getElementById(`drag-drop-${tugas.id}`)!.style.display = "none";
-    } catch (err) {
-      if (!(err instanceof TRPCError)) throw err;
+    } catch (err: unknown) {
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,

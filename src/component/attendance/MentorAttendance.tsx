@@ -17,9 +17,8 @@ import { HiPencil, HiOutlineX, HiOutlineCheck } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import { AttendanceStatus } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
 import { useSession } from "next-auth/react";
-import { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
 interface AttendanceReason {
   reason?: string | null;
@@ -29,7 +28,7 @@ interface AttendanceData {
   status: AttendanceStatus;
   student: {
     firstName: string;
-    lastName: string;
+    lastName: string | null;
     group: {
       group: number;
     };
@@ -220,10 +219,10 @@ export const MentorAttendance = () => {
         ).reason = { reason: alasan };
         setFilteredList(temp);
       } catch (err: unknown) {
-        if (!(err instanceof TRPCError)) throw err;
+        if (!(err instanceof TRPCClientError)) throw err;
 
         toast({
-          title: "Error",
+          title: "Failed",
           status: "error",
           description: err.message,
           duration: 2000,
@@ -359,7 +358,9 @@ export const MentorAttendance = () => {
                                   </>
                                 )}
                               </Td>
-                              <Td>{`${item.student.firstName} ${item.student.lastName}`}</Td>
+                              <Td>{`${item.student.firstName} ${
+                                item.student.lastName ?? ""
+                              }`}</Td>
                               <Td>Kelompok {item.student.group.group}</Td>
                               <Td>
                                 {editStatus?.[index1]?.[index2] ? (

@@ -20,7 +20,7 @@ import { api } from "~/utils/api";
 import { getDate, getTwoTime, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
+import { TRPCClientError } from "@trpc/client";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -119,10 +119,10 @@ const TableRow = ({
 
       URL.revokeObjectURL(link.href);
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,
@@ -152,10 +152,10 @@ const TableRow = ({
       setAlreadyAbsen(true);
       setStats("Hadir");
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,

@@ -104,7 +104,7 @@ export default function SignIn({
                 type='submit'
                 my={4}
                 onClick={(e) => void handleLogIn(e)}
-                disabled={loading}
+                isLoading={loading}
               >
                 Submit
               </Button>
