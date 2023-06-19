@@ -59,6 +59,16 @@ export default function MentorAssignment() {
     }
   };
 
+  //batch download file
+  const batchDownload = (item : any) => {
+    console.log(item)
+    for (let i = 0; i < item.submission.length; i++) {
+      if (item.submission[i].filePath) {
+        downloadFile(item.submission[i].filePath);
+      }
+    }
+  }
+
   useEffect(() => {
     if (assignmentResult) {
       if (selectedAssignment != "") {
@@ -151,6 +161,7 @@ export default function MentorAssignment() {
                   size='md'
                   width='100%'
                   marginTop={[5, 5, 5, 5, 0]}
+                  onClick={() => batchDownload(item)}
                 >
                   {"Download Semua"}
                   <DownloadIcon />
