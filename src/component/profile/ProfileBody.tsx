@@ -9,6 +9,7 @@ import {
   Td
 } from "@chakra-ui/react";
 import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 import { MdEdit } from "react-icons/md";
 import { EditingModal } from "~/component/profile/EditingModal";
@@ -52,7 +53,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
       </Tr>
     );
   };
-  console.log(student.imagePath);
+
   return (
     <Flex px='2em' flexDir='column'>
       <Flex mt='2em' justifyContent='center'>
@@ -91,7 +92,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
             />
           </Flex>
           <Text fontSize='lg' mt='1em'>
-            {''}
+            {student.nim}
           </Text>
           <TableContainer mt='1em'>
             <Table variant='unstyled'>
@@ -113,7 +114,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
                   title='Kelompok Mentoring'
                   data={student.mentorId}
                 />
-                <StudentInformationRow title='Link Zoom' data={""} />
+                <StudentInformationRow title='Link Zoom' data={<Link href={student.group?.zoomLink}>{student.group?.zoomLink}</Link>} />
               </Tbody>
             </Table>
           </TableContainer>

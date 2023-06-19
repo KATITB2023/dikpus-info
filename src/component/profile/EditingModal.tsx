@@ -127,13 +127,12 @@ export const EditingModal = ({
   const profilePicChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
     setProfilePic(e.target.files[0]);
-    console.log(e.target.files[0]);
   };
 
   const profilePicClicker = () => {
     if (profilePicRef.current) profilePicRef.current.click();
   };
-
+  
   return (
     <Modal isOpen={isOpen} onClose={() => {}}>
       <ModalOverlay />
