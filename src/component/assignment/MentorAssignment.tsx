@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
@@ -12,8 +14,8 @@ import {
   Button,
   Text
 } from "@chakra-ui/react";
-import { signIn, useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "./DownloadIcon";
 import { FolderEnum } from "~/utils/file";
@@ -22,14 +24,10 @@ import { TRPCError } from "@trpc/server";
 export default function MentorAssignment() {
   const { data: session } = useSession();
 
-  if (!session) return signIn();
-
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
-    userId: session.user.id
+    userId: session?.user.id ?? ""
   });
-
-  if (!assignmentListQuery.data || !assignmentResultQuery.data) return null;
 
   const assignmentList = assignmentListQuery.data;
   const assignmentResult = assignmentResultQuery.data;
@@ -105,85 +103,92 @@ export default function MentorAssignment() {
           color={"white"}
           onChange={handleSelectAssignment}
         >
-          {assignmentList.map((assignment) => (
-            <option value={assignment.title}>{assignment.title}</option>
-          ))}
+          {assignmentList && assignmentList.length > 0
+            ? assignmentList.map((assignment, index) => (
+                <option key={index} value={assignment.title}>
+                  {assignment.title}
+                </option>
+              ))
+            : null}
         </Select>
       </Flex>
 
       <Flex flexDir={"column"} marginTop={10} gap='20'>
-        {filteredAssignment?.submissions.map((submissions) => (
-          <Box>
-            <Box marginBottom={5}>
-              <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
-                {" "}
-                {submissions.title}{" "}
-              </Text>
-            </Box>
-
-            <Flex
-              justifyContent='space-between'
-              flexDir={["column", "column", "column", "column", "row"]}
-              w='80%'
-            >
-              <TableContainer>
-                <Table variant='unstyled'>
-                  <Tbody>
-                    {submissions.submission.map((submission) => (
-                      <Tr>
-                        <Td>
-                          {" "}
-                          <Text fontWeight='700' fontSize='xl'>
-                            {submission.student.firstName +
-                              " " +
-                              submission.student.lastName}{" "}
-                          </Text>
-                        </Td>
-                        <Td>
-                          {" "}
-                          <Text fontWeight='700' fontSize='xl'>
-                            {`Kelompok ${submission.student.group.group}`}
-                          </Text>
-                        </Td>
-                        <Td>
-                          {" "}
-                          {submission.filePath ? (
-                            <Button
-                              bg='#1C939A'
-                              onClick={() =>
-                                void downloadFile(submission.filePath!)
-                              }
-                            >
-                              <DownloadIcon />
-                            </Button>
-                          ) : (
-                            <Text fontWeight='400'>
-                              {"tidak mengumpulkan tugas"}
-                            </Text>
-                          )}
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-
-              <Box marginLeft={10}>
-                <Button
-                  color='white'
-                  bg={"#1C939A"}
-                  size='md'
-                  width='100%'
-                  marginTop={[5, 5, 5, 5, 0]}
-                  onClick={() => batchDownload(submissions)}
-                >
-                  {"Download Semua"}
-                  <DownloadIcon />
-                </Button>
+        {filteredAssignment?.submissions.map((submissions) => {
+          return (
+            <Box key={submissions.id}>
+              <Box marginBottom={5}>
+                <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
+                  {" "}
+                  {submissions.title}{" "}
+                </Text>
               </Box>
-            </Flex>
-          </Box>
-        ))}
+
+              <Flex
+                justifyContent='space-between'
+                flexDir={["column", "column", "column", "column", "row"]}
+                w='80%'
+              >
+                <TableContainer>
+                  <Table variant='unstyled'>
+                    <Tbody>
+                      {submissions.submission.map((submission) => {
+                        return (
+                          <Tr key={submission.id}>
+                            <Td>
+                              {" "}
+                              <Text fontWeight='700' fontSize='xl'>
+                                {submission.student.firstName}{" "}
+                                {submission.student.lastName}
+                              </Text>
+                            </Td>
+                            <Td>
+                              {" "}
+                              <Text fontWeight='700' fontSize='xl'>
+                                {`Kelompok ${submission.student.group.group}`}
+                              </Text>
+                            </Td>
+                            <Td>
+                              {" "}
+                              {submission.filePath ? (
+                                <Button
+                                  bg='#1C939A'
+                                  onClick={() =>
+                                    downloadFile(submission.filePath!)
+                                  }
+                                >
+                                  <DownloadIcon />
+                                </Button>
+                              ) : (
+                                <Text fontWeight='400'>
+                                  {"tidak mengumpulkan tugas"}
+                                </Text>
+                              )}
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+
+                <Box marginLeft={10}>
+                  <Button
+                    color='white'
+                    bg={"#1C939A"}
+                    size='md'
+                    width='100%'
+                    marginTop={[5, 5, 5, 5, 0]}
+                    onClick={() => batchDownload(submissions)}
+                  >
+                    {"Download Semua"}
+                    <DownloadIcon />
+                  </Button>
+                </Box>
+              </Flex>
+            </Box>
+          );
+        })}
       </Flex>
     </Box>
   );

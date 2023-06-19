@@ -1,5 +1,5 @@
-import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import {
   Table,
   Thead,
@@ -13,14 +13,14 @@ import {
   Text,
   useToast,
   Spinner
-} from '@chakra-ui/react';
-import { BiDownload } from 'react-icons/bi';
-import { type IconType } from 'react-icons/lib';
-import { api } from '~/utils/api';
-import { getDate, getTwoTime, validTime } from '~/utils/date';
-import { FolderEnum } from '~/utils/file';
-import { AttendanceStatus, type Event } from '@prisma/client';
-import { TRPCError } from '@trpc/server';
+} from "@chakra-ui/react";
+import { BiDownload } from "react-icons/bi";
+import { type IconType } from "react-icons/lib";
+import { api } from "~/utils/api";
+import { getDate, getTwoTime, validTime } from "~/utils/date";
+import { FolderEnum } from "~/utils/file";
+import { AttendanceStatus, type Event } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -50,7 +50,7 @@ const TableButton = ({
       transition='all 0.2s ease-in-out'
       fontStyle='normal'
       onClick={isDisabled ? undefined : onClick}
-      cursor={isDisabled ? 'not-allowed' : !onClick ? 'default' : 'pointer'}
+      cursor={isDisabled ? "not-allowed" : !onClick ? "default" : "pointer"}
     >
       <Flex
         flexDir='row'
@@ -108,10 +108,10 @@ const TableRow = ({
 
       const file = await fetch(url);
       const blob = await file.blob();
-      const link = document.createElement('a');
+      const link = document.createElement("a");
 
       link.href = window.URL.createObjectURL(blob);
-      link.download = 'Materi ' + attendance.event.title;
+      link.download = "Materi " + attendance.event.title;
       link.click();
 
       URL.revokeObjectURL(link.href);
@@ -119,12 +119,12 @@ const TableRow = ({
       if (!(err instanceof TRPCError)) throw err;
 
       toast({
-        title: 'Error',
-        status: 'error',
+        title: "Error",
+        status: "error",
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
     }
   };
@@ -138,26 +138,26 @@ const TableRow = ({
       });
 
       toast({
-        title: 'Success',
-        status: 'success',
+        title: "Success",
+        status: "success",
         description: result?.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
 
       setAlreadyAbsen(true);
-      setStats('Hadir');
+      setStats("Hadir");
     } catch (err: unknown) {
       if (!(err instanceof TRPCError)) throw err;
 
       toast({
-        title: 'Error',
-        status: 'error',
+        title: "Error",
+        status: "error",
         description: err.message,
         duration: 2000,
         isClosable: true,
-        position: 'top'
+        position: "top"
       });
     }
     setLoading(false);
@@ -200,33 +200,37 @@ const TableRow = ({
 export const MenteeAttendance = () => {
   const { data: session } = useSession();
   const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session?.user.id ?? ''
+    userId: session?.user.id ?? ""
   });
 
   const eventList = eventQuery?.data;
-  const tableHeader = ['Tanggal', 'Waktu', 'Topik', 'Materi', 'Absen'];
+  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Absen"];
 
   return (
     <TableContainer>
       <Table variant='unstyled'>
         <Thead borderBottom='1px solid'>
           <Tr>
-            {tableHeader.map((header, index) => (
-              <Th fontFamily='SomarRounded-Bold' key={index}>
-                {header}
-              </Th>
-            ))}
+            {tableHeader.map((header, index) => {
+              return (
+                <Th fontFamily='SomarRounded-Bold' key={index}>
+                  {header}
+                </Th>
+              );
+            })}
           </Tr>
         </Thead>
         <Tbody>
           {eventList && eventList?.length > 0 ? (
-            eventList.map((item: Attendance, index: number) => (
-              <TableRow
-                attendance={item}
-                userId={session?.user.id ?? ''}
-                key={index}
-              />
-            ))
+            eventList.map((item: Attendance, index: number) => {
+              return (
+                <TableRow
+                  attendance={item}
+                  userId={session?.user.id ?? ""}
+                  key={index}
+                />
+              );
+            })
           ) : (
             <Tr>
               <Td colSpan={5} textAlign='center'>
