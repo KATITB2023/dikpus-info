@@ -13,19 +13,21 @@ import {
   Td,
   TableContainer,
   Button,
-  Text
+  Text,
+  useToast
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { TRPCError } from "@trpc/server";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "~/component/assignment/DownloadIcon";
 import { FolderEnum } from "~/utils/file";
 import { useSession } from "next-auth/react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { TRPCClientError } from "@trpc/client";
 
 export default function MentorAssignment() {
   const { data: session } = useSession();
+  const toast = useToast();
 
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
@@ -86,7 +88,16 @@ export default function MentorAssignment() {
       URL.revokeObjectURL(blobUrl);
       document.body.removeChild(link);
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: err.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
     }
   };
 

@@ -2,8 +2,11 @@ import { Flex, Heading, Box, IconButton } from "@chakra-ui/react";
 import { FiArrowLeft } from "react-icons/fi";
 import PageLayout from "~/layout";
 import ChangePasswordForm from "~/component/ChangePasswordForm";
+import { useRouter } from "next/router";
 
 export default function ChangePassword() {
+  const router = useRouter();
+
   return (
     <PageLayout title='Password' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
@@ -14,6 +17,7 @@ export default function ChangePassword() {
             fontSize='30px'
             aria-label='back'
             icon={<FiArrowLeft />}
+            onClick={() => router.back()}
           />
         </Flex>
         <Box width='450px'>

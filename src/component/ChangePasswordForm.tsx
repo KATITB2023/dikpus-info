@@ -9,10 +9,10 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { api } from "~/utils/api";
-import { TRPCClientError } from "@trpc/client";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
 import { useRouter } from "next/router";
+import { TRPCClientError } from "@trpc/client";
 
 export default function ChangePasswordForm() {
   const { data: session } = useSession();
@@ -73,16 +73,16 @@ export default function ChangePasswordForm() {
 
       handleRedirect();
     } catch (error: unknown) {
-      if (error instanceof TRPCClientError) {
-        toast({
-          title: "Failed",
-          status: "error",
-          description: error.message,
-          duration: 2000,
-          isClosable: true,
-          position: "top"
-        });
-      }
+      if (!(error instanceof TRPCClientError)) throw error;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: error.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
     }
     setLoading(false);
   };
@@ -133,7 +133,8 @@ export default function ChangePasswordForm() {
           my={4}
           _hover={{ bg: "#72D8BA" }}
           onClick={(e) => void handleSubmitPass(e)}
-          isDisabled={isError || loading}
+          isDisabled={isError}
+          isLoading={loading}
         >
           Submit
         </Button>
