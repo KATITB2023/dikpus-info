@@ -6,10 +6,10 @@ import {
   Table,
   Tbody,
   Tr,
-  Td
+  Td,
+  Box
 } from "@chakra-ui/react";
-import { Student } from "@prisma/client";
-import { signIn, useSession } from "next-auth/react";
+import { type Student } from "@prisma/client";
 import Link from "next/link";
 import { useState } from "react";
 import { MdEdit } from "react-icons/md";
@@ -20,26 +20,24 @@ interface ProfileBodyProps {
   id: string;
 }
 
-interface ModifiedStudent extends Student {
+interface AddedStudent {
   group?: {
     id: string;
+    group: number;
     zoomLink: string;
   };
   user?: {
-    id: string;
     nim: string;
   };
 }
 
+type StudentWithGroup = Student & AddedStudent;
+
 export default function ProfileBody({ id }: ProfileBodyProps) {
-  const profileQuery = api.profile.getProfile.useQuery({ userId: id });
-  const { status } = useSession();
-
-  if (status === "unauthenticated") return signIn();
-
-  const student = profileQuery.data as ModifiedStudent;
-
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const profileQuery = api.profile.getProfile.useQuery({ userId: id });
+
+  const student = profileQuery.data as StudentWithGroup;
 
   if (!student) return null;
   if (typeof student.firstName != "string") return null;
@@ -65,19 +63,23 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
       </Tr>
     );
   };
-  console.log(student);
   return (
-    <Flex px='2em' flexDir='column'>
-      <Flex mt='2em' justifyContent='center'>
+    <Flex flexDir='column'>
+      <Flex
+        justifyContent={{ base: "center", lg: "flex-start" }}
+        flexDir={{ base: "column", lg: "row" }}
+        gap={{ base: 5, lg: 12 }}
+      >
         {student.imagePath ? (
           <Img src={student.imagePath} w='10em' h='15em' />
         ) : (
           <Flex
             justifyContent='center'
             alignItems='center'
+            alignSelf='center'
             w='10em'
             h='15em'
-            bg='gray'
+            bg='#1C939A'
             onClick={toggleEditing}
             cursor='pointer'
           >
@@ -85,19 +87,21 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
             Tambahkan Foto{" "}
           </Flex>
         )}
-        <Flex flexDir='column' w='calc(100% - 10em)' ml='2em'>
+        <Flex flexDir='column' w={{ base: "100%", lg: "calc(100% - 10em)" }}>
           <Flex justifyContent='space-between' w='100%'>
             <Text fontSize='2xl' fontWeight='bold'>
               {student.firstName} {student.lastName}
             </Text>
-            <MdEdit size={24} onClick={toggleEditing} cursor='pointer' />
+            <Box alignSelf='center'>
+              <MdEdit size={24} onClick={toggleEditing} cursor='pointer' />
+            </Box>
             <EditingModal
               isOpen={isEditing}
               toggleEditing={toggleEditing}
               initialState={{
                 userId: student.userId,
                 firstName: student.firstName,
-                lastName: student.lastName,
+                lastName: student.lastName || "",
                 phoneNumber: student.phoneNumber || "",
                 imageUrl: student.imagePath || ""
               }}
@@ -117,20 +121,23 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
                   title='Fakultas'
                   data={student.fakultas}
                 />
-                <StudentInformationRow title='Jurusan' data={student.jurusan} />
                 <StudentInformationRow
                   title='Nomor HP'
                   data={student.phoneNumber || "Belum ada data"}
                 />
                 <StudentInformationRow
                   title='Kelompok Mentoring'
-                  data={student.mentorId}
+                  data={
+                    student.group
+                      ? student.group.group.toString()
+                      : "Belum ada data"
+                  }
                 />
                 <StudentInformationRow
                   title='Link Zoom'
                   data={
                     student.group ? (
-                      <Link href={student.group.zoomLink}>
+                      <Link href={student.group.zoomLink} target='_blank'>
                         {student.group?.zoomLink}
                       </Link>
                     ) : (

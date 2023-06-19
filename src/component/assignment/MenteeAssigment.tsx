@@ -134,19 +134,26 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         flexDir='row'
         justifyContent='space-between'
         alignItems='bottom'
-        paddingTop={"45px"}
+        paddingTop={12}
+        flexWrap='wrap'
+        gap={{ base: 4, lg: 0 }}
       >
         <Flex flexDir='column' alignItems='left' marginRight={"30px"}>
-          <Text fontSize={"40px"} fontWeight={"700"} maxW={1200}>
+          <Text fontSize='2xl' fontWeight={"700"} maxW={1200}>
             {tugas.title}
           </Text>
-          <Text fontSize={"20px"} fontWeight={"400"} maxW={1200}>
+          <Text fontSize='xl' fontWeight={"400"} maxW={1200}>
             {tugas.description}
           </Text>
         </Flex>
-        <Flex flexDir='column' alignItems='left' alignSelf={"flex-end"}>
+        <Flex
+          flexDir='column'
+          alignItems={{ base: "flex-start", lg: "flex-end" }}
+          alignSelf='center'
+          gap={1}
+        >
           <Box display={"inline-flex"} justifyItems='left' alignItems='bottom'>
-            <Text fontSize={"20px"} fontWeight={"700"} marginBottom={5}>
+            <Text fontSize={"20px"} fontWeight={"700"}>
               Deadline :{" "}
               {tugas.deadline?.toLocaleString("id-ID", {
                 day: "numeric",
@@ -156,7 +163,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             </Text>
           </Box>
           <Box display={"inline-flex"} justifyItems='left'>
-            <Text fontSize={"12px"} fontWeight={"700"}>
+            <Text fontSize={"12px"} fontWeight={"700"} alignSelf='center'>
               Status :
             </Text>
             <Text
@@ -215,7 +222,12 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             size={"70px"}
             color='117584'
           ></MdOutlineFileUpload>
-          <Text fontSize={"20px"} fontWeight={"400"} color={"#1C939A"}>
+          <Text
+            fontSize={"20px"}
+            fontWeight={"400"}
+            color={"#1C939A"}
+            textAlign='center'
+          >
             Drag & Drop your files here
           </Text>
           <Text
@@ -267,21 +279,20 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
                 fontWeight={"normal"}
                 _hover={{ background: "#117584" }}
                 cursor={"pointer"}
-                borderRadius={0}
                 onClick={() => void handleOnClick()}
               >
                 <Text
                   marginRight={"10px"}
                   marginTop={"2px"}
                   marginBottom={"2px"}
-                  fontSize={"24px"}
+                  fontSize='lg'
                 >
                   Upload{" "}
                 </Text>
                 <Icon
                   as={MdOutlineFileUpload}
-                  w={10}
-                  h={10}
+                  w={7}
+                  h={7}
                   marginRight={"-30px"}
                   color={"white"}
                 />
@@ -328,7 +339,6 @@ export default function MenteeAssigment() {
           <Menu>
             <MenuButton
               as={Button}
-              margin={"3rem 0rem 0px 0px"}
               padding={"0px 5px 0px 0px"}
               background={"#1C939A"}
               borderRadius={"0px"}
@@ -343,7 +353,7 @@ export default function MenteeAssigment() {
                 w='150px'
                 px={2}
               >
-                <Text fontSize='20px'>Pilih tugas</Text>
+                <Text fontSize='lg'>Pilih tugas</Text>
                 <ChevronDownIcon fontSize={"20px"} />
               </Flex>
             </MenuButton>

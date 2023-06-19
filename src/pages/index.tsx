@@ -37,7 +37,7 @@ export default function SignIn({
       position: "top"
     });
     handleRedirect();
-  }
+  };
 
   const handleRedirect = () => {
     const role = session?.user.role;
@@ -80,13 +80,14 @@ export default function SignIn({
   return (
     <PageLayout title='Log In' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
-        <Heading>Diklat Terpusat</Heading>
-        <Box width='450px'>
+        <Heading textAlign='center'>Diklat Terpusat</Heading>
+        <Box w={{ base: "100%", md: "450px" }}>
           <form>
             <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
             <FormControl my={6}>
               <FormLabel>NIM</FormLabel>
               <Input
+                width='100%'
                 type='text'
                 name='nim'
                 placeholder='NIM'

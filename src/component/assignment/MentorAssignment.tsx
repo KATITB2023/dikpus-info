@@ -240,7 +240,7 @@ export default function MentorAssignment() {
                   </Table>
                 </TableContainer>
 
-                <Box marginLeft={10}>
+                <Box>
                   <Button
                     color='white'
                     bg={"#1C939A"}

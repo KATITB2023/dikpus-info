@@ -1,7 +1,6 @@
 import {
   Flex,
   Img,
-  Text,
   Button,
   TableContainer,
   Table,
@@ -16,16 +15,15 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  TagLabel,
   useToast,
   Avatar,
-  Spinner
+  Spinner,
+  useDisclosure
 } from "@chakra-ui/react";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
-import { useEffect, useState, useRef } from "react";
-import { set } from "zod";
-import { RouterInputs, RouterOutputs, api } from "~/utils/api";
+import { useState, useRef } from "react";
+import { api } from "~/utils/api";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
 
 interface EditingModalProps {
@@ -53,13 +51,14 @@ export const EditingModal = ({
     initialState.phoneNumber
   );
   const [imageUrl, setImageUrl] = useState<string>(initialState.imageUrl);
+  const { onClose } = useDisclosure();
 
   const profileMutation = api.profile.editProfile.useMutation();
   const generateURLForUpload = api.storage.generateURLForUpload.useMutation();
   const generateURLForDownload =
     api.storage.generateURLForDownload.useMutation();
 
-  const router = useRouter()
+  const router = useRouter();
 
   const profilePicRef = useRef<HTMLInputElement>(null);
   const [profilePic, setProfilePic] = useState<File | null>(null);
@@ -84,7 +83,7 @@ export const EditingModal = ({
       await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
       newImageUrl = downloadURL;
     } else {
-      newImageUrl = imageUrl
+      newImageUrl = imageUrl;
     }
 
     try {
@@ -120,8 +119,8 @@ export const EditingModal = ({
     toggleEditing();
     setIsUploading(false);
     setTimeout(() => {
-      router.reload()
-    }, 1400)
+      router.reload();
+    }, 1400);
   };
 
   const profilePicChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,44 +131,47 @@ export const EditingModal = ({
   const profilePicClicker = () => {
     if (profilePicRef.current) profilePicRef.current.click();
   };
-  
+
   return (
-    <Modal isOpen={isOpen} onClose={() => {}}>
+    <Modal isOpen={isOpen} isCentered onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader color='black'>Edit Profile</ModalHeader>
-        <ModalCloseButton color='black' onClick={toggleEditing} />
+      <ModalContent bg='#1C939A' color='white'>
+        <ModalHeader>Edit Profile</ModalHeader>
+        <ModalCloseButton onClick={toggleEditing} />
         <ModalBody>
           <TableContainer>
-            <Table>
-              <Tbody color='black'>
+            <Table size='sm'>
+              <Tbody>
                 <Tr>
-                  <Td>Nama Depan</Td>
+                  <Td className='modal-row'>Nama Depan</Td>
                   <Td>
                     <Input
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      border='1px solid black'
+                      border='1px solid white'
+                      fontSize='sm'
                     />
                   </Td>
                 </Tr>
                 <Tr>
-                  <Td>Nama Belakang</Td>
+                  <Td className='modal-row'>Nama Belakang</Td>
                   <Td>
                     <Input
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      border='1px solid black'
+                      border='1px solid white'
+                      fontSize='sm'
                     />
                   </Td>
                 </Tr>
                 <Tr>
-                  <Td>Nomor Telepon</Td>
+                  <Td className='modal-row'>Nomor Telepon</Td>
                   <Td>
                     <Input
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      border='1px solid black'
+                      border='1px solid white'
+                      fontSize='sm'
                     />
                   </Td>
                 </Tr>
@@ -200,7 +202,7 @@ export const EditingModal = ({
                 objectFit='cover'
               />
             ) : (
-              <Avatar w='100px' h='100px' />
+              <Avatar w='80px' h='80px' />
             )}
             <Input
               type='file'
@@ -214,17 +216,20 @@ export const EditingModal = ({
                 variant='solid'
                 colorScheme='blue'
                 onClick={profilePicClicker}
+                fontSize='sm'
               >
                 Unggah Foto Profil
               </Button>
               <Button
                 mt='1em'
                 variant='solid'
-                bg='salmon'
+                color='white'
+                bg='red.500'
                 onClick={() => {
                   setProfilePic(null);
                   setImageUrl("");
                 }}
+                fontSize='sm'
               >
                 Hapus Foto Profil
               </Button>
@@ -232,11 +237,17 @@ export const EditingModal = ({
           </Flex>
         </ModalBody>
         <ModalFooter>
-          <Button variant='ghost' onClick={toggleEditing} mr='1em'>
+          <Button
+            variant='ghost'
+            color='white'
+            bg='red.500'
+            onClick={toggleEditing}
+            mr='1em'
+          >
             Batal
           </Button>
-          <Button colorScheme='blue' mr={3} onClick={save} w='5em'>
-            {isUploading ?  <Spinner/>: "Simpan"}
+          <Button colorScheme='blue' mr={3} onClick={() => void save()} w='5em'>
+            {isUploading ? <Spinner /> : "Simpan"}
           </Button>
         </ModalFooter>
       </ModalContent>
