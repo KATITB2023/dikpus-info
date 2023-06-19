@@ -172,7 +172,7 @@ export default function MentorAssignment() {
         </Select>
       </Flex>
 
-      <Flex flexDir={"column"} marginTop={10} gap='20'>
+      <Flex flexDir={"column"} marginTop={10} gap={10}>
         {filteredAssignment?.submissions.map((submissions) => {
           return (
             <Box key={submissions.id}>
@@ -186,7 +186,6 @@ export default function MentorAssignment() {
               <Flex
                 justifyContent='space-between'
                 flexDir={["column", "column", "column", "column", "row"]}
-                w='80%'
               >
                 <TableContainer>
                   <Table variant='unstyled'>
@@ -196,14 +195,14 @@ export default function MentorAssignment() {
                           <Tr key={submission.id}>
                             <Td>
                               {" "}
-                              <Text fontWeight='700' fontSize='xl'>
+                              <Text fontWeight='400' fontSize='lg'>
                                 {submission.student.firstName}{" "}
                                 {submission.student.lastName}
                               </Text>
                             </Td>
                             <Td>
                               {" "}
-                              <Text fontWeight='700' fontSize='xl'>
+                              <Text fontWeight='400' fontSize='lg'>
                                 {`Kelompok ${submission.student.group.group}`}
                               </Text>
                             </Td>
