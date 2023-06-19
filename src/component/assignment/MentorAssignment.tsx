@@ -49,7 +49,7 @@ export default function MentorAssignment({ session }: { session: Session }) {
     }
   }, [assignmentList, assignmentResult, selectedAssignment]);
 
-  const handleSelectAssignment = (e: any) => {
+  const handleSelectAssignment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAssignment(e.target.value);
   };
 
