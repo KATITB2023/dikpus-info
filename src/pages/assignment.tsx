@@ -1,19 +1,34 @@
-import { useEffect } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
-import { type NextPage } from "next";
+import type {
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType
+} from "next";
 import PageLayout from "~/layout";
 import MentorAssignment from "~/component/assignment/MentorAssignment";
 import AssignmentMenteeSidePage from "~/component/assignment/assignment-mentee-side";
 
-const Assignment: NextPage = () => {
-  const { data: session, status } = useSession();
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
 
-  useEffect(() => {
-    if (status === "unauthenticated") signIn();
-  });
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    };
+  }
 
-  const role = session?.user.role;
+  return {
+    props: { session }
+  };
+}
+
+export default function Assignment({
+  session
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const role = session.user.role;
 
   return (
     <PageLayout title='Tugas'>
@@ -24,6 +39,4 @@ const Assignment: NextPage = () => {
       )}
     </PageLayout>
   );
-};
-
-export default Assignment;
+}

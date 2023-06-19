@@ -12,14 +12,15 @@ import PageLayout from "~/layout";
 import { UserRole } from "@prisma/client";
 import { useRouter } from "next/router";
 import { getCsrfToken, signIn, useSession } from "next-auth/react";
-import type { GetServerSidePropsContext } from "next";
+import type {
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType
+} from "next";
 import { useState } from "react";
 
-interface SignInProps {
-  csrfToken: string;
-}
-
-export default function SignIn({ csrfToken }: SignInProps) {
+export default function SignIn({
+  csrfToken
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });

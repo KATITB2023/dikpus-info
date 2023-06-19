@@ -1,25 +1,35 @@
-import { useEffect } from "react";
-import { signIn, useSession } from "next-auth/react";
-import { type NextPage } from "next";
+import { getSession } from "next-auth/react";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { UserRole } from "@prisma/client";
 import { MenteeAttendance } from "~/component/attendance/MenteeAttendance";
 import { MentorAttendance } from "~/component/attendance/MentorAttendance";
 import PageLayout from "~/layout";
 
-const Attendance: NextPage = () => {
-  const { data: session, status } = useSession();
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
 
-  useEffect(() => {
-    if (status === "unauthenticated") signIn();
-  });
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    };
+  }
 
-  const role = session?.user.role;
+  return {
+    props: { session }
+  };
+}
+
+export default function Attendance({
+  session
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const role = session.user.role;
 
   return (
     <PageLayout title='Absen'>
       {role === UserRole.MENTOR ? <MentorAttendance /> : <MenteeAttendance />}
     </PageLayout>
   );
-};
-
-export default Attendance;
+}

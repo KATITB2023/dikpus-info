@@ -2,16 +2,27 @@ import { Flex, Heading, Box, IconButton } from "@chakra-ui/react";
 import { FiArrowLeft } from "react-icons/fi";
 import PageLayout from "~/layout";
 import ChangePasswordForm from "~/component/ChangePasswordForm";
-import { signIn, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { getSession } from "next-auth/react";
+import { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    };
+  }
+
+  return {
+    props: { session }
+  };
+}
 
 export default function ChangePassword() {
-  const { status } = useSession();
-
-  useEffect(() => {
-    if (status === "unauthenticated") signIn();
-  });
-
   return (
     <>
       <PageLayout title='Log In - KAT ITB 2023' titleOnly={true}>
