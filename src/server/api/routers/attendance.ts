@@ -268,8 +268,14 @@ export const attendanceRouter = createTRPCRouter({
           message: "Please provide a reason"
         });
       } else {
-        await ctx.prisma.attendanceReason.create({
-          data: {
+        await ctx.prisma.attendanceReason.upsert({
+          where: {
+            attendanceId: attendance.id
+          },
+          update: {
+            reason: input.reason
+          },
+          create: {
             attendanceId: attendance.id,
             reason: input.reason
           }
