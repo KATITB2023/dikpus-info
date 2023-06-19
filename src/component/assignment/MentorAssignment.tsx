@@ -10,8 +10,6 @@ import {
   Button,
   Text
 } from '@chakra-ui/react';
-import Head from 'next/head';
-import PageLayout from '~/layout';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { api } from '~/utils/api';
@@ -41,7 +39,7 @@ interface Student {
 
 interface Group {
   id: string;
-  name?: string;
+  group?: number;
 }
 
 export default function MentorAssignment() {
@@ -118,7 +116,7 @@ export default function MentorAssignment() {
                         <Td>
                           {" "}
                           <Text fontWeight='700' fontSize='xl'>
-                            Kelompok {submission.student.group.name}
+                            {"Kelompok " + submission.student.group.group}
                           </Text>
                         </Td>
                         <Td>
@@ -129,7 +127,7 @@ export default function MentorAssignment() {
                             </Button>
                           ) : (
                             <Text fontWeight='400'>
-                              tidak mengumpulkan tugas
+                              {"tidak mengumpulkan tugas"}
                             </Text>
                           )}
                         </Td>
@@ -141,7 +139,7 @@ export default function MentorAssignment() {
 
               <Box marginLeft={10}>
                 <Button variant='outline' bg={"#1C939A"} size='md' width='100%' marginTop={[5,5,5,5,0]}>
-                  Download Semua
+                  {"Download Semua"}
                   <DownloadIcon />
                 </Button>
               </Box>
