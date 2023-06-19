@@ -45,7 +45,6 @@ const TableButton = ({
   return (
     <Button
       bg={bg}
-      borderRadius={0}
       _hover={isDisabled || !onClick ? { bg: bg } : { opacity: 0.8 }}
       transition='all 0.2s ease-in-out'
       fontStyle='normal'

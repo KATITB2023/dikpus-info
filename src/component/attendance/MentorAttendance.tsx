@@ -254,7 +254,6 @@ export const MentorAttendance = () => {
       <HStack spacing={10}>
         <Select
           placeholder='Pilih event'
-          borderRadius={0}
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectEvent(e.target.value)}
@@ -276,7 +275,6 @@ export const MentorAttendance = () => {
         </Select>
         <Select
           placeholder='Pilih kelompok'
-          borderRadius={0}
           variant='filled'
           bg='#1C939A'
           onChange={(e) => handleSelectGroup(Number(e.target.value))}
@@ -318,7 +316,6 @@ export const MentorAttendance = () => {
                                   <>
                                     <Button
                                       variant='ghost'
-                                      borderRadius={0}
                                       _hover={{
                                         background: "#25263E"
                                       }}
@@ -330,7 +327,6 @@ export const MentorAttendance = () => {
                                     </Button>
                                     <Button
                                       variant='ghost'
-                                      borderRadius={0}
                                       _hover={{
                                         background: "#761300"
                                       }}
@@ -345,7 +341,6 @@ export const MentorAttendance = () => {
                                   <>
                                     <Button
                                       variant='ghost'
-                                      borderRadius={0}
                                       _hover={{
                                         background: "#25263E"
                                       }}
@@ -365,7 +360,6 @@ export const MentorAttendance = () => {
                               <Td>
                                 {editStatus?.[index1]?.[index2] ? (
                                   <Select
-                                    borderRadius={0}
                                     variant='filled'
                                     bg='#1C939A'
                                     id={`status-${index1}-${index2}`}

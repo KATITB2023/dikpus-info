@@ -64,7 +64,7 @@ export default function Navbar({ title, titleOnly }: Props) {
       flexDir='row'
       justifyContent='space-between'
       alignItems='center'
-      px={12}
+      px={{ base: 7, lg: 12 }}
       py={7}
     >
       <Text as='b' fontSize='2xl'>
@@ -73,7 +73,11 @@ export default function Navbar({ title, titleOnly }: Props) {
       {!titleOnly ? (
         <HStack spacing={8}>
           {/* idk, bodwars fontnya stick ke atas.. */}
-          <Heading fontSize='2xl' pt={1.5}>
+          <Heading
+            fontSize='2xl'
+            pt={1.5}
+            display={{ base: "none", sm: "block" }}
+          >
             {title}
           </Heading>
           <Menu isLazy>
