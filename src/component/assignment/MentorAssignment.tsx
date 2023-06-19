@@ -12,37 +12,10 @@ import {
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { api } from "~/utils/api";
+import { RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "./DownloadIcon";
 import { FolderEnum } from "~/utils/file";
 import { TRPCError } from "@trpc/server";
-
-interface Submissions {
-  description: string | null;
-  id: string;
-  title: string;
-  submission: Submission[];
-}
-
-interface Submission {
-  id: string;
-  filePath: string | null;
-  student: Student;
-}
-
-interface Student {
-  fakultas: string;
-  firstName: string;
-  group: Group;
-  id: string;
-  jurusan: string;
-  lastName: string;
-}
-
-interface Group {
-  id: string;
-  group?: number;
-}
 
 export default function MentorAssignment() {
   const { data: session } = useSession();
@@ -53,9 +26,9 @@ export default function MentorAssignment() {
   const generateURLForDownload =
     api.storage.generateURLForDownload.useMutation();
   const [selectedAssignment, setSelectedAssignment] = useState("");
-  const [filteredAssignment, setFilteredAssignment] = useState<Submissions[]>(
-    []
-  );
+  const [filteredAssignment, setFilteredAssignment] = useState<
+    RouterOutputs["assignment"]["getAssignmentResult"]
+  >();
 
   const handleSelectAssignment = (e: any) => {
     setSelectedAssignment(e.target.value);
@@ -89,13 +62,12 @@ export default function MentorAssignment() {
   useEffect(() => {
     if (assignmentResult) {
       if (selectedAssignment != "") {
-        assignmentResult.submissions
-          .filter((item) => item.title === selectedAssignment)
-          .map((item) => {
-            setFilteredAssignment([item]);
-          });
+        const filtered = assignmentResult.submissions.filter(
+          (item) => item.title === selectedAssignment
+        );
+        setFilteredAssignment({ submissions: filtered });
       } else {
-        setFilteredAssignment(assignmentResult.submissions);
+        setFilteredAssignment(assignmentResult);
       }
     }
   }, [assignments, assignmentResult, selectedAssignment]);
@@ -117,7 +89,7 @@ export default function MentorAssignment() {
       </Flex>
 
       <Flex flexDir={"column"} marginTop={10} gap='20'>
-        {filteredAssignment.map((item) => (
+        {filteredAssignment?.submissions.map((item) => (
           <Box>
             <Box marginBottom={5}>
               <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
