@@ -15,14 +15,12 @@ async function main() {
   const groupFileContent = fs.readFileSync(groupFilePath, {
     encoding: "utf-8"
   });
+
   parse(
     groupFileContent,
     {
       delimiter: ",",
-      columns: Object.keys({
-        number: new String(),
-        zoomLink: new String()
-      } as GroupRawData)
+      columns: ["number", "zoomLink"]
     },
     async (err, records: GroupRawData[]) => {
       if (err) console.error(err);
