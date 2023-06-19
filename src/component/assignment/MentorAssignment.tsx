@@ -60,11 +60,10 @@ export default function MentorAssignment() {
   };
 
   //batch download file
-  const batchDownload = (item : any) => {
-    console.log(item)
+  const batchDownload = async (item : any) => {
     for (let i = 0; i < item.submission.length; i++) {
       if (item.submission[i].filePath) {
-        downloadFile(item.submission[i].filePath);
+        await downloadFile(item.submission[i].filePath);
       }
     }
   }
