@@ -6,7 +6,7 @@ import type {
 } from "next";
 import PageLayout from "~/layout";
 import MentorAssignment from "~/component/assignment/MentorAssignment";
-import AssignmentMenteeSidePage from "~/component/assignment/assignment-mentee-side";
+import MenteeAssigment from "~/component/assignment/MenteeAssigment";
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);
@@ -32,11 +32,7 @@ export default function Assignment({
 
   return (
     <PageLayout title='Tugas'>
-      {role === UserRole.MENTOR ? (
-        <MentorAssignment />
-      ) : (
-        <AssignmentMenteeSidePage />
-      )}
+      {role === UserRole.MENTOR ? <MentorAssignment /> : <MenteeAssigment />}
     </PageLayout>
   );
 }

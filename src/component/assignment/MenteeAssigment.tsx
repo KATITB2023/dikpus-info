@@ -294,7 +294,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   );
 }
 
-export default function AssignmentMenteeSidePage() {
+export default function MenteeAssigment() {
   const { data: session } = useSession();
   const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
