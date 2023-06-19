@@ -393,10 +393,8 @@ export default function AssignmentMenteeSidePage() {
   }
 
   return (
-    <>
-      <Text textAlign='center'>
-        Yeay, untuk sekarang kamu tidak memiliki tugas yang harus dikerjakan
-      </Text>
-    </>
+    <Text textAlign='center'>
+      Yeay, untuk sekarang kamu tidak memiliki tugas yang harus dikerjakan
+    </Text>
   );
 }

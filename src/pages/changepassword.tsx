@@ -3,11 +3,14 @@ import { FiArrowLeft } from "react-icons/fi";
 import PageLayout from "~/layout";
 import ChangePasswordForm from "~/component/ChangePasswordForm";
 import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function ChangePassword() {
-  const { data: session } = useSession();
+  const { status } = useSession();
 
-  if (!session) return signIn();
+  useEffect(() => {
+    if (status === "unauthenticated") signIn();
+  });
 
   return (
     <>
