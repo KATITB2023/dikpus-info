@@ -32,7 +32,11 @@ export default function Assignment({
 
   return (
     <PageLayout title='Tugas'>
-      {role === UserRole.MENTOR ? <MentorAssignment /> : <MenteeAssigment />}
+      {role === UserRole.MENTOR ? (
+        <MentorAssignment session={session} />
+      ) : (
+        <MenteeAssigment session={session} />
+      )}
     </PageLayout>
   );
 }

@@ -14,19 +14,17 @@ import {
   Button,
   Text
 } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
-import { useState, useEffect, ChangeEvent } from "react";
-import { type RouterOutputs, api } from "~/utils/api";
-import DownloadIcon from "./DownloadIcon";
-import { FolderEnum } from "~/utils/file";
+import { useState, useEffect } from "react";
+import { Session } from "next-auth";
 import { TRPCError } from "@trpc/server";
+import { type RouterOutputs, api } from "~/utils/api";
+import DownloadIcon from "~/component/assignment/DownloadIcon";
+import { FolderEnum } from "~/utils/file";
 
-export default function MentorAssignment() {
-  const { data: session } = useSession();
-
+export default function MentorAssignment({ session }: { session: Session }) {
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
-    userId: session?.user.id ?? ""
+    userId: session.user.id
   });
 
   const assignmentList = assignmentListQuery.data;

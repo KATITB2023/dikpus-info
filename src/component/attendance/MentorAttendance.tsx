@@ -12,13 +12,14 @@ import {
   FormControl,
   Input,
   useToast
-} from '@chakra-ui/react';
-import { HiPencil, HiOutlineX, HiOutlineCheck } from 'react-icons/hi';
-import { useEffect, useState } from 'react';
-import { api } from '~/utils/api';
-import { AttendanceStatus } from '@prisma/client';
-import { TRPCError } from '@trpc/server';
-import { useSession } from 'next-auth/react';
+} from "@chakra-ui/react";
+import { HiPencil, HiOutlineX, HiOutlineCheck } from "react-icons/hi";
+import { useEffect, useState } from "react";
+import { api } from "~/utils/api";
+import { AttendanceStatus } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 
 interface AttendanceReason {
   reason?: string | null;
@@ -61,13 +62,11 @@ function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
   return editingArr;
 }
 
-export const MentorAttendance = () => {
-  const { data: session } = useSession();
+export const MentorAttendance = ({ session }: { session: Session }) => {
   const toast = useToast();
-
   const attendanceMutation = api.attendance.editAttendance.useMutation();
   const attendanceQuery = api.attendance.getAttendance.useQuery({
-    userId: session?.user.id ?? ''
+    userId: session.user.id
   });
   const eventsList = api.attendance.getEventList.useQuery().data;
 
@@ -77,7 +76,7 @@ export const MentorAttendance = () => {
   const [editStatus, setEditStatus] = useState<boolean[][]>(
     getEditingArr(attendanceList)
   );
-  const [eventFilter, setEventFilter] = useState<string>('');
+  const [eventFilter, setEventFilter] = useState<string>("");
   const [groupFilter, setGroupFilter] = useState<number>(0);
   const [groupList, setGroupList] = useState<number[]>([]);
 
@@ -122,7 +121,7 @@ export const MentorAttendance = () => {
   const filterAll = (group: number, event: string) => {
     let filtered: AttendanceEvent[];
 
-    if (event !== '') {
+    if (event !== "") {
       filtered = attendanceList?.filter(
         (attendance) => attendance.title === event
       );
@@ -154,8 +153,8 @@ export const MentorAttendance = () => {
 
   const handleClickSave = async (index1: number, index2: number) => {
     const temp = [...editStatus];
-    let alasan = '';
-    let status = '';
+    let alasan = "";
+    let status = "";
 
     try {
       alasan = (
@@ -176,10 +175,10 @@ export const MentorAttendance = () => {
 
       let changedStatus;
       switch (status) {
-        case 'HADIR':
+        case "HADIR":
           changedStatus = AttendanceStatus.HADIR;
           break;
-        case 'IZIN':
+        case "IZIN":
           changedStatus = AttendanceStatus.IZIN;
           break;
         default:
@@ -198,12 +197,12 @@ export const MentorAttendance = () => {
         });
 
         toast({
-          title: 'Success',
-          status: 'success',
+          title: "Success",
+          status: "success",
           description: result?.message,
           duration: 2000,
           isClosable: true,
-          position: 'top'
+          position: "top"
         });
 
         const temp = [...filteredList];
@@ -217,12 +216,12 @@ export const MentorAttendance = () => {
         if (!(err instanceof TRPCError)) throw err;
 
         toast({
-          title: 'Error',
-          status: 'error',
+          title: "Error",
+          status: "error",
           description: err.message,
           duration: 2000,
           isClosable: true,
-          position: 'top'
+          position: "top"
         });
       }
     }
@@ -235,12 +234,12 @@ export const MentorAttendance = () => {
       setEditStatus(temp);
     }
     toast({
-      title: 'Canceled',
-      status: 'error',
-      description: 'Change discarded',
+      title: "Canceled",
+      status: "error",
+      description: "Change discarded",
       duration: 2000,
       isClosable: true,
-      position: 'top'
+      position: "top"
     });
   };
 
@@ -297,7 +296,7 @@ export const MentorAttendance = () => {
                                       variant='ghost'
                                       borderRadius={0}
                                       _hover={{
-                                        background: '#25263E'
+                                        background: "#25263E"
                                       }}
                                       onClick={() =>
                                         void handleClickSave(index1, index2)
@@ -309,14 +308,14 @@ export const MentorAttendance = () => {
                                       variant='ghost'
                                       borderRadius={0}
                                       _hover={{
-                                        background: '#761300'
+                                        background: "#761300"
                                       }}
                                       onClick={() =>
                                         handleClickDiscard(index1, index2)
                                       }
                                     >
                                       <HiOutlineX color='white' />
-                                    </Button>{' '}
+                                    </Button>{" "}
                                   </>
                                 ) : (
                                   <>
@@ -324,7 +323,7 @@ export const MentorAttendance = () => {
                                       variant='ghost'
                                       borderRadius={0}
                                       _hover={{
-                                        background: '#25263E'
+                                        background: "#25263E"
                                       }}
                                       onClick={() =>
                                         handleClickEdit(index1, index2)
@@ -361,11 +360,11 @@ export const MentorAttendance = () => {
                                       placeholder='Masukkan alasan...'
                                       variant='flushed'
                                       id={`alasan-${index1}-${index2}`}
-                                      defaultValue={item.reason?.reason ?? ''}
+                                      defaultValue={item.reason?.reason ?? ""}
                                     />
                                   </FormControl>
                                 ) : (
-                                  item.reason?.reason ?? ''
+                                  item.reason?.reason ?? ""
                                 )}
                               </Td>
                             </Tr>

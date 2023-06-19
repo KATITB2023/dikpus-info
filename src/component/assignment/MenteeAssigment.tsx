@@ -27,6 +27,7 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
 import { TRPCError } from "@trpc/server";
+import { Session } from "next-auth";
 
 function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const toast = useToast();
@@ -294,11 +295,10 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   );
 }
 
-export default function MenteeAssigment() {
-  const { data: session } = useSession();
+export default function MenteeAssigment({ session }: { session: Session }) {
   const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
-    userId: session?.user.id ?? ""
+    userId: session.user.id
   }).data;
 
   const handleFilterAssignment = (e: any) => {
@@ -383,7 +383,7 @@ export default function MenteeAssigment() {
             <Box key={index}>
               <AssignmentBox
                 tugas={item}
-                userId={session?.user.id ?? ""}
+                userId={session.user.id}
               ></AssignmentBox>
             </Box>
           );

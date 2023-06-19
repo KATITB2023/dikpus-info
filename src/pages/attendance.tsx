@@ -29,7 +29,11 @@ export default function Attendance({
 
   return (
     <PageLayout title='Absen'>
-      {role === UserRole.MENTOR ? <MentorAttendance /> : <MenteeAttendance />}
+      {role === UserRole.MENTOR ? (
+        <MentorAttendance session={session} />
+      ) : (
+        <MenteeAttendance session={session} />
+      )}
     </PageLayout>
   );
 }
