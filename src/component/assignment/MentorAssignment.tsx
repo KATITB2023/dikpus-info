@@ -56,7 +56,7 @@ export default function MentorAssignment() {
     }
   }, [assignmentList, assignmentResult, selectedAssignment]);
 
-  const handleSelectAssignment = (e: any) => {
+  const handleSelectAssignment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAssignment(e.target.value);
   };
 
