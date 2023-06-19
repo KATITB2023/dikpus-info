@@ -16,7 +16,8 @@ export const storageRouter = createTRPCRouter({
       z.object({
         folder: z.union([
           z.literal(FolderEnum.PROFILE),
-          z.literal(FolderEnum.ASSIGNMENT)
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
         ]),
         filename: z.string()
       })
@@ -49,14 +50,14 @@ export const storageRouter = createTRPCRouter({
       z.object({
         folder: z.union([
           z.literal(FolderEnum.PROFILE),
-          z.literal(FolderEnum.ASSIGNMENT)
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
         ]),
         filename: z.string(),
         contentType: z.union([
           z.literal(AllowableFileTypeEnum.PDF),
           z.literal(AllowableFileTypeEnum.PNG),
-          z.literal(AllowableFileTypeEnum.JPEG),
-          z.literal(AllowableFileTypeEnum.JPG)
+          z.literal(AllowableFileTypeEnum.JPEG)
         ])
       })
     )
@@ -94,7 +95,8 @@ export const storageRouter = createTRPCRouter({
       z.object({
         folder: z.union([
           z.literal(FolderEnum.PROFILE),
-          z.literal(FolderEnum.ASSIGNMENT)
+          z.literal(FolderEnum.ASSIGNMENT),
+          z.literal(FolderEnum.MATERIAL)
         ]),
         filename: z.string()
       })

@@ -14,8 +14,10 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/next-js": "^2.1.4",
     "@chakra-ui/react": "^2.7.0",
+    "@chakra-ui/system": "^2.5.8",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@google-cloud/storage": "^6.11.0",
@@ -39,8 +41,9 @@
     "@types/uuid": "^9.0.2",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
+    "csv-parse": "^5.4.0",
     "framer-motion": "^10.12.16",
-    "next": "^13.4.2",
+    "next": "13.3.4",
     "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
