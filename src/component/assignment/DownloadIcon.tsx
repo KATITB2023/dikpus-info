@@ -3,14 +3,6 @@ import { Button } from '@chakra-ui/react';
 
 export default function DownloadIcon() {
   return (
-    <Button
-      variant='unstyled'
-      colorScheme='teal'
-      size='md'
-      width='100%'
-      textAlign='initial'
-      marginLeft={3}
-    >
       <svg
         width='36'
         height='36'
@@ -23,6 +15,5 @@ export default function DownloadIcon() {
           fill='white'
         />
       </svg>
-    </Button>
   );
 }

@@ -17,88 +17,70 @@ import { useState, useEffect } from 'react';
 import { api } from '~/utils/api';
 import DownloadIcon from './DownloadIcon';
 
+interface Submissions {
+  description: string | null;
+  id : string;
+  title: string;
+  submission: Submission[];
+}
+
+interface Submission {
+  id: string;
+  filePath: string | null;
+  student : Student;
+}
+
+interface Student {
+  fakultas: string;
+  firstName: string;
+  group: Group;
+  id: string;
+  jurusan: string;
+  lastName: string;
+}
+
+interface Group {
+  id: string;
+  name?: string;
+}
+
 export default function MentorAssignment() {
-  //dummy data
-  //TODO : change with actual TRPC
-
-  //dummy data still not accurate with the response object
-  //will tweak later
-
-  const [assignment, setAssignment] = useState([
-    {
-      id: 1,
-      name: 'Tugas Mengenali Diri Sendiri'
-    },
-    {
-      id: 2,
-      name: 'Tugas Menjahili Orang'
-    },
-    {
-      id: 3,
-      name: 'Tugas Dikpus Nyusahin'
-    }
-  ]);
-
-  const [group, setGroup] = useState([
-    {
-      id: 1,
-      name: 'Kelompok 1'
-    },
-    {
-      id: 2,
-      name: 'Kelompok 2'
-    },
-    {
-      id: 3,
-      name: 'Kelompok 3'
-    }
-  ]);
-
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: 'Andhika Arta',
-      kelompok: 'Z',
-      isSubmitted: true
-    },
-    {
-      id: 2,
-      name: 'Malakan Bakbak',
-      kelompok: 'X',
-      isSubmitted: false
-    },
-    {
-      id: 3,
-      name: 'Testing',
-      kelompok: 'Z',
-      isSubmitted: true
-    }
-  ]);
-
 
   const { data: session } = useSession();
   const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentResult = api.assignment.getAssignmentResult.useQuery({userId: session?.user.id ?? ''}).data;
   
   const [selectedAssignment, setSelectedAssignment] = useState('');
-  const [filteredAssignment, setFilteredAssignment] = useState([]);
+  const [filteredAssignment, setFilteredAssignment] = useState<Submissions[]>([]);
 
   const handleSelectAssignment = (e: any) => {
     setSelectedAssignment(e.target.value);
   };
 
   useEffect(() => {
-    console.log()
-  }, [assignments, assignmentResult]);
+    if(assignmentResult) {
+      if(selectedAssignment != '') {
+        
+        assignmentResult.submissions.filter((item) => item.title === selectedAssignment).map((item) => {
+          
+          setFilteredAssignment([item]);
+        }
+        )
+      }
+      else {
+        setFilteredAssignment(assignmentResult.submissions);
+      }
+    }
+  }, [assignments, assignmentResult, selectedAssignment]);
 
   return (
     <Box>
-      <Flex gap={10} w={['50%', '40%', '30%', '20%', '15%']}>
+      <Flex gap={10} w={["50%", "40%", "30%", "20%", "15%"]}>
         <Select
           placeholder='Pilih tugas'
           variant='filled'
-          bg={'#1C939A'}
-          color={'white'}
+          bg={"#1C939A"}
+          color={"white"}
           onChange={handleSelectAssignment}
         >
           {assignments?.map((item) => (
@@ -107,42 +89,44 @@ export default function MentorAssignment() {
         </Select>
       </Flex>
 
-      <Flex flexDir={'column'} marginTop={10} gap='20'>
-        {assignment.map((item) => (
+      <Flex flexDir={"column"} marginTop={10} gap='20'>
+        {filteredAssignment.map((item) => (
           <Box>
             <Box marginBottom={5}>
-              <Text as='b' fontSize={['2xl', '2xl', '3xl']}>
-                {' '}
-                {item.name}{' '}
+              <Text as='b' fontSize={["2xl", "2xl", "3xl"]}>
+                {" "}
+                {item.title}{" "}
               </Text>
             </Box>
 
             <Flex
               justifyContent='space-between'
-              flexDir={['column', 'column', 'column', 'column', 'row']}
+              flexDir={["column", "column", "column", "column", "row"]}
               w='80%'
             >
               <TableContainer>
                 <Table variant='unstyled'>
                   <Tbody>
-                    {students.map((student) => (
+                    {item.submission.map((submission) => (
                       <Tr>
                         <Td>
-                          {' '}
+                          {" "}
                           <Text fontWeight='700' fontSize='xl'>
-                            {student.name}{' '}
+                            {submission.student.firstName + " " + submission.student.lastName}{" "}
                           </Text>
                         </Td>
                         <Td>
-                          {' '}
+                          {" "}
                           <Text fontWeight='700' fontSize='xl'>
-                            Kelompok {student.kelompok}
+                            Kelompok {submission.student.group.name}
                           </Text>
                         </Td>
                         <Td>
-                          {' '}
-                          {student.isSubmitted ? (
-                            <DownloadIcon />
+                          {" "}
+                          {submission.filePath ? (
+                            <Button >
+                              <DownloadIcon />
+                            </Button>
                           ) : (
                             <Text fontWeight='400'>
                               tidak mengumpulkan tugas
@@ -156,9 +140,9 @@ export default function MentorAssignment() {
               </TableContainer>
 
               <Box marginLeft={10}>
-                <Button variant='outline' bg={'#1C939A'} size='md' width='100%'>
-                  Download Semua   
-                  <DownloadIcon/>
+                <Button variant='outline' bg={"#1C939A"} size='md' width='100%' marginTop={[5,5,5,5,0]}>
+                  Download Semua
+                  <DownloadIcon />
                 </Button>
               </Box>
             </Flex>
