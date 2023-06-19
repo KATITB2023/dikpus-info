@@ -19,7 +19,6 @@ export const Redirect = () => {
           bg='#1C939A'
           color='white'
           textTransform='capitalize'
-          borderRadius={0}
           _hover={{ opacity: 0.8 }}
           transition='all 0.2 ease-in-out'
         >

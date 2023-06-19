@@ -27,6 +27,18 @@ export default function SignIn({
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
+  const handleLoggedIn = () => {
+    toast({
+      title: "Success",
+      description: "Successfully logged in!",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+      position: "top"
+    });
+    handleRedirect();
+  }
+
   const handleRedirect = () => {
     const role = session?.user.role;
     role === UserRole.MENTOR
@@ -57,7 +69,7 @@ export default function SignIn({
     });
 
     if (res?.error) handleError(res?.error);
-    if (res?.url) handleRedirect();
+    if (res?.url) handleLoggedIn();
     setLoading(false);
   };
 
