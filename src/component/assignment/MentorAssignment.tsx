@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -15,12 +16,13 @@ import {
   Text
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { Session } from "next-auth";
 import { TRPCError } from "@trpc/server";
 import { type RouterOutputs, api } from "~/utils/api";
 import DownloadIcon from "~/component/assignment/DownloadIcon";
 import { FolderEnum } from "~/utils/file";
 import { useSession } from "next-auth/react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export default function MentorAssignment() {
   const { data: session } = useSession();
@@ -56,7 +58,12 @@ export default function MentorAssignment() {
     setSelectedAssignment(e.target.value);
   };
 
-  const downloadFile = async (filePath: string) => {
+  const downloadFile = async (
+    title: string,
+    firstName: string,
+    lastName: string | null,
+    filePath: string
+  ) => {
     try {
       const { url } = await generateURLForDownload.mutateAsync({
         folder: FolderEnum.ASSIGNMENT,
@@ -69,7 +76,9 @@ export default function MentorAssignment() {
 
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = filePath;
+      link.download = `${title} ${firstName} ${
+        lastName ? lastName : ""
+      }${filePath.slice(filePath.lastIndexOf("."))}`;
 
       document.body.appendChild(link);
       link.click();
@@ -87,11 +96,40 @@ export default function MentorAssignment() {
   ) => {
     // might be bad , soalnya nunggu satu satu.
     // kalo mentor banyak banget download bareng problem
+    const zip = new JSZip();
+    let count = 0;
+    const zipFileName = submissions.title + ".zip";
+    const filesUrl: string[] = [];
+    const fileNames: string[] = [];
     for (const submission of submissions.submission) {
       if (submission.filePath) {
-        await downloadFile(submission.filePath);
+        // await downloadFile(submission.filePath);
+        const { url } = await generateURLForDownload.mutateAsync({
+          folder: FolderEnum.ASSIGNMENT,
+          filename: submission.filePath
+        });
+        filesUrl.push(url);
+        fileNames.push(
+          `${submissions.title} ${submission.student.firstName} ${
+            submission.student.lastName ? submission.student.lastName : ""
+          }${submission.filePath.slice(submission.filePath.lastIndexOf("."))}`
+        );
       }
     }
+
+    filesUrl.forEach(async function (url, i) {
+      console.log(i);
+      const name = fileNames[i];
+      const file = await fetch(url);
+      const fileBlob = await file.blob();
+      zip.file(name!, fileBlob, { binary: true });
+      count++;
+      if (count === filesUrl.length) {
+        void zip.generateAsync({ type: "blob" }).then((content) => {
+          saveAs(content, zipFileName);
+        });
+      }
+    });
   };
 
   return (
@@ -164,7 +202,12 @@ export default function MentorAssignment() {
                                 <Button
                                   bg='#1C939A'
                                   onClick={() =>
-                                    downloadFile(submission.filePath!)
+                                    downloadFile(
+                                      submissions.title,
+                                      submission.student.firstName,
+                                      submission.student.lastName,
+                                      submission.filePath!
+                                    )
                                   }
                                   _hover={{
                                     opacity: 0.8
