@@ -22,6 +22,7 @@ import { useSession } from 'next-auth/react';
 
 /* TODO:
     - urus alasan kalo udah ada endpointnya
+    - ganti studentId ke studentnama
   */
 
 interface AttendanceData {
@@ -47,9 +48,9 @@ interface AttendanceEvent {
 function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
   if (attendanceList === undefined) return [];
 
-  let editingArr: boolean[][] = [];
+  const editingArr: boolean[][] = [];
   attendanceList.forEach((event) => {
-    let currEvent: boolean[] = [];
+    const currEvent: boolean[] = [];
     event.attendances.forEach(() => {
       currEvent.push(false);
     });
@@ -88,7 +89,7 @@ export const MentorAttendance = () => {
   useEffect(() => {
     setFilteredList([...attendanceList]);
 
-    let temp: number[] = [];
+    const temp: number[] = [];
     attendanceList.forEach((event) => {
       event.attendances.forEach((attendance) => {
         if (!temp.includes(attendance.student.group.group)) {
@@ -143,7 +144,7 @@ export const MentorAttendance = () => {
   };
 
   const handleClickEdit = (index1: number, index2: number) => {
-    let temp = [...editStatus];
+    const temp = [...editStatus];
     if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
       (temp[index1] as boolean[])[index2] = true;
       setEditStatus(temp);
@@ -151,19 +152,19 @@ export const MentorAttendance = () => {
   };
 
   const handleClickSave = async (index1: number, index2: number) => {
-    let temp = [...editStatus];
+    const temp = [...editStatus];
     let alasan = '';
     let status = '';
 
     try {
       alasan = (
         document.getElementById(
-          'alasan-' + index1 + '-' + index2
+          `alasan-${index1}-${index2}`
         ) as HTMLInputElement
       ).value;
       status = (
         document.getElementById(
-          'status-' + index1 + '-' + index2
+          `status-${index1}-${index2}`
         ) as HTMLSelectElement
       ).value;
     } catch (e) {}
@@ -187,8 +188,9 @@ export const MentorAttendance = () => {
       try {
         const result = await attendanceMutation.mutateAsync({
           attendanceId: (
-            ((filteredList as AttendanceEvent[])[index1] as AttendanceEvent)
-              .attendances[index2] as AttendanceData
+            (filteredList[index1] as AttendanceEvent).attendances[
+              index2
+            ] as AttendanceData
           ).id,
           kehadiran: changedStatus
         });
@@ -202,9 +204,9 @@ export const MentorAttendance = () => {
           position: 'top'
         });
 
-        let temp = [...filteredList];
+        const temp = [...filteredList];
         (
-          ((temp as AttendanceEvent[])[index1] as AttendanceEvent).attendances[
+          (temp[index1] as AttendanceEvent).attendances[
             index2
           ] as AttendanceData
         ).status = changedStatus;
@@ -225,7 +227,7 @@ export const MentorAttendance = () => {
   };
 
   const handleClickDiscard = (index1: number, index2: number) => {
-    let temp = [...editStatus];
+    const temp = [...editStatus];
     if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
       (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
@@ -251,8 +253,8 @@ export const MentorAttendance = () => {
           onChange={(e) => handleSelectEvent(e.target.value)}
         >
           {eventsList
-            ? eventsList.map((event) => {
-                return <option>{event.title}</option>;
+            ? eventsList.map((event, index: number) => {
+                return <option key={index}>{event.title}</option>;
               })
             : null}
         </Select>
@@ -264,8 +266,8 @@ export const MentorAttendance = () => {
           onChange={(e) => handleSelectGroup(Number(e.target.value))}
         >
           {groupList
-            ? groupList.map((group) => {
-                return <option>{group}</option>;
+            ? groupList.map((group, index: number) => {
+                return <option key={index}>{group}</option>;
               })
             : null}
         </Select>
@@ -274,15 +276,19 @@ export const MentorAttendance = () => {
         {filteredList
           ? filteredList.map((event, index1) => {
               return (
-                <VStack alignItems='flex-start' spacing={5}>
+                <VStack
+                  alignItems='flex-start'
+                  spacing={5}
+                  key={`${index1}-${event.title}`}
+                >
                   <Heading size='lg'>{event.title}</Heading>
                   <TableContainer>
                     <Table variant='unstyled'>
                       <Tbody>
                         {event.attendances.map((item, index2) => {
                           return (
-                            <Tr>
-                              <Td key={index2}>
+                            <Tr key={index2}>
+                              <Td>
                                 {editStatus?.[index1]?.[index2] ? (
                                   <>
                                     <Button
@@ -292,7 +298,7 @@ export const MentorAttendance = () => {
                                         background: '#25263E'
                                       }}
                                       onClick={() =>
-                                        handleClickSave(index1, index2)
+                                        void handleClickSave(index1, index2)
                                       }
                                     >
                                       <HiOutlineCheck color='white' />
@@ -335,7 +341,7 @@ export const MentorAttendance = () => {
                                     borderRadius={0}
                                     variant='filled'
                                     bg='#1C939A'
-                                    id={'status-' + index1 + '-' + index2}
+                                    id={`status-${index1}-${index2}`}
                                     defaultValue={item.status}
                                   >
                                     <option>HADIR</option>
@@ -352,7 +358,7 @@ export const MentorAttendance = () => {
                                     <Input
                                       placeholder='Masukkan alasan...'
                                       variant='flushed'
-                                      id={'alasan-' + index1 + '-' + index2}
+                                      id={`alasan-${index1}-${index2}`}
                                       defaultValue={'Dummy alasan'}
                                     />
                                   </FormControl>
