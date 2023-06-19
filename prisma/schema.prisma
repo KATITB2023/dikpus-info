@@ -64,7 +64,7 @@ model Student {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   gender      Gender?
   firstName   String   @db.VarChar(50)
-  lastName    String   @db.VarChar(50)
+  lastName    String?  @db.VarChar(50)
   fakultas    String   @db.VarChar(50)
   phoneNumber String?  @unique @db.VarChar(15)
   imagePath   String?
