@@ -21,6 +21,7 @@ import { getDate, getTwoTime, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
+import Link from "next/link";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -178,8 +179,12 @@ const TableRow = ({
             bg='#1C939A'
             onClick={() => void downloadFile(attendance.event.materialPath)}
           />
+        ) : attendance.event.youtubeLink !== null ? (
+          <Link href={attendance.event.youtubeLink} target='_blank'>
+            <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
+          </Link>
         ) : (
-          <></>
+          <>-</>
         )}
       </Td>
       <Td>

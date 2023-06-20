@@ -11,12 +11,13 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { AiOutlineHome } from "react-icons/ai";
-import { BsPeopleFill } from "react-icons/bs";
+import { BsPeopleFill, BsCameraVideoFill } from "react-icons/bs";
 import {
   MdOutlineFolderCopy,
   MdOutlineLogout,
   MdPassword
 } from "react-icons/md";
+import { FaYoutube } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { signOut, useSession } from "next-auth/react";
 
@@ -39,6 +40,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         icon: <MdOutlineFolderCopy size={20} />
       },
       {
+        name: "Live",
+        href: "/live",
+        icon: <FaYoutube size={20} />
+      },
+      {
         name: "Password",
         href: "/changepassword",
         icon: <MdPassword size={20} />
@@ -52,13 +58,17 @@ export default function Navbar({ title, titleOnly }: Props) {
         icon: <MdOutlineFolderCopy size={20} />
       },
       {
+        name: "Zoom",
+        href: "/changezoom",
+        icon: <BsCameraVideoFill size={20} />
+      },
+      {
         name: "Password",
         href: "/changepassword",
         icon: <MdPassword size={20} />
       }
     ]
   };
-  // TODO ganti logo dikpus
 
   return (
     <Flex
@@ -71,7 +81,6 @@ export default function Navbar({ title, titleOnly }: Props) {
       <Img src='/logotype.png' alt='logo' height={16} />
       {!titleOnly ? (
         <HStack spacing={8}>
-          {/* idk, bodwars fontnya stick ke atas.. */}
           <Heading
             fontSize='2xl'
             pt={1.5}

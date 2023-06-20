@@ -119,7 +119,7 @@ export const profileRouter = createTRPCRouter({
     }),
 
   getEmbedYoutubeLink: studentProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.embedYoutube.findMany({
+    return await ctx.prisma.embedYoutube.findFirst({
       select: {
         liveLink: true,
         fallbackLink: true
