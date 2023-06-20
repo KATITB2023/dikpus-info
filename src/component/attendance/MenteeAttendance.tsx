@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Thead,
@@ -12,18 +12,19 @@ import {
   Flex,
   Text,
   useToast,
-  Spinner
+  Spinner,
+  Select
 } from "@chakra-ui/react";
 import { BiDownload } from "react-icons/bi";
 import { type IconType } from "react-icons/lib";
 import { api } from "~/utils/api";
-import { getDate, getTwoTime, validTime } from "~/utils/date";
+import { getDate, getDateList, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 
-interface Attendance {
+export interface Attendance {
   status: AttendanceStatus;
   event: Event;
 }
@@ -90,10 +91,10 @@ const TableRow = ({
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
   const tanggal = getDate(attendance.event.startTime);
-  const waktu = getTwoTime(
-    attendance.event.startTime,
-    attendance.event.endTime
-  );
+  // const waktu = getTwoTime(
+  //   attendance.event.startTime,
+  //   attendance.event.endTime
+  // );
   const canAbsen = validTime(
     attendance.event.startTime,
     attendance.event.endTime
@@ -169,7 +170,7 @@ const TableRow = ({
   return (
     <Tr>
       <Td>{tanggal}</Td>
-      <Td>{waktu}</Td>
+      {/* <Td>{waktu}</Td> */}
       <Td>{attendance.event.title}</Td>
       <Td>
         {attendance.event.materialPath !== "" ? (
@@ -185,7 +186,7 @@ const TableRow = ({
       </Td>
       <Td>
         {attendance.event.youtubeLink !== null ? (
-          <Link href={attendance.event.youtubeLink} target='_blank'>
+          <Link href={attendance.event.youtubeLink ?? "/"} target='_blank'>
             <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
           </Link>
         ) : (
@@ -206,7 +207,7 @@ const TableRow = ({
             />
           )
         ) : (
-          <TableButton text={waktu} bg='#E8553E' isDisabled />
+          <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
         )}
       </Td>
     </Tr>
@@ -219,43 +220,97 @@ export const MenteeAttendance = () => {
     userId: session?.user.id ?? ""
   });
 
-  const eventList = eventQuery?.data;
-  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Video", "Absen"];
+  const [eventList, setEventList] = useState<Attendance[] | undefined>(
+    eventQuery?.data
+  );
+
+  const dateList = getDateList(eventQuery?.data);
+  const tableHeader = ["Tanggal", "Topik", "Materi", "Video", "Absen"];
+
+  const handleSelect = (date: string) => {
+    if (date === "") {
+      setEventList(eventQuery?.data);
+      return;
+    }
+
+    const filteredEvent = eventQuery?.data?.filter((event) => {
+      const eventDate = getDate(event.event.startTime);
+      return eventDate === date;
+    });
+
+    setEventList(filteredEvent);
+  };
+
+  useEffect(() => {
+    setEventList(
+      eventQuery?.data?.sort((a: Attendance, b: Attendance) => {
+        const dateA = getDate(a.event.startTime);
+        const dateB = getDate(b.event.startTime);
+
+        // whygini?LINTERCUK
+        if (dateA < dateB) return 1;
+        if (dateA > dateB) return -1;
+        return a.event.startTime > b.event.startTime ? 1 : -1;
+      })
+    );
+  }, [eventQuery?.data]);
 
   return (
-    <TableContainer>
-      <Table variant='unstyled'>
-        <Thead borderBottom='1px solid'>
-          <Tr>
-            {tableHeader.map((header, index) => {
-              return (
-                <Th fontFamily='SomarRounded-Bold' key={index}>
-                  {header}
-                </Th>
-              );
-            })}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {eventList && eventList?.length > 0 ? (
-            eventList.map((item: Attendance, index: number) => {
-              return (
-                <TableRow
-                  attendance={item}
-                  userId={session?.user.id ?? ""}
-                  key={index}
-                />
-              );
-            })
-          ) : (
+    <Flex flexDir='column' gap={10}>
+      <Select
+        placeholder='Pilih tanggal'
+        variant='filled'
+        bg='#1C939A'
+        onChange={(e) => handleSelect(e.target.value)}
+        transition='all 0.2s ease-in-out'
+        _hover={{
+          opacity: 0.8
+        }}
+        css={{
+          option: {
+            background: "#1C939A"
+          }
+        }}
+        w='fit-content'
+      >
+        {dateList
+          ? dateList.map((date, index) => <option key={index}>{date}</option>)
+          : null}
+      </Select>
+      <TableContainer>
+        <Table variant='unstyled'>
+          <Thead borderBottom='1px solid'>
             <Tr>
-              <Td colSpan={5} textAlign='center'>
-                Eventnya belum ada nih, coba cek lagi nanti ya!
-              </Td>
+              {tableHeader.map((header, index) => {
+                return (
+                  <Th fontFamily='SomarRounded-Bold' key={index}>
+                    {header}
+                  </Th>
+                );
+              })}
             </Tr>
-          )}
-        </Tbody>
-      </Table>
-    </TableContainer>
+          </Thead>
+          <Tbody>
+            {eventList && eventList?.length > 0 ? (
+              eventList.map((item: Attendance, index: number) => {
+                return (
+                  <TableRow
+                    attendance={item}
+                    userId={session?.user.id ?? ""}
+                    key={index}
+                  />
+                );
+              })
+            ) : (
+              <Tr>
+                <Td colSpan={6} textAlign='center'>
+                  Eventnya belum ada nih, coba cek lagi nanti ya!
+                </Td>
+              </Tr>
+            )}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Flex>
   );
 };

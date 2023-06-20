@@ -25,7 +25,7 @@ export default function PageLayout({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
       >
-        <Box px={{ base: 7, lg: 12 }} py={5}>
+        <Box px={{ base: 7, lg: 12 }} pt={5} pb={10}>
           {children}
         </Box>
       </motion.div>

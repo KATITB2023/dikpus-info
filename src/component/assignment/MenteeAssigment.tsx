@@ -313,10 +313,13 @@ function AssignmentBox({
 
 export default function MenteeAssigment() {
   const { data: session } = useSession();
-  const assignments = api.assignment.getAssignmentNameList.useQuery().data;
   const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
     userId: session?.user.id ?? ""
   }).data;
+
+  const assignments = assignmentsDetails?.map((item) => {
+    return item.title;
+  });
 
   const handleFilterAssignment: React.MouseEventHandler<HTMLButtonElement> = (
     e
@@ -342,6 +345,19 @@ export default function MenteeAssigment() {
       });
     }
   };
+
+  assignmentsDetails?.sort((a, b) => {
+    const submittedA =
+      a.submission[0] !== undefined && a.submission[0].filePath !== null;
+    const submittedB =
+      b.submission[0] !== undefined && b.submission[0].filePath !== null;
+
+    if (submittedA && !submittedB) return 1;
+    if (!submittedA && submittedB) return -1;
+    return (
+      new Date(a.deadline ?? 0).getTime() - new Date(b.deadline ?? 0).getTime()
+    );
+  });
 
   if (assignments && assignments.length > 0) {
     return (
@@ -384,7 +400,7 @@ export default function MenteeAssigment() {
                 return (
                   <MenuItem
                     key={index}
-                    name={item.title}
+                    name={item}
                     bg='#1C939A'
                     w='100%'
                     _hover={{ opacity: 0.7, bg: "#12122E" }}
@@ -392,7 +408,7 @@ export default function MenteeAssigment() {
                     px={"20px"}
                     onClick={handleFilterAssignment}
                   >
-                    {item.title}
+                    {item}
                   </MenuItem>
                 );
               })}
