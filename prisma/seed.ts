@@ -1,17 +1,22 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 import { parse } from "csv-parse";
+import { hash } from "bcrypt";
 import path from "path";
 import fs from "fs";
 
 const prisma = new PrismaClient();
 
-interface GroupRawData {
-  number: string;
-  zoomLink: string;
+interface RawData {
+  nim: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  fakultas: string;
+  rawGroup: string;
 }
 
 async function main() {
-  const groupFilePath = path.resolve(__dirname, "data/group.csv");
+  const groupFilePath = path.resolve(__dirname, "data/student.csv");
   const groupFileContent = fs.readFileSync(groupFilePath, {
     encoding: "utf-8"
   });
@@ -20,21 +25,45 @@ async function main() {
     groupFileContent,
     {
       delimiter: ",",
-      columns: ["number", "zoomLink"]
+      columns: [
+        "nim",
+        "password",
+        "firstName",
+        "lastName",
+        "fakultas",
+        "rawGroup"
+      ]
     },
-    async (err, records: GroupRawData[]) => {
+    async (err, records: RawData[]) => {
       if (err) console.error(err);
-      const groups = await Promise.all(
+      const mentor = await Promise.all(
         records.map(async (record) => {
-          return await prisma.group.create({
+          const group = await prisma.group.findUnique({
+            where: {
+              group: parseInt(record.rawGroup)
+            }
+          });
+
+          if (!group) throw new Error(`Group ${record.rawGroup} not found`);
+
+          return await prisma.user.create({
             data: {
-              group: parseInt(record.number),
-              zoomLink: record.zoomLink
+              nim: record.nim,
+              passwordHash: await hash(record.password, 10),
+              role: UserRole.STUDENT,
+              student: {
+                create: {
+                  firstName: record.firstName,
+                  lastName: record.lastName,
+                  fakultas: record.fakultas,
+                  groupId: group.id
+                }
+              }
             }
           });
         })
       );
-      console.log(groups);
+      console.log(mentor);
     }
   );
 }

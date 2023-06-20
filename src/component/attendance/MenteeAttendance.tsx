@@ -21,6 +21,7 @@ import { getDate, getTwoTime, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
+import Link from "next/link";
 
 interface Attendance {
   status: AttendanceStatus;
@@ -171,12 +172,25 @@ const TableRow = ({
       <Td>{waktu}</Td>
       <Td>{attendance.event.title}</Td>
       <Td>
-        <TableButton
-          icon={BiDownload}
-          text='Download'
-          bg='#1C939A'
-          onClick={() => void downloadFile(attendance.event.materialPath)}
-        />
+        {attendance.event.materialPath !== "" ? (
+          <TableButton
+            icon={BiDownload}
+            text='Download'
+            bg='#1C939A'
+            onClick={() => void downloadFile(attendance.event.materialPath)}
+          />
+        ) : (
+          <>-</>
+        )}
+      </Td>
+      <Td>
+        {attendance.event.youtubeLink !== null ? (
+          <Link href={attendance.event.youtubeLink} target='_blank'>
+            <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
+          </Link>
+        ) : (
+          <>-</>
+        )}
       </Td>
       <Td>
         {alreadyAbsen ? (
@@ -206,7 +220,7 @@ export const MenteeAttendance = () => {
   });
 
   const eventList = eventQuery?.data;
-  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Absen"];
+  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Video", "Absen"];
 
   return (
     <TableContainer>

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   createTRPCRouter,
+  mentorProcedure,
   protectedProcedure,
   studentProcedure
 } from "~/server/api/trpc";
@@ -114,6 +115,109 @@ export const profileRouter = createTRPCRouter({
 
       return {
         message: "Change password successful"
+      };
+    }),
+
+  getEmbedYoutubeLink: studentProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.embedYoutube.findFirst({
+      select: {
+        liveLink: true,
+        fallbackLink: true
+      }
+    });
+  }),
+
+  getZoomLink: mentorProcedure
+    .input(z.object({ userId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const mentor = await ctx.prisma.mentor.findFirst({
+        where: {
+          userId: input.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!mentor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Mentor not found"
+        });
+      }
+
+      const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
+        where: {
+          mentorId: mentor.id
+        },
+        select: {
+          groupId: true
+        }
+      });
+
+      if (!mentorGroup) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Mentor group not found"
+        });
+      }
+
+      return await ctx.prisma.group.findFirst({
+        where: {
+          id: mentorGroup.groupId
+        },
+        select: {
+          zoomLink: true
+        }
+      });
+    }),
+
+  editZoomLink: mentorProcedure
+    .input(z.object({ userId: z.string().uuid(), zoomLink: z.string().url() }))
+    .mutation(async ({ ctx, input }) => {
+      const mentor = await ctx.prisma.mentor.findFirst({
+        where: {
+          userId: input.userId
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!mentor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Mentor not found"
+        });
+      }
+
+      const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
+        where: {
+          mentorId: mentor.id
+        },
+        select: {
+          groupId: true
+        }
+      });
+
+      if (!mentorGroup) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Mentor group not found"
+        });
+      }
+
+      await ctx.prisma.group.update({
+        where: {
+          id: mentorGroup.groupId
+        },
+        data: {
+          zoomLink: input.zoomLink
+        }
+      });
+
+      return {
+        message: "Zoom link updated"
       };
     })
 });

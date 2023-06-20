@@ -55,8 +55,6 @@ export const EditingModal = ({
 
   const profileMutation = api.profile.editProfile.useMutation();
   const generateURLForUpload = api.storage.generateURLForUpload.useMutation();
-  const generateURLForDownload =
-    api.storage.generateURLForDownload.useMutation();
 
   const router = useRouter();
 
@@ -75,13 +73,9 @@ export const EditingModal = ({
           contentType: AllowableFileTypeEnum.PNG
         });
 
-      const { url: downloadURL } = await generateURLForDownload.mutateAsync({
-        folder: FolderEnum.PROFILE,
-        filename: sanitizedFilename
-      });
-
       await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
-      newImageUrl = downloadURL;
+
+      newImageUrl = sanitizedFilename;
     } else {
       newImageUrl = imageUrl;
     }
