@@ -1,9 +1,9 @@
-import { createTRPCRouter } from '~/server/api/trpc';
-import { assignmentRouter } from './routers/assignment';
-import { attendanceRouter } from './routers/attendance';
-import { profileRouter } from './routers/profile';
-import { storageRouter } from './routers/storage';
-import { utilityRouter } from './routers/utility';
+import { createTRPCRouter } from "~/server/api/trpc";
+import { assignmentRouter } from "~/server/api/routers/assignment";
+import { attendanceRouter } from "~/server/api/routers/attendance";
+import { profileRouter } from "~/server/api/routers/profile";
+import { storageRouter } from "~/server/api/routers/storage";
+import { utilityRouter } from "~/server/api/routers/utility";
 
 /**
  * This is the primary router for your server.

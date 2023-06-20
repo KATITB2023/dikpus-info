@@ -120,7 +120,7 @@ export const MentorAttendance = () => {
 
   const handleClickEdit = (index1: number, index2: number) => {
     const temp = [...editStatus];
-    if (temp !== undefined && temp[index1]?.[index2] !== undefined) {
+    if (temp && temp[index1]?.[index2]) {
       (temp[index1] as boolean[])[index2] = true;
       setEditStatus(temp);
     }
