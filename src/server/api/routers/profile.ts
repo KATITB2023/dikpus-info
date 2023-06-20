@@ -118,6 +118,15 @@ export const profileRouter = createTRPCRouter({
       };
     }),
 
+  getEmbedYoutubeLink: studentProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.embedYoutube.findMany({
+      select: {
+        liveLink: true,
+        fallbackLink: true
+      }
+    });
+  }),
+
   getZoomLink: mentorProcedure
     .input(z.object({ userId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
@@ -164,7 +173,7 @@ export const profileRouter = createTRPCRouter({
     }),
 
   editZoomLink: mentorProcedure
-    .input(z.object({ userId: z.string().uuid(), zoomLink: z.string() }))
+    .input(z.object({ userId: z.string().uuid(), zoomLink: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {

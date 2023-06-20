@@ -104,5 +104,46 @@ export const utilityRouter = createTRPCRouter({
       return {
         message: "Reset password successful"
       };
+    }),
+
+  createEmbedYoutubeLink: mentorProcedure
+    .input(
+      z.object({ liveLink: z.string().url(), fallbackLink: z.string().url() })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.embedYoutube.create({
+        data: {
+          liveLink: input.liveLink,
+          fallbackLink: input.fallbackLink
+        }
+      });
+
+      return {
+        message: "Create link successful"
+      };
+    }),
+
+  editEmbedYoutubeLink: mentorProcedure
+    .input(
+      z.object({
+        embedId: z.string().uuid(),
+        liveLink: z.string().url().optional(),
+        fallbackLink: z.string().url().optional()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.embedYoutube.update({
+        where: {
+          id: input.embedId
+        },
+        data: {
+          liveLink: input.liveLink,
+          fallbackLink: input.fallbackLink
+        }
+      });
+
+      return {
+        message: "Edit link successful"
+      };
     })
 });
