@@ -18,7 +18,7 @@ import {
 import { BiDownload } from "react-icons/bi";
 import { type IconType } from "react-icons/lib";
 import { api } from "~/utils/api";
-import { getDate, getDateList, getTwoTime, validTime } from "~/utils/date";
+import { getDate, getDateList, validTime } from "~/utils/date";
 import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
@@ -91,10 +91,10 @@ const TableRow = ({
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
   const tanggal = getDate(attendance.event.startTime);
-  const waktu = getTwoTime(
-    attendance.event.startTime,
-    attendance.event.endTime
-  );
+  // const waktu = getTwoTime(
+  //   attendance.event.startTime,
+  //   attendance.event.endTime
+  // );
   const canAbsen = validTime(
     attendance.event.startTime,
     attendance.event.endTime
@@ -170,7 +170,7 @@ const TableRow = ({
   return (
     <Tr>
       <Td>{tanggal}</Td>
-      <Td>{waktu}</Td>
+      {/* <Td>{waktu}</Td> */}
       <Td>{attendance.event.title}</Td>
       <Td>
         {attendance.event.materialPath !== "" ? (
@@ -207,7 +207,7 @@ const TableRow = ({
             />
           )
         ) : (
-          <TableButton text={waktu} bg='#E8553E' isDisabled />
+          <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
         )}
       </Td>
     </Tr>
@@ -225,7 +225,7 @@ export const MenteeAttendance = () => {
   );
 
   const dateList = getDateList(eventQuery?.data);
-  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Video", "Absen"];
+  const tableHeader = ["Tanggal", "Topik", "Materi", "Video", "Absen"];
 
   const handleSelect = (date: string) => {
     if (date === "") {

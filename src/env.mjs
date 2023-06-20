@@ -25,18 +25,18 @@ export const env = createEnv({
       (str) => (str ? +str : 30 * 24 * 60 * 60),
       z.number().int().positive().min(1)
     ),
-    S_MAXAGE: z.preprocess(
-      // If S_MAXAGE is not set, set it to 1 second
-      (str) => (str ? +str : 1),
-      // S_MAXAGE must be a positive integer
-      z.number().int().positive().min(1)
-    ),
-    STALE_WHILE_REVALIDATE: z.preprocess(
-      // If STALE_WHILE_REVALIDATE is not set, set it to 24 hours
-      (str) => (str ? +str : 24 * 60 * 60),
-      // STALE_WHILE_REVALIDATE must be a positive integer
-      z.number().int().positive().min(1)
-    ),
+    // S_MAXAGE: z.preprocess(
+    //   // If S_MAXAGE is not set, set it to 1 second
+    //   (str) => (str ? +str : 1),
+    //   // S_MAXAGE must be a positive integer
+    //   z.number().int().positive().min(1)
+    // ),
+    // STALE_WHILE_REVALIDATE: z.preprocess(
+    //   // If STALE_WHILE_REVALIDATE is not set, set it to 24 hours
+    //   (str) => (str ? +str : 24 * 60 * 60),
+    //   // STALE_WHILE_REVALIDATE must be a positive integer
+    //   z.number().int().positive().min(1)
+    // ),
     SAMPLER_RATIO: z.preprocess(
       // If SAMPLER_RATIO is not set, set it to 1
       (str) => (str ? +str : 1),
@@ -79,8 +79,8 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     SESSION_MAXAGE: process.env.SESSION_MAXAGE,
-    S_MAXAGE: process.env.S_MAXAGE,
-    STALE_WHILE_REVALIDATE: process.env.STALE_WHILE_REVALIDATE,
+    // S_MAXAGE: process.env.S_MAXAGE,
+    // STALE_WHILE_REVALIDATE: process.env.STALE_WHILE_REVALIDATE,
     SAMPLER_RATIO: process.env.SAMPLER_RATIO,
     BCRYPT_SALT: process.env.BCRYPT_SALT,
     GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
