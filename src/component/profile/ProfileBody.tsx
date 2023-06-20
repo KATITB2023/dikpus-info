@@ -35,13 +35,13 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
         folder: FolderEnum.PROFILE,
         filename: profileQuery.data.imagePath
       })
-      .then((response) => setImageUrl(response.url));
+      .then((response) => setImageUrl(response.url))
+      .catch((err) => console.log(err));
   }, [profileQuery.data]);
 
   const student = profileQuery.data;
 
   if (!student) return null;
-  if (typeof student.firstName !== "string") return null;
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
