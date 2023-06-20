@@ -2,6 +2,7 @@ html,
 body {
   padding: 0;
   margin: 0;
+  user-select: none;
 }
 
 a {
@@ -10,16 +11,16 @@ a {
 }
 
 @font-face {
-  font-family: 'Bodwars';
-  src: url('../assets/fonts/Bodwars.otf');
+  font-family: "Bodwars";
+  src: url("/fonts/Bodwars.otf");
 }
 
 @font-face {
-  font-family: 'SomarRounded-Bold';
-  src: url('../assets/fonts/SomarRounded-Bold.ttf');
+  font-family: "SomarRounded-Bold";
+  src: url("/fonts/SomarRounded-Bold.ttf");
 }
 
 @font-face {
-  font-family: 'SomarRounded-Regular';
-  src: url('../assets/fonts/SomarRounded-Regular.ttf');
+  font-family: "SomarRounded-Regular";
+  src: url("/fonts/SomarRounded-Regular.ttf");
 }

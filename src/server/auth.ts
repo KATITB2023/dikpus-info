@@ -4,12 +4,13 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
-  type DefaultUser,
+  type DefaultUser
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import { prisma } from "~/server/db";
 import type { UserRole } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -39,12 +40,12 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   session: {
-    strategy: "jwt",
+    strategy: "jwt"
   },
   jwt: {
     // The maximum age of the NextAuth.js issued JWT in seconds.
     // Defaults to `session.maxAge`.
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 30
   },
   callbacks: {
     session: ({ session, token }) => ({
@@ -52,8 +53,8 @@ export const authOptions: NextAuthOptions = {
       user: {
         ...session.user,
         id: token.id,
-        role: token.role,
-      },
+        role: token.role
+      }
     }),
     jwt: ({ token, user }) => {
       if (user) {
@@ -61,7 +62,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
       }
       return token;
-    },
+    }
   },
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -84,45 +85,63 @@ export const authOptions: NextAuthOptions = {
         nim: {
           label: "NIM",
           type: "text",
-          placeholder: "13520065",
+          placeholder: "13520065"
         },
         password: {
           label: "Password",
           type: "password",
-          placeholder: "password",
-        },
+          placeholder: "password"
+        }
       },
       async authorize(credentials) {
         // Add logic here to look up the user from the credentials supplied
         // You can also use the `req` object to access additional parameters
         // return { id: 1, name: "J Smith", email: "jsmith@example" };
         if (!credentials) {
-          throw new Error("No credentials");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Credentials not provided"
+          });
         }
 
         const { nim, password } = credentials;
+        if (!nim || !password) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "NIM or password not provided"
+          });
+        }
 
         const user = await prisma.user.findUnique({
           where: {
-            nim,
-          },
+            nim
+          }
         });
         if (!user) {
-          throw new Error("User hasn't registered yet");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User not found"
+          });
         }
 
         const isValid = await compare(password, user.passwordHash);
         if (!isValid) {
-          throw new Error("Invalid password");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Password is incorrect"
+          });
         }
 
         return {
           id: user.id,
-          role: user.role,
+          role: user.role
         };
-      },
-    }),
+      }
+    })
   ],
+  pages: {
+    signIn: "/"
+  }
 };
 
 /**
