@@ -179,7 +179,12 @@ const TableRow = ({
             bg='#1C939A'
             onClick={() => void downloadFile(attendance.event.materialPath)}
           />
-        ) : attendance.event.youtubeLink !== null ? (
+        ) : (
+          <>-</>
+        )}
+      </Td>
+      <Td>
+        {attendance.event.youtubeLink !== null ? (
           <Link href={attendance.event.youtubeLink} target='_blank'>
             <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
           </Link>
@@ -215,7 +220,7 @@ export const MenteeAttendance = () => {
   });
 
   const eventList = eventQuery?.data;
-  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Absen"];
+  const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Video", "Absen"];
 
   return (
     <TableContainer>

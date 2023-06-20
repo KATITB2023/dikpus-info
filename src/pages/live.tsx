@@ -37,10 +37,10 @@ export default function Live() {
         alignItems='center'
         justifyContent='center'
         flexDir='column'
-        gap={7}
+        gap={10}
       >
-        <Heading fontSize='2xl'>Youtube Live</Heading>
-        <AspectRatio ratio={16 / 9} w={{ base: "80%", lg: "80ch" }}>
+        <Heading fontSize='4xl'>Youtube Live</Heading>
+        <AspectRatio ratio={16 / 9} w={{ base: "80%", lg: "90ch" }}>
           <iframe
             src={youtubeQuery?.liveLink || youtubeQuery?.fallbackLink}
             title='YouTube video player'
