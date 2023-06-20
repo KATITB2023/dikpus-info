@@ -1,4 +1,6 @@
+import { hash } from "bcrypt";
 import { z } from "zod";
+import { env } from "~/env.mjs";
 import { createTRPCRouter, mentorProcedure } from "~/server/api/trpc";
 
 export const utilityRouter = createTRPCRouter({
@@ -82,6 +84,23 @@ export const utilityRouter = createTRPCRouter({
 
       return {
         message: "Assignment added successfully"
+      };
+    }),
+
+  resetPassword: mentorProcedure
+    .input(z.object({ nim: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.user.update({
+        where: {
+          nim: input.nim
+        },
+        data: {
+          passwordHash: await hash(input.nim, env.BCRYPT_SALT)
+        }
+      });
+
+      return {
+        message: "Reset password successful"
       };
     })
 });
