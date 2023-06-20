@@ -171,12 +171,16 @@ const TableRow = ({
       <Td>{waktu}</Td>
       <Td>{attendance.event.title}</Td>
       <Td>
-        <TableButton
-          icon={BiDownload}
-          text='Download'
-          bg='#1C939A'
-          onClick={() => void downloadFile(attendance.event.materialPath)}
-        />
+        {attendance.event.materialPath !== "" ? (
+          <TableButton
+            icon={BiDownload}
+            text='Download'
+            bg='#1C939A'
+            onClick={() => void downloadFile(attendance.event.materialPath)}
+          />
+        ) : (
+          <></>
+        )}
       </Td>
       <Td>
         {alreadyAbsen ? (
