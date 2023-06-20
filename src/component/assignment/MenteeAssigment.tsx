@@ -1,13 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { api } from "~/utils/api";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import {
@@ -25,42 +15,52 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { MdOutlineFileUpload } from "react-icons/md";
+import { api, type RouterOutputs } from "~/utils/api";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
-import { TRPCError } from "@trpc/server";
-import { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
-function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
+function AssignmentBox({
+  tugas,
+  userId
+}: {
+  tugas: RouterOutputs["assignment"]["getAssignmentDescription"][number];
+  userId: string;
+}) {
   const toast = useToast();
   const [isDragActive, setIsDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const generateURLMutation = api.storage.generateURLForUpload.useMutation();
   const uploadMutation = api.assignment.updateSubmission.useMutation();
+
   const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
-  const submitted = tugas.submission[0].filePath !== null;
+  const submitted =
+    tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null;
   const isRed = pastDeadline || !submitted;
 
-  const handleDragEnter = (e: { preventDefault: () => void }) => {
+  const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
     setIsDragActive(true);
   };
 
-  const handleDragLeave = (e: { preventDefault: () => void }) => {
+  const handleDragLeave: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
     setIsDragActive(false);
   };
 
-  const handleDragOver = (e: { preventDefault: () => void }) => {
+  const handleDragOver: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: any) => {
+  const handleDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
+
     if (e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
-      setIsDragActive(false);
       if (!droppedFile) return;
+
       setFile(droppedFile);
+      setIsDragActive(false);
     }
   };
 
@@ -108,16 +108,20 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         position: "top"
       });
 
-      document.getElementById(tugas.id)!.style.border = "2px solid #069154";
-      document.getElementById(tugas.id)!.style.background = "#E6FEED";
-      document.getElementById(tugas.id)!.style.color = "#069154";
-      document.getElementById(tugas.id)!.innerHTML = "Sudah terkumpul";
-      document.getElementById(`drag-drop-${tugas.id}`)!.style.display = "none";
-    } catch (err) {
-      if (!(err instanceof TRPCError)) throw err;
+      const element = document.getElementById(tugas.id);
+      const dragDrop = document.getElementById(`drag-drop-${tugas.id}`);
+      if (!element || !dragDrop) return;
+
+      element.style.border = "2px solid #069154";
+      element.style.background = "#E6FEED";
+      element.style.color = "#069154";
+      element.innerHTML = "Sudah terkumpul";
+      dragDrop.style.display = "none";
+    } catch (err: unknown) {
+      if (!(err instanceof TRPCClientError)) throw err;
 
       toast({
-        title: "Error",
+        title: "Failed",
         status: "error",
         description: err.message,
         duration: 2000,
@@ -129,25 +133,33 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
     setFile(null);
     setLoading(false);
   };
+
   return (
     <Flex flexDir={"column"} id={tugas.title} display={""}>
       <Flex
         flexDir='row'
         justifyContent='space-between'
         alignItems='bottom'
-        paddingTop={"45px"}
+        paddingTop={12}
+        flexWrap='wrap'
+        gap={{ base: 4, lg: 0 }}
       >
         <Flex flexDir='column' alignItems='left' marginRight={"30px"}>
-          <Text fontSize={"40px"} fontWeight={"700"} maxW={1200}>
+          <Text fontSize='2xl' fontWeight={"700"} maxW={1200}>
             {tugas.title}
           </Text>
-          <Text fontSize={"20px"} fontWeight={"400"} maxW={1200}>
+          <Text fontSize='xl' fontWeight={"400"} maxW={1200}>
             {tugas.description}
           </Text>
         </Flex>
-        <Flex flexDir='column' alignItems='left' alignSelf={"flex-end"}>
+        <Flex
+          flexDir='column'
+          alignItems={{ base: "flex-start", lg: "flex-end" }}
+          alignSelf='center'
+          gap={1}
+        >
           <Box display={"inline-flex"} justifyItems='left' alignItems='bottom'>
-            <Text fontSize={"20px"} fontWeight={"700"} marginBottom={5}>
+            <Text fontSize={"20px"} fontWeight={"700"}>
               Deadline :{" "}
               {tugas.deadline?.toLocaleString("id-ID", {
                 day: "numeric",
@@ -157,7 +169,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             </Text>
           </Box>
           <Box display={"inline-flex"} justifyItems='left'>
-            <Text fontSize={"12px"} fontWeight={"700"}>
+            <Text fontSize={"12px"} fontWeight={"700"} alignSelf='center'>
               Status :
             </Text>
             <Text
@@ -216,7 +228,12 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
             size={"70px"}
             color='117584'
           ></MdOutlineFileUpload>
-          <Text fontSize={"20px"} fontWeight={"400"} color={"#1C939A"}>
+          <Text
+            fontSize={"20px"}
+            fontWeight={"400"}
+            color={"#1C939A"}
+            textAlign='center'
+          >
             Drag & Drop your files here
           </Text>
           <Text
@@ -268,21 +285,20 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
                 fontWeight={"normal"}
                 _hover={{ background: "#117584" }}
                 cursor={"pointer"}
-                borderRadius={0}
                 onClick={() => void handleOnClick()}
               >
                 <Text
                   marginRight={"10px"}
                   marginTop={"2px"}
                   marginBottom={"2px"}
-                  fontSize={"24px"}
+                  fontSize='lg'
                 >
                   Upload{" "}
                 </Text>
                 <Icon
                   as={MdOutlineFileUpload}
-                  w={10}
-                  h={10}
+                  w={7}
+                  h={7}
                   marginRight={"-30px"}
                   color={"white"}
                 />
@@ -302,22 +318,27 @@ export default function MenteeAssigment() {
     userId: session?.user.id ?? ""
   }).data;
 
-  const handleFilterAssignment = (e: any) => {
-    filterAssignment(e.target.name);
+  const handleFilterAssignment: React.MouseEventHandler<HTMLButtonElement> = (
+    e
+  ) => {
+    const target = e.target as HTMLButtonElement;
+    filterAssignment(target.name);
   };
 
   const filterAssignment = (title: string) => {
     if (title === "all") {
-      assignmentsDetails?.map((item) => {
-        document.getElementById(item.title)!.style.display = "";
+      assignmentsDetails?.forEach((item) => {
+        const element = document.getElementById(item.title);
+        if (!element) return;
+
+        element.style.display = "";
       });
     } else {
-      assignmentsDetails?.map((item) => {
-        if (item.title === title) {
-          document.getElementById(item.title)!.style.display = "";
-        } else {
-          document.getElementById(item.title)!.style.display = "none";
-        }
+      assignmentsDetails?.forEach((item) => {
+        const element = document.getElementById(item.title);
+        if (!element) return;
+
+        element.style.display = item.title === title ? "" : "none";
       });
     }
   };
@@ -329,7 +350,6 @@ export default function MenteeAssigment() {
           <Menu>
             <MenuButton
               as={Button}
-              margin={"3rem 0rem 0px 0px"}
               padding={"0px 5px 0px 0px"}
               background={"#1C939A"}
               borderRadius={"0px"}
@@ -344,7 +364,7 @@ export default function MenteeAssigment() {
                 w='150px'
                 px={2}
               >
-                <Text fontSize='20px'>Pilih tugas</Text>
+                <Text fontSize='lg'>Pilih tugas</Text>
                 <ChevronDownIcon fontSize={"20px"} />
               </Flex>
             </MenuButton>
@@ -360,7 +380,7 @@ export default function MenteeAssigment() {
               >
                 Semua tugas
               </MenuItem>
-              {assignments?.map((item: any, index: number) => {
+              {assignments.map((item, index: number) => {
                 return (
                   <MenuItem
                     key={index}
@@ -379,7 +399,7 @@ export default function MenteeAssigment() {
             </MenuList>
           </Menu>
         </Flex>
-        {assignmentsDetails?.map((item: any, index: number) => {
+        {assignmentsDetails?.map((item, index: number) => {
           return (
             <Box key={index}>
               <AssignmentBox

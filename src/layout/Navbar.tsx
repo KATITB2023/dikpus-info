@@ -2,6 +2,7 @@ import {
   Flex,
   HStack,
   Heading,
+  Img,
   Menu,
   MenuButton,
   MenuItem,
@@ -11,7 +12,11 @@ import {
 import Link from "next/link";
 import { AiOutlineHome } from "react-icons/ai";
 import { BsPeopleFill } from "react-icons/bs";
-import { MdOutlineFolderCopy, MdOutlineLogout } from "react-icons/md";
+import {
+  MdOutlineFolderCopy,
+  MdOutlineLogout,
+  MdPassword
+} from "react-icons/md";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { signOut, useSession } from "next-auth/react";
 
@@ -32,6 +37,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         name: "Tugas",
         href: "/assignment",
         icon: <MdOutlineFolderCopy size={20} />
+      },
+      {
+        name: "Password",
+        href: "/changepassword",
+        icon: <MdPassword size={20} />
       }
     ],
     MENTOR: [
@@ -40,6 +50,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         name: "Tugas",
         href: "/assignment",
         icon: <MdOutlineFolderCopy size={20} />
+      },
+      {
+        name: "Password",
+        href: "/changepassword",
+        icon: <MdPassword size={20} />
       }
     ]
   };
@@ -50,16 +65,18 @@ export default function Navbar({ title, titleOnly }: Props) {
       flexDir='row'
       justifyContent='space-between'
       alignItems='center'
-      px={12}
+      px={{ base: 7, lg: 12 }}
       py={7}
     >
-      <Text as='b' fontSize='2xl'>
-        Logo Dikpus
-      </Text>
+      <Img src="/logotype.png" alt="logo" height={16}/>
       {!titleOnly ? (
         <HStack spacing={8}>
           {/* idk, bodwars fontnya stick ke atas.. */}
-          <Heading fontSize='2xl' pt={1.5}>
+          <Heading
+            fontSize='2xl'
+            pt={1.5}
+            display={{ base: "none", sm: "block" }}
+          >
             {title}
           </Heading>
           <Menu isLazy>

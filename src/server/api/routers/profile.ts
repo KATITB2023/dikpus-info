@@ -17,6 +17,11 @@ export const profileRouter = createTRPCRouter({
           userId: input.userId
         },
         include: {
+          user: {
+            select: {
+              nim: true
+            }
+          },
           group: {
             select: {
               id: true,

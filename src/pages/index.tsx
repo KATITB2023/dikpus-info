@@ -24,7 +24,20 @@ export default function SignIn({
   const { data: session } = useSession();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState({ nim: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
+
+  const handleLoggedIn = () => {
+    toast({
+      title: "Success",
+      description: "Successfully logged in!",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+      position: "top"
+    });
+    handleRedirect();
+  };
 
   const handleRedirect = () => {
     const role = session?.user.role;
@@ -38,13 +51,15 @@ export default function SignIn({
       title: "Error",
       description: `${message}`,
       status: "error",
-      duration: 3000,
-      isClosable: true
+      duration: 2000,
+      isClosable: true,
+      position: "top"
     });
   };
 
   const handleLogIn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const res = await signIn("credentials", {
       nim: userInfo.nim,
@@ -54,7 +69,8 @@ export default function SignIn({
     });
 
     if (res?.error) handleError(res?.error);
-    if (res?.url) handleRedirect();
+    if (res?.url) handleLoggedIn();
+    setLoading(false);
   };
 
   if (session) {
@@ -64,13 +80,14 @@ export default function SignIn({
   return (
     <PageLayout title='Log In' titleOnly={true}>
       <Flex minH='80vh' align='center' justify='center' direction='column'>
-        <Heading>Diklat Terpusat</Heading>
-        <Box width='450px'>
+        <Heading textAlign='center'>Diklat Terpusat</Heading>
+        <Box w={{ base: "100%", md: "450px" }}>
           <form>
             <input name='csrfToken' type='hidden' defaultValue={csrfToken} />
             <FormControl my={6}>
               <FormLabel>NIM</FormLabel>
               <Input
+                width='100%'
                 type='text'
                 name='nim'
                 placeholder='NIM'
@@ -100,6 +117,7 @@ export default function SignIn({
                 type='submit'
                 my={4}
                 onClick={(e) => void handleLogIn(e)}
+                isLoading={loading}
               >
                 Submit
               </Button>

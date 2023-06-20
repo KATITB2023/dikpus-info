@@ -32,7 +32,7 @@ export const utilityRouter = createTRPCRouter({
         students.map(async (student) => {
           await ctx.prisma.attendance.create({
             data: {
-              date: new Date(),
+              date: new Date(Date.now()),
               studentId: student.id,
               eventId: event.id
             }

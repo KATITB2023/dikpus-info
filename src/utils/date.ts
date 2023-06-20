@@ -20,7 +20,7 @@ export const getTwoTime = (startDate: Date, endDate: Date) => {
 };
 
 export const validTime = (startTime: Date, endTime: Date) => {
-  const currentTime = new Date();
+  const currentTime = new Date(Date.now());
 
   return currentTime >= startTime && currentTime <= endTime;
 };

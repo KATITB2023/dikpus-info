@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Box,
   Flex,
@@ -13,19 +8,21 @@ import {
   Td,
   TableContainer,
   Button,
-  Text
+  Text,
+  useToast
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { TRPCError } from "@trpc/server";
-import { type RouterOutputs, api } from "~/utils/api";
-import DownloadIcon from "~/component/assignment/DownloadIcon";
-import { FolderEnum } from "~/utils/file";
 import { useSession } from "next-auth/react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { TRPCClientError } from "@trpc/client";
+import { type RouterOutputs, api } from "~/utils/api";
+import DownloadIcon from "~/component/assignment/DownloadIcon";
+import { FolderEnum, downloadFile } from "~/utils/file";
 
 export default function MentorAssignment() {
   const { data: session } = useSession();
+  const toast = useToast();
 
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
   const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
@@ -54,82 +51,84 @@ export default function MentorAssignment() {
     }
   }, [assignmentList, assignmentResult, selectedAssignment]);
 
-  const handleSelectAssignment = (e: any) => {
+  const handleSelectAssignment = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAssignment(e.target.value);
   };
 
-  const downloadFile = async (
+  const handleSingleFileDownload = async (
     title: string,
     firstName: string,
     lastName: string | null,
-    filePath: string
+    filePath: string | null
   ) => {
     try {
+      if (!filePath) return;
+
       const { url } = await generateURLForDownload.mutateAsync({
         folder: FolderEnum.ASSIGNMENT,
         filename: filePath
       });
 
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = `${title} ${firstName} ${
+      const content = await downloadFile(url);
+      const filename = `${title} ${firstName} ${
         lastName ? lastName : ""
       }${filePath.slice(filePath.lastIndexOf("."))}`;
 
-      document.body.appendChild(link);
-      link.click();
-
-      URL.revokeObjectURL(blobUrl);
-      document.body.removeChild(link);
+      saveAs(content, filename);
     } catch (err: unknown) {
-      if (!(err instanceof TRPCError)) throw err;
+      if (!(err instanceof TRPCClientError)) throw err;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: err.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
     }
   };
 
-  // batch download file
-  const batchDownload = async (
+  const handleMultipleFileDownload = async (
     submissions: RouterOutputs["assignment"]["getAssignmentResult"]["submissions"][number]
   ) => {
-    // might be bad , soalnya nunggu satu satu.
-    // kalo mentor banyak banget download bareng problem
-    const zip = new JSZip();
-    let count = 0;
-    const zipFileName = submissions.title + ".zip";
-    const filesUrl: string[] = [];
-    const fileNames: string[] = [];
-    for (const submission of submissions.submission) {
-      if (submission.filePath) {
-        // await downloadFile(submission.filePath);
+    try {
+      const zip = new JSZip();
+
+      // Download sequentially to avoid 429 error (too many requests)
+      for (const submission of submissions.submission) {
+        if (!submission.filePath) continue;
+
         const { url } = await generateURLForDownload.mutateAsync({
           folder: FolderEnum.ASSIGNMENT,
           filename: submission.filePath
         });
-        filesUrl.push(url);
-        fileNames.push(
-          `${submissions.title} ${submission.student.firstName} ${
-            submission.student.lastName ? submission.student.lastName : ""
-          }${submission.filePath.slice(submission.filePath.lastIndexOf("."))}`
-        );
-      }
-    }
+        const filename = `${submissions.title} ${
+          submission.student.firstName
+        } ${
+          submission.student.lastName ? submission.student.lastName : ""
+        }${submission.filePath.slice(submission.filePath.lastIndexOf("."))}`;
 
-    filesUrl.forEach(async function (url, i) {
-      console.log(i);
-      const name = fileNames[i];
-      const file = await fetch(url);
-      const fileBlob = await file.blob();
-      zip.file(name!, fileBlob, { binary: true });
-      count++;
-      if (count === filesUrl.length) {
-        void zip.generateAsync({ type: "blob" }).then((content) => {
-          saveAs(content, zipFileName);
-        });
+        const fileBlob = await downloadFile(url);
+        zip.file(filename, fileBlob, { binary: true });
       }
-    });
+
+      const zipFileName = `${submissions.title}.zip`;
+      const content = await zip.generateAsync({ type: "blob" });
+
+      saveAs(content, zipFileName);
+    } catch (err) {
+      if (!(err instanceof TRPCClientError)) throw err;
+
+      toast({
+        title: "Failed",
+        status: "error",
+        description: err.message,
+        duration: 2000,
+        isClosable: true,
+        position: "top"
+      });
+    }
   };
 
   return (
@@ -161,7 +160,7 @@ export default function MentorAssignment() {
         </Select>
       </Flex>
 
-      <Flex flexDir={"column"} marginTop={10} gap='20'>
+      <Flex flexDir={"column"} marginTop={10} gap={10}>
         {filteredAssignment?.submissions.map((submissions) => {
           return (
             <Box key={submissions.id}>
@@ -175,7 +174,6 @@ export default function MentorAssignment() {
               <Flex
                 justifyContent='space-between'
                 flexDir={["column", "column", "column", "column", "row"]}
-                w='80%'
               >
                 <TableContainer>
                   <Table variant='unstyled'>
@@ -185,14 +183,14 @@ export default function MentorAssignment() {
                           <Tr key={submission.id}>
                             <Td>
                               {" "}
-                              <Text fontWeight='700' fontSize='xl'>
+                              <Text fontWeight='400' fontSize='lg'>
                                 {submission.student.firstName}{" "}
                                 {submission.student.lastName}
                               </Text>
                             </Td>
                             <Td>
                               {" "}
-                              <Text fontWeight='700' fontSize='xl'>
+                              <Text fontWeight='400' fontSize='lg'>
                                 {`Kelompok ${submission.student.group.group}`}
                               </Text>
                             </Td>
@@ -202,11 +200,11 @@ export default function MentorAssignment() {
                                 <Button
                                   bg='#1C939A'
                                   onClick={() =>
-                                    downloadFile(
+                                    void handleSingleFileDownload(
                                       submissions.title,
                                       submission.student.firstName,
                                       submission.student.lastName,
-                                      submission.filePath!
+                                      submission.filePath
                                     )
                                   }
                                   _hover={{
@@ -229,14 +227,14 @@ export default function MentorAssignment() {
                   </Table>
                 </TableContainer>
 
-                <Box marginLeft={10}>
+                <Box>
                   <Button
                     color='white'
                     bg={"#1C939A"}
                     size='md'
                     width='100%'
                     marginTop={[5, 5, 5, 5, 0]}
-                    onClick={() => batchDownload(submissions)}
+                    onClick={() => void handleMultipleFileDownload(submissions)}
                     _hover={{
                       opacity: 0.8
                     }}
