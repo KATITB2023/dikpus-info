@@ -2,6 +2,7 @@ import {
   Flex,
   HStack,
   Heading,
+  Img,
   Menu,
   MenuButton,
   MenuItem,
@@ -67,9 +68,7 @@ export default function Navbar({ title, titleOnly }: Props) {
       px={{ base: 7, lg: 12 }}
       py={7}
     >
-      <Text as='b' fontSize='2xl'>
-        Logo Dikpus
-      </Text>
+      <Img src="/logotype.png" alt="logo" height={16}/>
       {!titleOnly ? (
         <HStack spacing={8}>
           {/* idk, bodwars fontnya stick ke atas.. */}
