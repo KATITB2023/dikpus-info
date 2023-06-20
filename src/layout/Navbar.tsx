@@ -68,7 +68,7 @@ export default function Navbar({ title, titleOnly }: Props) {
       px={{ base: 7, lg: 12 }}
       py={7}
     >
-      <Img src="/logotype.png" alt="logo" height={16}/>
+      <Img src='/logotype.png' alt='logo' height={16} />
       {!titleOnly ? (
         <HStack spacing={8}>
           {/* idk, bodwars fontnya stick ke atas.. */}
