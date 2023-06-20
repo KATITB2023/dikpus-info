@@ -39,7 +39,7 @@ export default function Live() {
         flexDir='column'
         gap={10}
       >
-        <Heading fontSize='4xl' textAlign='center'>
+        <Heading fontSize='2xl' textAlign='center'>
           Youtube Live
         </Heading>
         <AspectRatio ratio={16 / 9} w={{ base: "80%", lg: "90ch" }}>
