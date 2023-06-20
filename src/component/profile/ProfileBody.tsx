@@ -24,11 +24,12 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useState<string>("");
   const profileQuery = api.profile.getProfile.useQuery({ userId: id });
-  const generateURLForDownload =
-    api.storage.generateURLForDownload.useMutation();
 
   useEffect(() => {
     if (!profileQuery.data || !profileQuery.data.imagePath) return;
+
+    const generateURLForDownload =
+      api.storage.generateURLForDownload.useMutation();
 
     generateURLForDownload
       .mutateAsync({
