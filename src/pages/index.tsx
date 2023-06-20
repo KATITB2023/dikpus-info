@@ -43,7 +43,7 @@ export default function SignIn({
     const role = session?.user.role;
     role === UserRole.MENTOR
       ? void router.push("/attendance")
-      : void router.push("/youtube");
+      : void router.push("/live");
   };
 
   const handleError = (message: string) => {
