@@ -9,38 +9,40 @@ import {
   Td,
   Box
 } from "@chakra-ui/react";
-import { type Student } from "@prisma/client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import { EditingModal } from "~/component/profile/EditingModal";
 import { api } from "~/utils/api";
+import { FolderEnum } from "~/utils/file";
 
 interface ProfileBodyProps {
   id: string;
 }
 
-interface AddedStudent {
-  group?: {
-    id: string;
-    group: number;
-    zoomLink: string;
-  };
-  user?: {
-    nim: string;
-  };
-}
-
-type StudentWithGroup = Student & AddedStudent;
-
 export default function ProfileBody({ id }: ProfileBodyProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const profileQuery = api.profile.getProfile.useQuery({ userId: id });
 
-  const student = profileQuery.data as StudentWithGroup;
+  useEffect(() => {
+    if (!profileQuery.data || !profileQuery.data.imagePath) return;
+
+    const generateURLForDownload =
+      api.storage.generateURLForDownload.useMutation();
+
+    generateURLForDownload
+      .mutateAsync({
+        folder: FolderEnum.PROFILE,
+        filename: profileQuery.data.imagePath
+      })
+      .then((response) => setImageUrl(response.url))
+      .catch((err) => console.log(err));
+  }, [profileQuery.data]);
+
+  const student = profileQuery.data;
 
   if (!student) return null;
-  if (typeof student.firstName != "string") return null;
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -63,6 +65,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
       </Tr>
     );
   };
+
   return (
     <Flex flexDir='column'>
       <Flex
@@ -70,8 +73,8 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
         flexDir={{ base: "column", lg: "row" }}
         gap={{ base: 5, lg: 12 }}
       >
-        {student.imagePath ? (
-          <Img src={student.imagePath} w='10em' h='15em' />
+        {imageUrl ? (
+          <Img src={imageUrl} w='10em' h='15em' />
         ) : (
           <Flex
             justifyContent='center'
@@ -103,7 +106,7 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
                 firstName: student.firstName,
                 lastName: student.lastName || "",
                 phoneNumber: student.phoneNumber || "",
-                imageUrl: student.imagePath || ""
+                imageUrl: imageUrl
               }}
             />
           </Flex>
