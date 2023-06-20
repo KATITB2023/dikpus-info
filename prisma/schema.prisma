@@ -107,7 +107,8 @@ model AttendanceReason {
 model Event {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title        String   @db.VarChar(50)
-  materialPath String   @db.VarChar(255)
+  materialPath String?  @db.VarChar(255)
+  youtubeLink  String?  @db.VarChar(255)
   startTime    DateTime
   endTime      DateTime
   createdAt    DateTime @default(now())
