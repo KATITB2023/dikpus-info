@@ -1,13 +1,4 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { api } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import {
@@ -28,7 +19,13 @@ import { MdOutlineFileUpload } from "react-icons/md";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
 import { TRPCClientError } from "@trpc/client";
 
-function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
+function AssignmentBox({
+  tugas,
+  userId
+}: {
+  tugas: RouterOutputs["assignment"]["getAssignmentDescription"][number];
+  userId: string;
+}) {
   const toast = useToast();
   const [isDragActive, setIsDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -37,7 +34,8 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const uploadMutation = api.assignment.updateSubmission.useMutation();
 
   const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
-  const submitted = tugas.submission[0].filePath !== null;
+  const submitted =
+    tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null;
   const isRed = pastDeadline || !submitted;
 
   const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
@@ -110,11 +108,15 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
         position: "top"
       });
 
-      document.getElementById(tugas.id)!.style.border = "2px solid #069154";
-      document.getElementById(tugas.id)!.style.background = "#E6FEED";
-      document.getElementById(tugas.id)!.style.color = "#069154";
-      document.getElementById(tugas.id)!.innerHTML = "Sudah terkumpul";
-      document.getElementById(`drag-drop-${tugas.id}`)!.style.display = "none";
+      const element = document.getElementById(tugas.id);
+      const dragDrop = document.getElementById(`drag-drop-${tugas.id}`);
+      if (!element || !dragDrop) return;
+
+      element.style.border = "2px solid #069154";
+      element.style.background = "#E6FEED";
+      element.style.color = "#069154";
+      element.innerHTML = "Sudah terkumpul";
+      dragDrop.style.display = "none";
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -131,6 +133,7 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
     setFile(null);
     setLoading(false);
   };
+
   return (
     <Flex flexDir={"column"} id={tugas.title} display={""}>
       <Flex
@@ -324,16 +327,18 @@ export default function MenteeAssigment() {
 
   const filterAssignment = (title: string) => {
     if (title === "all") {
-      assignmentsDetails?.map((item) => {
-        document.getElementById(item.title)!.style.display = "";
+      assignmentsDetails?.forEach((item) => {
+        const element = document.getElementById(item.title);
+        if (!element) return;
+
+        element.style.display = "";
       });
     } else {
-      assignmentsDetails?.map((item) => {
-        if (item.title === title) {
-          document.getElementById(item.title)!.style.display = "";
-        } else {
-          document.getElementById(item.title)!.style.display = "none";
-        }
+      assignmentsDetails?.forEach((item) => {
+        const element = document.getElementById(item.title);
+        if (!element) return;
+
+        element.style.display = item.title === title ? "" : "none";
       });
     }
   };
