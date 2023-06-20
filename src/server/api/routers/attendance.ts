@@ -83,23 +83,7 @@ export const attendanceRouter = createTRPCRouter({
         });
       }
 
-      const currentTime = new Date();
-      if (currentTime >= event.startTime && currentTime <= event.endTime) {
-        await ctx.prisma.attendance.updateMany({
-          where: {
-            studentId: student.id,
-            eventId: input.eventId
-          },
-          data: {
-            date: currentTime,
-            status: "HADIR"
-          }
-        });
-
-        return {
-          message: "Attendance Recorded"
-        };
-      }
+      const currentTime = new Date(Date.now());
 
       if (currentTime < event.startTime) {
         throw new TRPCError({
@@ -114,6 +98,21 @@ export const attendanceRouter = createTRPCRouter({
           message: "Event is finished"
         });
       }
+
+      await ctx.prisma.attendance.updateMany({
+        where: {
+          studentId: student.id,
+          eventId: input.eventId
+        },
+        data: {
+          date: currentTime,
+          status: AttendanceStatus.HADIR
+        }
+      });
+
+      return {
+        message: "Attendance Recorded"
+      };
     }),
 
   getAttendance: mentorProcedure
@@ -262,25 +261,25 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (input.kehadiran !== "HADIR" && !input.reason) {
+      if (input.kehadiran !== AttendanceStatus.HADIR && !input.reason) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Please provide a reason"
         });
-      } else {
-        await ctx.prisma.attendanceReason.upsert({
-          where: {
-            attendanceId: attendance.id
-          },
-          update: {
-            reason: input.reason
-          },
-          create: {
-            attendanceId: attendance.id,
-            reason: input.reason
-          }
-        });
       }
+
+      await ctx.prisma.attendanceReason.upsert({
+        where: {
+          attendanceId: attendance.id
+        },
+        update: {
+          reason: input.reason
+        },
+        create: {
+          attendanceId: attendance.id,
+          reason: input.reason
+        }
+      });
 
       return {
         message: "Edit attendance successful"
