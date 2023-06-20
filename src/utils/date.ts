@@ -1,3 +1,5 @@
+import { type Attendance } from "~/component/attendance/MenteeAttendance";
+
 export const getDate = (fullDate: Date) => {
   return fullDate.toLocaleDateString("id-ID", {
     year: "numeric",
@@ -23,4 +25,12 @@ export const validTime = (startTime: Date, endTime: Date) => {
   const currentTime = new Date(Date.now());
 
   return currentTime >= startTime && currentTime <= endTime;
+};
+
+export const getDateList = (attendances: Attendance[] | undefined) => {
+  const dateList = attendances?.map((attendance: Attendance) => {
+    return getDate(attendance.event.startTime);
+  });
+
+  return [...new Set(dateList)];
 };
