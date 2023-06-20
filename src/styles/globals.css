@@ -12,15 +12,15 @@ a {
 
 @font-face {
   font-family: "Bodwars";
-  src: url("../assets/fonts/Bodwars.otf");
+  src: url("/fonts/Bodwars.otf");
 }
 
 @font-face {
   font-family: "SomarRounded-Bold";
-  src: url("../assets/fonts/SomarRounded-Bold.ttf");
+  src: url("/fonts/SomarRounded-Bold.ttf");
 }
 
 @font-face {
   font-family: "SomarRounded-Regular";
-  src: url("../assets/fonts/SomarRounded-Regular.ttf");
+  src: url("/fonts/SomarRounded-Regular.ttf");
 }
