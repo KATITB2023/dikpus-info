@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Thead,
@@ -186,7 +186,7 @@ const TableRow = ({
       </Td>
       <Td>
         {attendance.event.youtubeLink !== null ? (
-          <Link href={attendance.event.youtubeLink} target='_blank'>
+          <Link href={attendance.event.youtubeLink ?? "/"} target='_blank'>
             <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
           </Link>
         ) : (
@@ -223,17 +223,37 @@ export const MenteeAttendance = () => {
   const [eventList, setEventList] = useState<Attendance[] | undefined>(
     eventQuery?.data
   );
-  const dateList = getDateList(eventList);
+
+  const dateList = getDateList(eventQuery?.data);
   const tableHeader = ["Tanggal", "Waktu", "Topik", "Materi", "Video", "Absen"];
 
   const handleSelect = (date: string) => {
-    const filteredEvent = eventList?.filter((event) => {
+    if (date === "") {
+      setEventList(eventQuery?.data);
+      return;
+    }
+
+    const filteredEvent = eventQuery?.data?.filter((event) => {
       const eventDate = getDate(event.event.startTime);
       return eventDate === date;
     });
 
     setEventList(filteredEvent);
   };
+
+  useEffect(() => {
+    setEventList(
+      eventQuery?.data?.sort((a: Attendance, b: Attendance) => {
+        const dateA = getDate(a.event.startTime);
+        const dateB = getDate(b.event.startTime);
+
+        // whygini?LINTERCUK
+        if (dateA < dateB) return 1;
+        if (dateA > dateB) return -1;
+        return a.event.startTime > b.event.startTime ? 1 : -1;
+      })
+    );
+  }, [eventQuery?.data]);
 
   return (
     <Flex flexDir='column' gap={10}>
