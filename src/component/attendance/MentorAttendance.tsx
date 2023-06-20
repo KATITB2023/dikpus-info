@@ -15,64 +15,41 @@ import {
 } from "@chakra-ui/react";
 import { HiPencil, HiOutlineX, HiOutlineCheck } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import { api } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 import { AttendanceStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { TRPCClientError } from "@trpc/client";
 
-interface AttendanceReason {
-  reason?: string | null;
-}
-
-interface AttendanceData {
-  status: AttendanceStatus;
-  student: {
-    firstName: string;
-    lastName: string | null;
-    group: {
-      group: number;
-    };
-  };
-  studentId: string;
-  id: string;
-  eventId: string;
-  reason?: AttendanceReason | null;
-}
-
-interface AttendanceEvent {
-  attendances: AttendanceData[];
-  title: string;
-  startTime: Date;
-  endTime: Date;
-}
-
-function getEditingArr(attendanceList: AttendanceEvent[] | undefined) {
-  if (attendanceList === undefined) return [];
-
-  const editingArr: boolean[][] = [];
-  attendanceList.forEach((event) => {
-    const currEvent: boolean[] = [];
-    event.attendances.forEach(() => {
-      currEvent.push(false);
+const getEditingArr = (
+  attendanceList: RouterOutputs["attendance"]["getAttendance"]["event"]
+) => {
+  return attendanceList.map((event) => {
+    return event.attendances.map(() => {
+      return false;
     });
-    editingArr.push([...currEvent]);
   });
-
-  return editingArr;
-}
+};
 
 export const MentorAttendance = () => {
-  const toast = useToast();
   const { data: session } = useSession();
+
+  const toast = useToast();
   const attendanceMutation = api.attendance.editAttendance.useMutation();
   const attendanceQuery = api.attendance.getAttendance.useQuery({
     userId: session?.user.id ?? ""
   });
-  const eventsList = api.attendance.getEventList.useQuery().data;
+  const eventListQuery = api.attendance.getEventList.useQuery();
 
-  const [attendanceList, setAttendanceList] = useState<AttendanceEvent[]>([]);
+  const attendanceData = attendanceQuery.data;
+  const eventList = eventListQuery.data;
+
+  const [attendanceList, setAttendanceList] = useState<
+    RouterOutputs["attendance"]["getAttendance"]["event"]
+  >([]);
   const [filteredList, setFilteredList] =
-    useState<AttendanceEvent[]>(attendanceList);
+    useState<RouterOutputs["attendance"]["getAttendance"]["event"]>(
+      attendanceList
+    );
   const [editStatus, setEditStatus] = useState<boolean[][]>(
     getEditingArr(attendanceList)
   );
@@ -81,10 +58,8 @@ export const MentorAttendance = () => {
   const [groupList, setGroupList] = useState<number[]>([]);
 
   useEffect(() => {
-    attendanceQuery?.data?.event
-      ? setAttendanceList(attendanceQuery?.data?.event)
-      : setAttendanceList([]);
-  }, [attendanceQuery]);
+    setAttendanceList(attendanceData?.event ?? []);
+  }, [attendanceData]);
 
   useEffect(() => {
     setFilteredList([...attendanceList]);
@@ -119,7 +94,7 @@ export const MentorAttendance = () => {
   };
 
   const filterAll = (group: number, event: string) => {
-    let filtered: AttendanceEvent[];
+    let filtered: RouterOutputs["attendance"]["getAttendance"]["event"];
 
     if (event !== "") {
       filtered = attendanceList?.filter(
@@ -173,7 +148,7 @@ export const MentorAttendance = () => {
       (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
 
-      let changedStatus;
+      let changedStatus: AttendanceStatus;
       switch (status) {
         case "HADIR":
           changedStatus = AttendanceStatus.HADIR;
@@ -188,9 +163,13 @@ export const MentorAttendance = () => {
       try {
         const result = await attendanceMutation.mutateAsync({
           attendanceId: (
-            (filteredList[index1] as AttendanceEvent).attendances[
+            (
+              filteredList[
+                index1
+              ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]
+            ).attendances[
               index2
-            ] as AttendanceData
+            ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]["attendances"][number]
           ).id,
           kehadiran: changedStatus,
           reason: alasan
@@ -207,15 +186,23 @@ export const MentorAttendance = () => {
 
         const temp = [...filteredList];
         (
-          (temp[index1] as AttendanceEvent).attendances[
+          (
+            temp[
+              index1
+            ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]
+          ).attendances[
             index2
-          ] as AttendanceData
+          ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]["attendances"][number]
         ).status = changedStatus;
 
         (
-          (temp[index1] as AttendanceEvent).attendances[
+          (
+            temp[
+              index1
+            ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]
+          ).attendances[
             index2
-          ] as AttendanceData
+          ] as RouterOutputs["attendance"]["getAttendance"]["event"][number]["attendances"][number]
         ).reason = { reason: alasan };
         setFilteredList(temp);
       } catch (err: unknown) {
@@ -267,8 +254,8 @@ export const MentorAttendance = () => {
             }
           }}
         >
-          {eventsList
-            ? eventsList.map((event, index: number) => {
+          {eventList
+            ? eventList.map((event, index: number) => {
                 return <option key={index}>{event.title}</option>;
               })
             : null}

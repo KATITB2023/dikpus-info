@@ -35,31 +35,34 @@ function AssignmentBox({ tugas, userId }: { tugas: any; userId: string }) {
   const [loading, setLoading] = useState(false);
   const generateURLMutation = api.storage.generateURLForUpload.useMutation();
   const uploadMutation = api.assignment.updateSubmission.useMutation();
+
   const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
   const submitted = tugas.submission[0].filePath !== null;
   const isRed = pastDeadline || !submitted;
 
-  const handleDragEnter = (e: { preventDefault: () => void }) => {
+  const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
     setIsDragActive(true);
   };
 
-  const handleDragLeave = (e: { preventDefault: () => void }) => {
+  const handleDragLeave: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
     setIsDragActive(false);
   };
 
-  const handleDragOver = (e: { preventDefault: () => void }) => {
+  const handleDragOver: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: any) => {
+  const handleDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
+
     if (e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
-      setIsDragActive(false);
       if (!droppedFile) return;
+
       setFile(droppedFile);
+      setIsDragActive(false);
     }
   };
 
@@ -312,8 +315,11 @@ export default function MenteeAssigment() {
     userId: session?.user.id ?? ""
   }).data;
 
-  const handleFilterAssignment = (e: any) => {
-    filterAssignment(e.target.name);
+  const handleFilterAssignment: React.MouseEventHandler<HTMLButtonElement> = (
+    e
+  ) => {
+    const target = e.target as HTMLButtonElement;
+    filterAssignment(target.name);
   };
 
   const filterAssignment = (title: string) => {
@@ -369,7 +375,7 @@ export default function MenteeAssigment() {
               >
                 Semua tugas
               </MenuItem>
-              {assignments?.map((item: any, index: number) => {
+              {assignments.map((item, index: number) => {
                 return (
                   <MenuItem
                     key={index}
@@ -388,7 +394,7 @@ export default function MenteeAssigment() {
             </MenuList>
           </Menu>
         </Flex>
-        {assignmentsDetails?.map((item: any, index: number) => {
+        {assignmentsDetails?.map((item, index: number) => {
           return (
             <Box key={index}>
               <AssignmentBox
