@@ -6,6 +6,7 @@ import {
   studentProcedure
 } from "~/server/api/trpc";
 import { compare, hash } from "bcrypt";
+import { sprintf } from "sprintf-js";
 import { TRPCError } from "@trpc/server";
 import { env } from "~/env.mjs";
 
@@ -71,8 +72,7 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         curPass: z.string(),
-        newPass: z.string(),
-        repeatPass: z.string()
+        newPass: z.string()
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -92,19 +92,11 @@ export const profileRouter = createTRPCRouter({
         });
 
       const isValid = await compare(input.curPass, user.passwordHash);
-      if (!isValid) {
+      if (!isValid)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Incorrect current password"
         });
-      }
-
-      if (input.repeatPass.localeCompare(input.newPass) !== 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Confirmation password doesn't match"
-        });
-      }
 
       await ctx.prisma.user.update({
         where: {
@@ -186,12 +178,11 @@ export const profileRouter = createTRPCRouter({
         }
       });
 
-      if (!mentor) {
+      if (!mentor)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Mentor not found"
         });
-      }
 
       // TODO: Handle multiple groups
       const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
@@ -222,5 +213,55 @@ export const profileRouter = createTRPCRouter({
       return {
         message: "Zoom link updated"
       };
-    })
+    }),
+
+  getBroadcast: studentProcedure.query(async ({ ctx }) => {
+    const student = await ctx.prisma.student.findUnique({
+      where: {
+        userId: ctx.session.user.id
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true
+      }
+    });
+
+    if (!student)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Student not found"
+      });
+
+    const studentClass = await ctx.prisma.studentClass.findMany({
+      where: {
+        studentId: student.id
+      }
+    });
+
+    const classIds = studentClass.map((c) => c.id);
+
+    const classes = await ctx.prisma.class.findMany({
+      where: {
+        id: {
+          in: classIds
+        }
+      },
+      select: {
+        broadcastTemplate: true
+      }
+    });
+
+    const broadcasts = classes.map((c) =>
+      sprintf(c.broadcastTemplate, {
+        name: student.lastName
+          ? `${student.firstName} ${student.lastName}`
+          : student.firstName
+      })
+    );
+
+    return {
+      broadcasts
+    };
+  })
 });
