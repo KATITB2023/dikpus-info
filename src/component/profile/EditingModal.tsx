@@ -31,8 +31,8 @@ interface EditingModalProps {
   initialState: {
     userId: string;
     firstName: string;
-    lastName: string;
-    phoneNumber: string;
+    lastName?: string;
+    phoneNumber?: string;
     imageUrl?: string;
   };
   toggleEditing: () => void;
@@ -46,8 +46,10 @@ export const EditingModal = ({
   const toast = useToast();
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>(initialState.firstName);
-  const [lastName, setLastName] = useState<string>(initialState.lastName);
-  const [phoneNumber, setPhoneNumber] = useState<string>(
+  const [lastName, setLastName] = useState<string | undefined>(
+    initialState.lastName
+  );
+  const [phoneNumber, setPhoneNumber] = useState<string | undefined>(
     initialState.phoneNumber
   );
   const [imageUrl, setImageUrl] = useState<string | undefined>(

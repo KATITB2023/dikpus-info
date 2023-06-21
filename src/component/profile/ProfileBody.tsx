@@ -106,8 +106,8 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
               initialState={{
                 userId: student.userId,
                 firstName: student.firstName,
-                lastName: student.lastName || "",
-                phoneNumber: student.phoneNumber || "",
+                lastName: student.lastName || undefined,
+                phoneNumber: student.phoneNumber || undefined,
                 imageUrl: generateURLForDownload.data?.url
               }}
             />
