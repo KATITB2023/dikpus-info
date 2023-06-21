@@ -35,8 +35,8 @@ export const MentorAttendance = () => {
 
   const toast = useToast();
   const attendanceMutation = api.attendance.editAttendance.useMutation();
-  const attendanceQuery = api.attendance.getAttendance.useQuery({
-    userId: session?.user.id ?? ""
+  const attendanceQuery = api.attendance.getAttendance.useQuery(undefined, {
+    enabled: session?.user !== undefined
   });
   const eventListQuery = api.attendance.getEventList.useQuery();
 

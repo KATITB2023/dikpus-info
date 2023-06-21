@@ -47,12 +47,14 @@ model MentorGroup {
 
   mentor Mentor @relation(fields: [mentorId], references: [id])
   group  Group  @relation(fields: [groupId], references: [id])
+
+  @@unique([mentorId, groupId])
 }
 
 model Group {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   group     Int      @unique
-  zoomLink  String
+  zoomLink  String   @db.VarChar(255)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -62,12 +64,12 @@ model Group {
 
 model Student {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  gender      Gender?
   firstName   String   @db.VarChar(50)
   lastName    String?  @db.VarChar(50)
   fakultas    String   @db.VarChar(50)
   phoneNumber String?  @unique @db.VarChar(15)
-  imagePath   String?
+  imagePath   String?  @db.VarChar(255)
+  gender      Gender?
   accepted    Boolean  @default(false)
   userId      String   @unique @db.Uuid
   groupId     String   @db.Uuid
@@ -78,6 +80,7 @@ model Student {
   group      Group                  @relation(fields: [groupId], references: [id])
   attendance Attendance[]
   submission AssignmentSubmission[]
+  class      StudentClass[]
 }
 
 model Attendance {
@@ -92,6 +95,8 @@ model Attendance {
   student Student           @relation(fields: [studentId], references: [id])
   event   Event             @relation(fields: [eventId], references: [id])
   reason  AttendanceReason?
+
+  @@unique([studentId, eventId])
 }
 
 model AttendanceReason {
@@ -138,12 +143,37 @@ model AssignmentSubmission {
 
   student    Student    @relation(fields: [studentId], references: [id])
   assignment Assignment @relation(fields: [assignmentId], references: [id])
+
+  @@unique([studentId, assignmentId])
 }
 
 model EmbedYoutube {
   id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   liveLink     String @db.VarChar(255)
   fallbackLink String @db.VarChar(255)
+}
+
+model Class {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String   @db.VarChar(255)
+  broadcastTemplate String   @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  students StudentClass[]
+}
+
+model StudentClass {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId String   @db.Uuid
+  classId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+
+  @@unique([studentId, classId])
 }
 
 enum UserRole {

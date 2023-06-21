@@ -75,19 +75,13 @@ const TableButton = ({
   );
 };
 
-const TableRow = ({
-  attendance,
-  userId
-}: {
-  attendance: Attendance;
-  userId: string;
-}) => {
+const TableRow = ({ attendance }: { attendance: Attendance }) => {
   const [loading, setLoading] = useState(false);
   const [alreadyAbsen, setAlreadyAbsen] = useState(
     attendance.status === AttendanceStatus.HADIR ||
       attendance.status === AttendanceStatus.IZIN
   );
-  const [stats, setStats] = useState(attendance.status === AttendanceStatus.TIDAK_HADIR ? "Tidak Hadir" : attendance.status.toLowerCase());
+  const [stats, setStats] = useState<AttendanceStatus>(attendance.status);
   const toast = useToast();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
@@ -132,7 +126,6 @@ const TableRow = ({
     setLoading(true);
     try {
       const result = await absenMutation.mutateAsync({
-        userId,
         eventId
       });
 
@@ -146,7 +139,7 @@ const TableRow = ({
       });
 
       setAlreadyAbsen(true);
-      setStats("Hadir");
+      setStats(AttendanceStatus.HADIR);
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -190,7 +183,7 @@ const TableRow = ({
       </Td>
       <Td>
         {alreadyAbsen ? (
-          <TableButton text={stats} bg='transparent' />
+          <TableButton text={stats.toLowerCase()} bg='transparent' />
         ) : canAbsen ? (
           loading ? (
             <Spinner color='#1C939A' />
@@ -201,12 +194,10 @@ const TableRow = ({
               onClick={() => void handleAbsen(attendance.event.id)}
             />
           )
+        ) : absenDahLewat ? (
+          <TableButton text={stats} bg='transparent' />
         ) : (
-          absenDahLewat ? (
-            <TableButton text={stats} bg='transparent' />
-          ) : (
-            <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
-          )
+          <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
         )}
       </Td>
     </Tr>
@@ -215,8 +206,8 @@ const TableRow = ({
 
 export const MenteeAttendance = () => {
   const { data: session } = useSession();
-  const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session?.user.id ?? ""
+  const eventQuery = api.attendance.getEvents.useQuery(undefined, {
+    enabled: session?.user !== undefined
   });
 
   const [eventList, setEventList] = useState<Attendance[] | undefined>(
@@ -292,13 +283,7 @@ export const MenteeAttendance = () => {
           <Tbody>
             {eventList && eventList?.length > 0 ? (
               eventList.map((item: Attendance, index: number) => {
-                return (
-                  <TableRow
-                    attendance={item}
-                    userId={session?.user.id ?? ""}
-                    key={index}
-                  />
-                );
+                return <TableRow attendance={item} key={index} />;
               })
             ) : (
               <Tr>

@@ -86,7 +86,6 @@ export const EditingModal = ({
       }
 
       const res = await profileMutation.mutateAsync({
-        userId: initialState.userId,
         firstName,
         lastName,
         phoneNumber,

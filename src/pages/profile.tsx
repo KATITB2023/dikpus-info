@@ -12,8 +12,7 @@ export default function Profile() {
     return <Redirect />;
   }
 
-  const role = session?.user.role;
-  const id = session?.user.id;
+  const role = session.user.role;
 
   if (role === UserRole.MENTOR) {
     return (
@@ -25,11 +24,9 @@ export default function Profile() {
     );
   }
 
-  if (!role || !id) return null;
-
   return (
     <PageLayout title='Profile'>
-      <ProfileBody id={id} />
+      <ProfileBody />
     </PageLayout>
   );
 }

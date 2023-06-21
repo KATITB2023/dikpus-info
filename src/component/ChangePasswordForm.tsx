@@ -56,7 +56,6 @@ export default function ChangePasswordForm() {
     setLoading(true);
     try {
       const res = await changePassMutation.mutateAsync({
-        userId: session?.user.id ?? "",
         curPass: currentPass,
         newPass: newPass,
         repeatPass: confirmationPass

@@ -10,35 +10,39 @@ import { TRPCError } from "@trpc/server";
 import { env } from "~/env.mjs";
 
 export const profileRouter = createTRPCRouter({
-  getProfile: studentProcedure
-    .input(z.object({ userId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const studentData = await ctx.prisma.student.findFirst({
-        where: {
-          userId: input.userId
+  getProfile: studentProcedure.query(async ({ ctx }) => {
+    const student = await ctx.prisma.student.findUnique({
+      where: {
+        userId: ctx.session.user.id
+      },
+      include: {
+        user: {
+          select: {
+            nim: true
+          }
         },
-        include: {
-          user: {
-            select: {
-              nim: true
-            }
-          },
-          group: {
-            select: {
-              id: true,
-              group: true,
-              zoomLink: true
-            }
+        group: {
+          select: {
+            id: true,
+            group: true,
+            zoomLink: true
           }
         }
+      }
+    });
+
+    if (!student)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Student not found"
       });
-      return studentData;
-    }),
+
+    return student;
+  }),
 
   editProfile: studentProcedure
     .input(
       z.object({
-        userId: z.string().uuid(),
         profileURL: z.string().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
@@ -48,7 +52,7 @@ export const profileRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.student.update({
         where: {
-          userId: input.userId
+          userId: ctx.session.user.id
         },
         data: {
           imagePath: input.profileURL,
@@ -66,28 +70,26 @@ export const profileRouter = createTRPCRouter({
   changePass: protectedProcedure
     .input(
       z.object({
-        userId: z.string().uuid(),
         curPass: z.string(),
         newPass: z.string(),
         repeatPass: z.string()
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user.findFirst({
+      const user = await ctx.prisma.user.findUnique({
         where: {
-          id: input.userId
+          id: ctx.session.user.id
         },
         select: {
           passwordHash: true
         }
       });
 
-      if (!user) {
+      if (!user)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "User not found"
         });
-      }
 
       const isValid = await compare(input.curPass, user.passwordHash);
       if (!isValid) {
@@ -106,7 +108,7 @@ export const profileRouter = createTRPCRouter({
 
       await ctx.prisma.user.update({
         where: {
-          id: input.userId
+          id: ctx.session.user.id
         },
         data: {
           passwordHash: await hash(input.newPass, env.BCRYPT_SALT)
@@ -119,6 +121,7 @@ export const profileRouter = createTRPCRouter({
     }),
 
   getEmbedYoutubeLink: studentProcedure.query(async ({ ctx }) => {
+    // TODO: Handle multiple links
     return await ctx.prisma.embedYoutube.findFirst({
       select: {
         liveLink: true,
@@ -127,57 +130,56 @@ export const profileRouter = createTRPCRouter({
     });
   }),
 
-  getZoomLink: mentorProcedure
-    .input(z.object({ userId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const mentor = await ctx.prisma.mentor.findFirst({
-        where: {
-          userId: input.userId
-        },
-        select: {
-          id: true
-        }
-      });
-
-      if (!mentor) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Mentor not found"
-        });
+  getZoomLink: mentorProcedure.query(async ({ ctx }) => {
+    const mentor = await ctx.prisma.mentor.findUnique({
+      where: {
+        userId: ctx.session.user.id
+      },
+      select: {
+        id: true
       }
+    });
 
-      const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
-        where: {
-          mentorId: mentor.id
-        },
-        select: {
-          groupId: true
-        }
+    if (!mentor) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Mentor not found"
       });
+    }
 
-      if (!mentorGroup) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Mentor group not found"
-        });
+    // TODO: Handle multiple groups
+    const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
+      where: {
+        mentorId: mentor.id
+      },
+      select: {
+        groupId: true
       }
+    });
 
-      return await ctx.prisma.group.findFirst({
-        where: {
-          id: mentorGroup.groupId
-        },
-        select: {
-          zoomLink: true
-        }
+    if (!mentorGroup) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Mentor group not found"
       });
-    }),
+    }
+
+    return await ctx.prisma.group.findUnique({
+      where: {
+        id: mentorGroup.groupId
+      },
+      select: {
+        zoomLink: true
+      }
+    });
+  }),
 
   editZoomLink: mentorProcedure
-    .input(z.object({ userId: z.string().uuid(), zoomLink: z.string().url() }))
+    .input(z.object({ zoomLink: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
-      const mentor = await ctx.prisma.mentor.findFirst({
+      const mentor = await ctx.prisma.mentor.findUnique({
         where: {
-          userId: input.userId
+          userId: ctx.session.user.id
         },
         select: {
           id: true
@@ -191,6 +193,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
+      // TODO: Handle multiple groups
       const mentorGroup = await ctx.prisma.mentorGroup.findFirst({
         where: {
           mentorId: mentor.id

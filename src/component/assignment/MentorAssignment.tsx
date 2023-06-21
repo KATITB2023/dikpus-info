@@ -25,9 +25,12 @@ export default function MentorAssignment() {
   const toast = useToast();
 
   const assignmentListQuery = api.assignment.getAssignmentNameList.useQuery();
-  const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery({
-    userId: session?.user.id ?? ""
-  });
+  const assignmentResultQuery = api.assignment.getAssignmentResult.useQuery(
+    undefined,
+    {
+      enabled: session?.user !== undefined
+    }
+  );
 
   const assignmentList = assignmentListQuery.data;
   const assignmentResult = assignmentResultQuery.data;

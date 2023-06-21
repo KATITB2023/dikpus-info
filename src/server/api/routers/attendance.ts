@@ -8,41 +8,38 @@ import {
 } from "~/server/api/trpc";
 
 export const attendanceRouter = createTRPCRouter({
-  getEvents: studentProcedure
-    .input(z.object({ userId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const student = await ctx.prisma.student.findFirst({
-        where: {
-          userId: input.userId
-        }
-      });
-
-      if (!student) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Student not found"
-        });
+  getEvents: studentProcedure.query(async ({ ctx }) => {
+    const student = await ctx.prisma.student.findUnique({
+      where: {
+        userId: ctx.session.user.id
       }
+    });
 
-      const attendance = await ctx.prisma.attendance.findMany({
-        where: {
-          studentId: student.id
-        },
-        select: {
-          status: true,
-          event: true
-        }
+    if (!student)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Student not found"
       });
 
-      return attendance;
-    }),
+    const attendance = await ctx.prisma.attendance.findMany({
+      where: {
+        studentId: student.id
+      },
+      select: {
+        status: true,
+        event: true
+      }
+    });
+
+    return attendance;
+  }),
 
   setAttendance: studentProcedure
-    .input(z.object({ userId: z.string().uuid(), eventId: z.string().uuid() }))
+    .input(z.object({ eventId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const student = await ctx.prisma.student.findFirst({
+      const student = await ctx.prisma.student.findUnique({
         where: {
-          userId: input.userId
+          userId: ctx.session.user.id
         },
         select: {
           id: true
@@ -56,7 +53,7 @@ export const attendanceRouter = createTRPCRouter({
         });
       }
 
-      const event = await ctx.prisma.event.findFirst({
+      const event = await ctx.prisma.event.findUnique({
         where: {
           id: input.eventId
         }
@@ -76,7 +73,7 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (attendance && attendance.status === "HADIR") {
+      if (attendance && attendance.status === AttendanceStatus.HADIR) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Attendance already set"
@@ -115,125 +112,118 @@ export const attendanceRouter = createTRPCRouter({
       };
     }),
 
-  getAttendance: mentorProcedure
-    .input(
-      z.object({
-        userId: z.string().uuid(),
-        tanggal: z.string().optional()
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      // get mentorId
-      const mentor = await ctx.prisma.mentor.findFirst({
-        where: {
-          userId: input.userId
-        },
-        select: {
-          id: true
-        }
-      });
-
-      // error handling (kalau gak ada ini yg students gak mau jalan)
-      if (!mentor) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Mentor not found"
-        });
+  getAttendance: mentorProcedure.query(async ({ ctx }) => {
+    // get mentorId
+    const mentor = await ctx.prisma.mentor.findUnique({
+      where: {
+        userId: ctx.session.user.id
+      },
+      select: {
+        id: true
       }
+    });
 
-      // get mentor group
-      const mentorGroups = await ctx.prisma.mentorGroup.findMany({
-        where: {
-          mentorId: mentor.id
-        },
-        select: {
-          groupId: true
-        }
+    // error handling (kalau gak ada ini yg students gak mau jalan)
+    if (!mentor) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Mentor not found"
       });
+    }
 
-      if (mentorGroups.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Mentor group not found"
-        });
+    // get mentor group
+    const mentorGroups = await ctx.prisma.mentorGroup.findMany({
+      where: {
+        mentorId: mentor.id
+      },
+      select: {
+        groupId: true
       }
+    });
 
-      const groups = await ctx.prisma.group.findMany({
-        where: {
-          id: {
-            in: mentorGroups.map((mentorGroup) => mentorGroup.groupId)
-          }
-        },
-        select: {
-          id: true,
-          group: true
-        }
+    if (mentorGroups.length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Mentor group not found"
       });
+    }
 
-      if (groups.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Group not found"
-        });
+    const groups = await ctx.prisma.group.findMany({
+      where: {
+        id: {
+          in: mentorGroups.map((mentorGroup) => mentorGroup.groupId)
+        }
+      },
+      select: {
+        id: true,
+        group: true
       }
+    });
 
-      // get all studentId
-      const students = await ctx.prisma.student.findMany({
-        where: {
-          groupId: {
-            in: groups.map((group) => group.id)
-          }
-        },
-        select: {
-          id: true
-        }
+    if (groups.length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Group not found"
       });
+    }
 
-      const studentIds = students.map((student) => student.id);
+    // get all studentId
+    const students = await ctx.prisma.student.findMany({
+      where: {
+        groupId: {
+          in: groups.map((group) => group.id)
+        }
+      },
+      select: {
+        id: true
+      }
+    });
 
-      const events = await ctx.prisma.event.findMany({
-        select: {
-          title: true,
-          startTime: true,
-          endTime: true,
-          attendances: {
-            select: {
-              id: true,
-              status: true,
-              studentId: true,
-              eventId: true,
-              student: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  group: {
-                    select: {
-                      group: true
-                    }
+    const studentIds = students.map((student) => student.id);
+
+    const events = await ctx.prisma.event.findMany({
+      select: {
+        title: true,
+        startTime: true,
+        endTime: true,
+        attendances: {
+          select: {
+            id: true,
+            status: true,
+            studentId: true,
+            eventId: true,
+            student: {
+              select: {
+                firstName: true,
+                lastName: true,
+                group: {
+                  select: {
+                    group: true
                   }
                 }
-              },
-              reason: {
-                select: {
-                  reason: true
-                }
+              }
+            },
+            reason: {
+              select: {
+                reason: true
               }
             }
           }
         }
-      });
+      }
+    });
 
-      return {
-        event: events.map((event) => {
-          return {
-            ...event,
-            attendances: event.attendances.filter((attendance) =>
-              studentIds.includes(attendance.studentId)
-            )
-          };
-        })
-      };
-    }),
+    return {
+      event: events.map((event) => {
+        return {
+          ...event,
+          attendances: event.attendances.filter((attendance) =>
+            studentIds.includes(attendance.studentId)
+          )
+        };
+      })
+    };
+  }),
 
   getEventList: mentorProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.event.findMany({

@@ -9,6 +9,7 @@ import {
   Td,
   Box
 } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
@@ -16,13 +17,12 @@ import { EditingModal } from "~/component/profile/EditingModal";
 import { api } from "~/utils/api";
 import { FolderEnum } from "~/utils/file";
 
-interface ProfileBodyProps {
-  id: string;
-}
-
-export default function ProfileBody({ id }: ProfileBodyProps) {
+export default function ProfileBody() {
+  const { data: session } = useSession();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const profileQuery = api.profile.getProfile.useQuery({ userId: id });
+  const profileQuery = api.profile.getProfile.useQuery(undefined, {
+    enabled: session?.user !== undefined
+  });
   const generateURLForDownload =
     api.storage.generateURLForDownload.useMutation();
 
