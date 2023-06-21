@@ -233,7 +233,7 @@ export const profileRouter = createTRPCRouter({
         message: "Student not found"
       });
 
-    const studentClass = await ctx.prisma.studentClass.findMany({
+    const studentClasses = await ctx.prisma.studentClass.findMany({
       where: {
         studentId: student.id
       },
@@ -242,7 +242,7 @@ export const profileRouter = createTRPCRouter({
       }
     });
 
-    const classIds = studentClass.map((c) => c.classId);
+    const classIds = studentClasses.map((studentClass) => studentClass.classId);
 
     const classes = await ctx.prisma.class.findMany({
       where: {
@@ -251,17 +251,21 @@ export const profileRouter = createTRPCRouter({
         }
       },
       select: {
-        broadcastTemplate: true
+        broadcastTemplate: true,
+        zoomLink: true,
+        type: true
       }
     });
 
-    const broadcasts = classes.map((c) =>
-      sprintf(c.broadcastTemplate, {
+    const broadcasts = classes.map(({ broadcastTemplate, zoomLink, type }) => ({
+      broadcastTemplate: sprintf(broadcastTemplate, {
         name: student.lastName
           ? `${student.firstName} ${student.lastName}`
           : student.firstName
-      })
-    );
+      }),
+      type,
+      zoomLink
+    }));
 
     return {
       broadcasts

@@ -20,7 +20,7 @@ model User {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nim          String   @unique
   passwordHash String
-  role         UserRole @default(STUDENT)
+  role         UserRole
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
 
@@ -154,11 +154,13 @@ model EmbedYoutube {
 }
 
 model Class {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String   @db.VarChar(255)
-  broadcastTemplate String   @db.Text
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String    @db.VarChar(255)
+  broadcastTemplate String    @db.Text
+  zoomLink          String    @db.VarChar(255)
+  type              ClassType
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
 
   students StudentClass[]
 }
@@ -190,4 +192,9 @@ enum AttendanceStatus {
   HADIR
   IZIN
   TIDAK_HADIR
+}
+
+enum ClassType {
+  SKILL
+  ISSUE
 }
