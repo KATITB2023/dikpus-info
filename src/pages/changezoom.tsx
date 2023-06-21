@@ -11,9 +11,7 @@ export default function ChangeZoom() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (!session) {
-    return <Redirect />;
-  }
+  if (!session) return <Redirect />;
 
   const role = session?.user.role;
 

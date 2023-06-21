@@ -8,9 +8,7 @@ import PageLayout from "~/layout";
 export default function Profile() {
   const { data: session } = useSession();
 
-  if (!session) {
-    return <Redirect />;
-  }
+  if (!session) return <Redirect />;
 
   const role = session.user.role;
 

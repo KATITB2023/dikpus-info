@@ -125,7 +125,11 @@ export default function Navbar({ title, titleOnly }: Props) {
                 w='100%'
                 _hover={{ bg: "#2FC1AD" }}
                 transition='all 0.2s ease-in-out'
-                onClick={() => void signOut()}
+                onClick={() =>
+                  void signOut({
+                    callbackUrl: "/"
+                  })
+                }
               >
                 <Flex
                   flexDir='row'

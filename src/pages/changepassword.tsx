@@ -10,9 +10,7 @@ export default function ChangePassword() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (!session) {
-    return <Redirect />;
-  }
+  if (!session) return <Redirect />;
 
   return (
     <PageLayout title='Password' titleOnly={true}>
