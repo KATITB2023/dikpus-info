@@ -22,7 +22,7 @@ import { TRPCClientError } from "@trpc/client";
 import { saveAs } from "file-saver";
 import Link from "next/link";
 import { api } from "~/utils/api";
-import { getDate, getDateList, validTime } from "~/utils/date";
+import { getDate, getDateList, validTime, afterTime } from "~/utils/date";
 import { FolderEnum, downloadFile } from "~/utils/file";
 
 export interface Attendance {
@@ -87,7 +87,7 @@ const TableRow = ({
     attendance.status === AttendanceStatus.HADIR ||
       attendance.status === AttendanceStatus.IZIN
   );
-  const [stats, setStats] = useState(attendance.status.toLowerCase());
+  const [stats, setStats] = useState(attendance.status === AttendanceStatus.TIDAK_HADIR ? "Tidak Hadir" : attendance.status.toLowerCase());
   const toast = useToast();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
@@ -100,6 +100,7 @@ const TableRow = ({
     attendance.event.startTime,
     attendance.event.endTime
   );
+  const absenDahLewat = afterTime(attendance.event.endTime);
 
   const handleDownloadFile = async () => {
     if (!attendance.event.materialPath) return null;
@@ -201,7 +202,11 @@ const TableRow = ({
             />
           )
         ) : (
-          <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
+          absenDahLewat ? (
+            <TableButton text={stats} bg='transparent' />
+          ) : (
+            <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
+          )
         )}
       </Td>
     </Tr>
