@@ -5,21 +5,15 @@ import { UserRole } from "@prisma/client";
 import { Center, Text, AspectRatio, Heading, Flex } from "@chakra-ui/react";
 import { api } from "~/utils/api";
 
-interface Props {
-  liveLink: string;
-  fallbackLink: string;
-}
-
 export default function Live() {
   const { data: session } = useSession();
-  const youtubeQuery: Props | null | undefined =
-    api.profile.getEmbedYoutubeLink.useQuery().data;
+  const getEmbedYoutubeLink = api.profile.getEmbedYoutubeLink.useQuery();
 
-  if (!session) {
-    return <Redirect />;
-  }
+  const youtubeData = getEmbedYoutubeLink.data;
 
-  const role = session?.user.role;
+  if (!session) return <Redirect />;
+
+  const role = session.user.role;
 
   if (role === UserRole.MENTOR) {
     return (
@@ -44,7 +38,7 @@ export default function Live() {
         </Heading>
         <AspectRatio ratio={16 / 9} w={{ base: "80%", lg: "90ch" }}>
           <iframe
-            src={youtubeQuery?.liveLink || youtubeQuery?.fallbackLink}
+            src={youtubeData?.liveLink || youtubeData?.fallbackLink}
             title='YouTube video player'
             allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
             allowFullScreen

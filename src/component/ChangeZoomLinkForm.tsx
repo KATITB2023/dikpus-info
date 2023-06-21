@@ -18,8 +18,8 @@ export default function ChangeZoomLinkForm() {
   const { data: session } = useSession();
   const toast = useToast();
   const router = useRouter();
-  const currentZoomLink = api.profile.getZoomLink.useQuery({
-    userId: session?.user.id ?? ""
+  const currentZoomLink = api.profile.getZoomLink.useQuery(undefined, {
+    enabled: session?.user !== undefined
   });
   const editZoomMutation = api.profile.editZoomLink.useMutation();
 
@@ -46,7 +46,6 @@ export default function ChangeZoomLinkForm() {
     setLoading(true);
     try {
       const res = await editZoomMutation.mutateAsync({
-        userId: session?.user.id ?? "",
         zoomLink
       });
 

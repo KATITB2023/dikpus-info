@@ -8,7 +8,7 @@ export const utilityRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string(),
-        materialPath: z.string(),
+        materialPath: z.string().optional(),
         youtubeLink: z.string().optional(),
         startTime: z.coerce.date(),
         endTime: z.coerce.date()

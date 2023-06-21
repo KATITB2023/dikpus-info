@@ -17,12 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { BiDownload } from "react-icons/bi";
 import { type IconType } from "react-icons/lib";
-import { api } from "~/utils/api";
-import { getDate, getDateList, validTime } from "~/utils/date";
-import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
+import { saveAs } from "file-saver";
 import Link from "next/link";
+import { api } from "~/utils/api";
+import { getDate, getDateList, validTime, afterTime } from "~/utils/date";
+import { FolderEnum, downloadFile } from "~/utils/file";
 
 export interface Attendance {
   status: AttendanceStatus;
@@ -74,19 +75,13 @@ const TableButton = ({
   );
 };
 
-const TableRow = ({
-  attendance,
-  userId
-}: {
-  attendance: Attendance;
-  userId: string;
-}) => {
+const TableRow = ({ attendance }: { attendance: Attendance }) => {
   const [loading, setLoading] = useState(false);
   const [alreadyAbsen, setAlreadyAbsen] = useState(
     attendance.status === AttendanceStatus.HADIR ||
       attendance.status === AttendanceStatus.IZIN
   );
-  const [stats, setStats] = useState(attendance.status.toLowerCase());
+  const [stats, setStats] = useState<AttendanceStatus>(attendance.status);
   const toast = useToast();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
@@ -99,26 +94,20 @@ const TableRow = ({
     attendance.event.startTime,
     attendance.event.endTime
   );
+  const absenDahLewat = afterTime(attendance.event.endTime);
 
-  const downloadFile = async (filePath: string) => {
+  const handleDownloadFile = async () => {
+    if (!attendance.event.materialPath) return null;
+
     try {
+      const filePath = attendance.event.materialPath;
       const { url } = await downloadMutation.mutateAsync({
         folder: FolderEnum.MATERIAL,
         filename: filePath
       });
 
-      const file = await fetch(url);
-      const blob = await file.blob();
-      const link = document.createElement("a");
-
-      link.href = window.URL.createObjectURL(blob);
-      link.download =
-        "Materi " +
-        attendance.event.title +
-        filePath.slice(filePath.lastIndexOf("."));
-      link.click();
-
-      URL.revokeObjectURL(link.href);
+      const content = await downloadFile(url);
+      saveAs(content, filePath);
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -137,7 +126,6 @@ const TableRow = ({
     setLoading(true);
     try {
       const result = await absenMutation.mutateAsync({
-        userId,
         eventId
       });
 
@@ -151,7 +139,7 @@ const TableRow = ({
       });
 
       setAlreadyAbsen(true);
-      setStats("Hadir");
+      setStats(AttendanceStatus.HADIR);
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -173,12 +161,12 @@ const TableRow = ({
       {/* <Td>{waktu}</Td> */}
       <Td>{attendance.event.title}</Td>
       <Td>
-        {attendance.event.materialPath !== "" ? (
+        {attendance.event.materialPath !== null ? (
           <TableButton
             icon={BiDownload}
             text='Download'
             bg='#1C939A'
-            onClick={() => void downloadFile(attendance.event.materialPath)}
+            onClick={() => void handleDownloadFile()}
           />
         ) : (
           <>-</>
@@ -186,8 +174,8 @@ const TableRow = ({
       </Td>
       <Td>
         {attendance.event.youtubeLink !== null ? (
-          <Link href={attendance.event.youtubeLink ?? "/"} target='_blank'>
-            <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
+          <Link href={attendance.event.youtubeLink} target='_blank'>
+            <TableButton text='Youtube' bg='#1C939A' />
           </Link>
         ) : (
           <>-</>
@@ -195,7 +183,7 @@ const TableRow = ({
       </Td>
       <Td>
         {alreadyAbsen ? (
-          <TableButton text={stats} bg='transparent' />
+          <TableButton text={stats.toLowerCase()} bg='transparent' />
         ) : canAbsen ? (
           loading ? (
             <Spinner color='#1C939A' />
@@ -206,6 +194,8 @@ const TableRow = ({
               onClick={() => void handleAbsen(attendance.event.id)}
             />
           )
+        ) : absenDahLewat ? (
+          <TableButton text={stats} bg='transparent' />
         ) : (
           <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
         )}
@@ -216,8 +206,8 @@ const TableRow = ({
 
 export const MenteeAttendance = () => {
   const { data: session } = useSession();
-  const eventQuery = api.attendance.getEvents.useQuery({
-    userId: session?.user.id ?? ""
+  const eventQuery = api.attendance.getEvents.useQuery(undefined, {
+    enabled: session?.user !== undefined
   });
 
   const [eventList, setEventList] = useState<Attendance[] | undefined>(
@@ -293,13 +283,7 @@ export const MenteeAttendance = () => {
           <Tbody>
             {eventList && eventList?.length > 0 ? (
               eventList.map((item: Attendance, index: number) => {
-                return (
-                  <TableRow
-                    attendance={item}
-                    userId={session?.user.id ?? ""}
-                    key={index}
-                  />
-                );
+                return <TableRow attendance={item} key={index} />;
               })
             ) : (
               <Tr>

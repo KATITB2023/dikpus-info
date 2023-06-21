@@ -43,7 +43,7 @@ export default function ChangePasswordForm() {
 
   const isNewPassError = currentPass === newPass && newPass !== "";
   const isConfirmationPassError =
-    confirmationPass != newPass && confirmationPass !== "";
+    confirmationPass !== newPass && confirmationPass !== "";
   const isError =
     isNewPassError ||
     isConfirmationPassError ||
@@ -53,13 +53,14 @@ export default function ChangePasswordForm() {
 
   const handleSubmitPass = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (isError) return;
+
     setLoading(true);
     try {
       const res = await changePassMutation.mutateAsync({
-        userId: session?.user.id ?? "",
         curPass: currentPass,
-        newPass: newPass,
-        repeatPass: confirmationPass
+        newPass: newPass
       });
 
       toast({

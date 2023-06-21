@@ -8,12 +8,9 @@ import PageLayout from "~/layout";
 export default function Profile() {
   const { data: session } = useSession();
 
-  if (!session) {
-    return <Redirect />;
-  }
+  if (!session) return <Redirect />;
 
-  const role = session?.user.role;
-  const id = session?.user.id;
+  const role = session.user.role;
 
   if (role === UserRole.MENTOR) {
     return (
@@ -25,11 +22,9 @@ export default function Profile() {
     );
   }
 
-  if (!role || !id) return null;
-
   return (
     <PageLayout title='Profile'>
-      <ProfileBody id={id} />
+      <ProfileBody />
     </PageLayout>
   );
 }

@@ -31,9 +31,9 @@ interface EditingModalProps {
   initialState: {
     userId: string;
     firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    imageUrl: string;
+    lastName?: string;
+    phoneNumber?: string;
+    imageUrl?: string;
   };
   toggleEditing: () => void;
 }
@@ -46,11 +46,15 @@ export const EditingModal = ({
   const toast = useToast();
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>(initialState.firstName);
-  const [lastName, setLastName] = useState<string>(initialState.lastName);
-  const [phoneNumber, setPhoneNumber] = useState<string>(
+  const [lastName, setLastName] = useState<string | undefined>(
+    initialState.lastName
+  );
+  const [phoneNumber, setPhoneNumber] = useState<string | undefined>(
     initialState.phoneNumber
   );
-  const [imageUrl, setImageUrl] = useState<string>(initialState.imageUrl);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(
+    initialState.imageUrl
+  );
   const { onClose } = useDisclosure();
 
   const profileMutation = api.profile.editProfile.useMutation();
@@ -65,24 +69,23 @@ export const EditingModal = ({
     setIsUploading(true);
     let newImageUrl = initialState.imageUrl;
 
-    if (profilePic) {
-      const { url: uploadURL, sanitizedFilename } =
-        await generateURLForUpload.mutateAsync({
-          folder: FolderEnum.PROFILE,
-          filename: `${initialState.userId}.png`,
-          contentType: AllowableFileTypeEnum.PNG
-        });
-
-      await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
-
-      newImageUrl = sanitizedFilename;
-    } else {
-      newImageUrl = imageUrl;
-    }
-
     try {
+      if (profilePic) {
+        const { url: uploadURL, sanitizedFilename } =
+          await generateURLForUpload.mutateAsync({
+            folder: FolderEnum.PROFILE,
+            filename: `${initialState.userId}.png`,
+            contentType: AllowableFileTypeEnum.PNG
+          });
+
+        await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
+
+        newImageUrl = sanitizedFilename;
+      } else {
+        newImageUrl = imageUrl;
+      }
+
       const res = await profileMutation.mutateAsync({
-        userId: initialState.userId,
         firstName,
         lastName,
         phoneNumber,

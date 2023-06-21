@@ -9,38 +9,40 @@ import {
   Td,
   Box
 } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import { EditingModal } from "~/component/profile/EditingModal";
 import { api } from "~/utils/api";
 import { FolderEnum } from "~/utils/file";
 
-interface ProfileBodyProps {
-  id: string;
-}
-
-export default function ProfileBody({ id }: ProfileBodyProps) {
+export default function ProfileBody() {
+  const { data: session } = useSession();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const profileQuery = api.profile.getProfile.useQuery({ userId: id });
-
-  useEffect(() => {
-    if (!profileQuery.data || !profileQuery.data.imagePath) return;
-
-    const generateURLForDownload =
-      api.storage.generateURLForDownload.useMutation();
-
-    generateURLForDownload
-      .mutateAsync({
-        folder: FolderEnum.PROFILE,
-        filename: profileQuery.data.imagePath
-      })
-      .then((response) => setImageUrl(response.url))
-      .catch((err) => console.log(err));
-  }, [profileQuery.data]);
+  const profileQuery = api.profile.getProfile.useQuery(undefined, {
+    enabled: session?.user !== undefined
+  });
+  const generateURLForDownload =
+    api.storage.generateURLForDownload.useMutation();
 
   const student = profileQuery.data;
+  const imagePath = student?.imagePath;
+  const downloadMutate = generateURLForDownload.mutate;
+
+  const fetchData = useCallback(() => {
+    // Fetch data logic
+    if (!imagePath) return;
+
+    downloadMutate({
+      folder: FolderEnum.PROFILE,
+      filename: imagePath
+    });
+  }, [imagePath, downloadMutate]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (!student) return null;
 
@@ -73,8 +75,8 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
         flexDir={{ base: "column", lg: "row" }}
         gap={{ base: 5, lg: 12 }}
       >
-        {imageUrl ? (
-          <Img src={imageUrl} w='10em' h='15em' />
+        {student.imagePath ? (
+          <Img src={generateURLForDownload.data?.url} w='10em' h='15em' />
         ) : (
           <Flex
             justifyContent='center'
@@ -104,9 +106,9 @@ export default function ProfileBody({ id }: ProfileBodyProps) {
               initialState={{
                 userId: student.userId,
                 firstName: student.firstName,
-                lastName: student.lastName || "",
-                phoneNumber: student.phoneNumber || "",
-                imageUrl: imageUrl
+                lastName: student.lastName || undefined,
+                phoneNumber: student.phoneNumber || undefined,
+                imageUrl: generateURLForDownload.data?.url
               }}
             />
           </Flex>

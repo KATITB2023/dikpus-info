@@ -9,9 +9,7 @@ export default function Assignment() {
   const { data: session } = useSession();
   const role = session?.user.role;
 
-  if (!session) {
-    return <Redirect />;
-  }
+  if (!session) return <Redirect />;
 
   return (
     <PageLayout title='Tugas'>

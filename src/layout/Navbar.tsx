@@ -17,7 +17,7 @@ import {
   MdOutlineLogout,
   MdPassword
 } from "react-icons/md";
-import { FaYoutube } from "react-icons/fa";
+import { FaYoutube, FaUniversity } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { signOut, useSession } from "next-auth/react";
 
@@ -43,6 +43,11 @@ export default function Navbar({ title, titleOnly }: Props) {
         name: "Live",
         href: "/live",
         icon: <FaYoutube size={20} />
+      },
+      {
+        name: "Ekskul",
+        href: "/ekskul",
+        icon: <FaUniversity size={20} />
       },
       {
         name: "Password",
@@ -125,7 +130,11 @@ export default function Navbar({ title, titleOnly }: Props) {
                 w='100%'
                 _hover={{ bg: "#2FC1AD" }}
                 transition='all 0.2s ease-in-out'
-                onClick={() => void signOut()}
+                onClick={() =>
+                  void signOut({
+                    callbackUrl: "/"
+                  })
+                }
               >
                 <Flex
                   flexDir='row'

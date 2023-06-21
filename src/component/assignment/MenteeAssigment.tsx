@@ -20,11 +20,9 @@ import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
 import { TRPCClientError } from "@trpc/client";
 
 function AssignmentBox({
-  tugas,
-  userId
+  tugas
 }: {
   tugas: RouterOutputs["assignment"]["getAssignmentDescription"][number];
-  userId: string;
 }) {
   const toast = useToast();
   const [isDragActive, setIsDragActive] = useState(false);
@@ -95,8 +93,7 @@ function AssignmentBox({
 
     try {
       const result = await uploadMutation.mutateAsync({
-        assignmentId: tugas.id ?? "",
-        userId,
+        assignmentId: tugas.id,
         fileUrl: sanitizedFilename
       });
       toast({
@@ -313,13 +310,13 @@ function AssignmentBox({
 
 export default function MenteeAssigment() {
   const { data: session } = useSession();
-  const assignmentsDetails = api.assignment.getAssignmentDescription.useQuery({
-    userId: session?.user.id ?? ""
-  }).data;
 
-  const assignments = assignmentsDetails?.map((item) => {
-    return item.title;
-  });
+  const getAssignmentDescription =
+    api.assignment.getAssignmentDescription.useQuery(undefined, {
+      enabled: session?.user !== undefined
+    });
+
+  const assignmentsDetails = getAssignmentDescription.data;
 
   const handleFilterAssignment: React.MouseEventHandler<HTMLButtonElement> = (
     e
@@ -359,7 +356,7 @@ export default function MenteeAssigment() {
     );
   });
 
-  if (assignments && assignments.length > 0) {
+  if (assignmentsDetails && assignmentsDetails.length > 0) {
     return (
       <>
         <Flex>
@@ -396,11 +393,11 @@ export default function MenteeAssigment() {
               >
                 Semua tugas
               </MenuItem>
-              {assignments.map((item, index: number) => {
+              {assignmentsDetails.map((item, index: number) => {
                 return (
                   <MenuItem
                     key={index}
-                    name={item}
+                    name={item.title}
                     bg='#1C939A'
                     w='100%'
                     _hover={{ opacity: 0.7, bg: "#12122E" }}
@@ -408,7 +405,7 @@ export default function MenteeAssigment() {
                     px={"20px"}
                     onClick={handleFilterAssignment}
                   >
-                    {item}
+                    {item.title}
                   </MenuItem>
                 );
               })}
@@ -418,10 +415,7 @@ export default function MenteeAssigment() {
         {assignmentsDetails?.map((item, index: number) => {
           return (
             <Box key={index}>
-              <AssignmentBox
-                tugas={item}
-                userId={session?.user.id ?? ""}
-              ></AssignmentBox>
+              <AssignmentBox tugas={item}></AssignmentBox>
             </Box>
           );
         })}

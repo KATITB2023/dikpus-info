@@ -27,6 +27,12 @@ export const validTime = (startTime: Date, endTime: Date) => {
   return currentTime >= startTime && currentTime <= endTime;
 };
 
+export const afterTime = (endTime: Date) => {
+  const currentTime = new Date(Date.now());
+  
+  return currentTime > endTime;
+}
+
 export const getDateList = (attendances: Attendance[] | undefined) => {
   const dateList = attendances?.map((attendance: Attendance) => {
     return getDate(attendance.event.startTime);
