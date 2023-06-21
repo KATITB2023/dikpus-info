@@ -236,10 +236,13 @@ export const profileRouter = createTRPCRouter({
     const studentClass = await ctx.prisma.studentClass.findMany({
       where: {
         studentId: student.id
+      },
+      select: {
+        classId: true
       }
     });
 
-    const classIds = studentClass.map((c) => c.id);
+    const classIds = studentClass.map((c) => c.classId);
 
     const classes = await ctx.prisma.class.findMany({
       where: {
