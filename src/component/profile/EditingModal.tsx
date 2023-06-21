@@ -33,7 +33,7 @@ interface EditingModalProps {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-    imageUrl: string;
+    imageUrl?: string;
   };
   toggleEditing: () => void;
 }
@@ -50,7 +50,9 @@ export const EditingModal = ({
   const [phoneNumber, setPhoneNumber] = useState<string>(
     initialState.phoneNumber
   );
-  const [imageUrl, setImageUrl] = useState<string>(initialState.imageUrl);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(
+    initialState.imageUrl
+  );
   const { onClose } = useDisclosure();
 
   const profileMutation = api.profile.editProfile.useMutation();
@@ -65,22 +67,22 @@ export const EditingModal = ({
     setIsUploading(true);
     let newImageUrl = initialState.imageUrl;
 
-    if (profilePic) {
-      const { url: uploadURL, sanitizedFilename } =
-        await generateURLForUpload.mutateAsync({
-          folder: FolderEnum.PROFILE,
-          filename: `${initialState.userId}.png`,
-          contentType: AllowableFileTypeEnum.PNG
-        });
-
-      await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
-
-      newImageUrl = sanitizedFilename;
-    } else {
-      newImageUrl = imageUrl;
-    }
-
     try {
+      if (profilePic) {
+        const { url: uploadURL, sanitizedFilename } =
+          await generateURLForUpload.mutateAsync({
+            folder: FolderEnum.PROFILE,
+            filename: `${initialState.userId}.png`,
+            contentType: AllowableFileTypeEnum.PNG
+          });
+
+        await uploadFile(uploadURL, profilePic, AllowableFileTypeEnum.PNG);
+
+        newImageUrl = sanitizedFilename;
+      } else {
+        newImageUrl = imageUrl;
+      }
+
       const res = await profileMutation.mutateAsync({
         userId: initialState.userId,
         firstName,
