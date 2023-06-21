@@ -9,14 +9,11 @@ const prisma = new PrismaClient();
 interface RawData {
   nim: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  fakultas: string;
   rawGroup: string;
 }
 
 async function main() {
-  const groupFilePath = path.resolve(__dirname, "data/student.csv");
+  const groupFilePath = path.resolve(__dirname, "data/mentor.csv");
   const groupFileContent = fs.readFileSync(groupFilePath, {
     encoding: "utf-8"
   });
@@ -25,14 +22,7 @@ async function main() {
     groupFileContent,
     {
       delimiter: ",",
-      columns: [
-        "nim",
-        "password",
-        "firstName",
-        "lastName",
-        "fakultas",
-        "rawGroup"
-      ]
+      columns: ["nim", "password", "rawGroup"]
     },
     async (err, records: RawData[]) => {
       if (err) console.error(err);
@@ -50,13 +40,14 @@ async function main() {
             data: {
               nim: record.nim,
               passwordHash: await hash(record.password, 10),
-              role: UserRole.STUDENT,
-              student: {
+              role: UserRole.MENTOR,
+              mentor: {
                 create: {
-                  firstName: record.firstName,
-                  lastName: record.lastName,
-                  fakultas: record.fakultas,
-                  groupId: group.id
+                  mentorGroup: {
+                    create: {
+                      groupId: group.id
+                    }
+                  }
                 }
               }
             }

@@ -17,12 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { BiDownload } from "react-icons/bi";
 import { type IconType } from "react-icons/lib";
-import { api } from "~/utils/api";
-import { getDate, getDateList, validTime } from "~/utils/date";
-import { FolderEnum } from "~/utils/file";
 import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
+import { saveAs } from "file-saver";
 import Link from "next/link";
+import { api } from "~/utils/api";
+import { getDate, getDateList, validTime } from "~/utils/date";
+import { FolderEnum, downloadFile } from "~/utils/file";
 
 export interface Attendance {
   status: AttendanceStatus;
@@ -100,25 +101,18 @@ const TableRow = ({
     attendance.event.endTime
   );
 
-  const downloadFile = async (filePath: string) => {
+  const handleDownloadFile = async () => {
+    if (!attendance.event.materialPath) return null;
+
     try {
+      const filePath = attendance.event.materialPath;
       const { url } = await downloadMutation.mutateAsync({
         folder: FolderEnum.MATERIAL,
         filename: filePath
       });
 
-      const file = await fetch(url);
-      const blob = await file.blob();
-      const link = document.createElement("a");
-
-      link.href = window.URL.createObjectURL(blob);
-      link.download =
-        "Materi " +
-        attendance.event.title +
-        filePath.slice(filePath.lastIndexOf("."));
-      link.click();
-
-      URL.revokeObjectURL(link.href);
+      const content = await downloadFile(url);
+      saveAs(content, filePath);
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -173,12 +167,12 @@ const TableRow = ({
       {/* <Td>{waktu}</Td> */}
       <Td>{attendance.event.title}</Td>
       <Td>
-        {attendance.event.materialPath !== "" ? (
+        {attendance.event.materialPath !== null ? (
           <TableButton
             icon={BiDownload}
             text='Download'
             bg='#1C939A'
-            onClick={() => void downloadFile(attendance.event.materialPath)}
+            onClick={() => void handleDownloadFile()}
           />
         ) : (
           <>-</>
@@ -186,8 +180,8 @@ const TableRow = ({
       </Td>
       <Td>
         {attendance.event.youtubeLink !== null ? (
-          <Link href={attendance.event.youtubeLink ?? "/"} target='_blank'>
-            <TableButton text='Youtube' bg='#1C939A' onClick={() => void {}} />
+          <Link href={attendance.event.youtubeLink} target='_blank'>
+            <TableButton text='Youtube' bg='#1C939A' />
           </Link>
         ) : (
           <>-</>
