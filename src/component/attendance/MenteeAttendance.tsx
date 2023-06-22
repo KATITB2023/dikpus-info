@@ -81,7 +81,6 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
     attendance.status === AttendanceStatus.HADIR ||
       attendance.status === AttendanceStatus.IZIN
   );
-  const [stats, setStats] = useState<AttendanceStatus>(attendance.status);
   const toast = useToast();
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
@@ -139,7 +138,7 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
       });
 
       setAlreadyAbsen(true);
-      setStats(AttendanceStatus.HADIR);
+      attendance.status = AttendanceStatus.HADIR;
     } catch (err: unknown) {
       if (!(err instanceof TRPCClientError)) throw err;
 
@@ -183,7 +182,10 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
       </Td>
       <Td>
         {alreadyAbsen ? (
-          <TableButton text={stats.toLowerCase()} bg='transparent' />
+          <TableButton
+            text={attendance.status.toLowerCase()}
+            bg='transparent'
+          />
         ) : canAbsen ? (
           loading ? (
             <Spinner color='#1C939A' />
@@ -195,7 +197,10 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
             />
           )
         ) : absenDahLewat ? (
-          <TableButton text={stats} bg='transparent' />
+          <TableButton
+            text={attendance.status.toLowerCase().replaceAll("_", " ")}
+            bg='transparent'
+          />
         ) : (
           <TableButton text='Belum Dibuka' bg='#E8553E' isDisabled />
         )}
@@ -213,27 +218,23 @@ export const MenteeAttendance = () => {
   const [eventList, setEventList] = useState<Attendance[] | undefined>(
     eventQuery?.data
   );
+  const [filter, setFilter] = useState<string>("");
 
   const dateList = getDateList(eventQuery?.data);
   const tableHeader = ["Tanggal", "Topik", "Materi", "Video", "Absen"];
 
-  const handleSelect = (date: string) => {
-    if (date === "") {
-      setEventList(eventQuery?.data);
-      return;
+  useEffect(() => {
+    let toFilter = eventQuery?.data;
+
+    if (filter !== "") {
+      toFilter = eventQuery?.data?.filter((event) => {
+        const eventDate = getDate(event.event.startTime);
+        return eventDate === filter;
+      });
     }
 
-    const filteredEvent = eventQuery?.data?.filter((event) => {
-      const eventDate = getDate(event.event.startTime);
-      return eventDate === date;
-    });
-
-    setEventList(filteredEvent);
-  };
-
-  useEffect(() => {
     setEventList(
-      eventQuery?.data?.sort((a: Attendance, b: Attendance) => {
+      toFilter?.sort((a: Attendance, b: Attendance) => {
         const dateA = getDate(a.event.startTime);
         const dateB = getDate(b.event.startTime);
 
@@ -243,7 +244,7 @@ export const MenteeAttendance = () => {
         return a.event.startTime > b.event.startTime ? 1 : -1;
       })
     );
-  }, [eventQuery?.data]);
+  }, [eventQuery?.data, filter]);
 
   return (
     <Flex flexDir='column' gap={10}>
@@ -251,7 +252,7 @@ export const MenteeAttendance = () => {
         placeholder='Pilih tanggal'
         variant='filled'
         bg='#1C939A'
-        onChange={(e) => handleSelect(e.target.value)}
+        onChange={(e) => setFilter(e.target.value)}
         transition='all 0.2s ease-in-out'
         _hover={{
           opacity: 0.8
