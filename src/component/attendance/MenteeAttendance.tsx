@@ -227,7 +227,7 @@ export const MenteeAttendance = () => {
     let toFilter = eventQuery?.data;
 
     if (filter !== "") {
-      toFilter = eventQuery?.data?.filter((event) => {
+      toFilter = toFilter?.filter((event) => {
         const eventDate = getDate(event.event.startTime);
         return eventDate === filter;
       });
