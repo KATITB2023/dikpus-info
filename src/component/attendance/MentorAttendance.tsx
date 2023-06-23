@@ -19,6 +19,7 @@ import { api, type RouterOutputs } from "~/utils/api";
 import { AttendanceStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { TRPCClientError } from "@trpc/client";
+import { match } from "ts-pattern";
 
 const getEditingArr = (
   attendanceList: RouterOutputs["attendance"]["getAttendance"]["event"]
@@ -148,17 +149,10 @@ export const MentorAttendance = () => {
       (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
 
-      let changedStatus: AttendanceStatus;
-      switch (status) {
-        case "HADIR":
-          changedStatus = AttendanceStatus.HADIR;
-          break;
-        case "IZIN":
-          changedStatus = AttendanceStatus.IZIN;
-          break;
-        default:
-          changedStatus = AttendanceStatus.TIDAK_HADIR;
-      }
+      const changedStatus = match(status)
+        .with("HADIR", () => AttendanceStatus.HADIR)
+        .with("IZIN", () => AttendanceStatus.IZIN)
+        .otherwise(() => AttendanceStatus.TIDAK_HADIR);
 
       try {
         const result = await attendanceMutation.mutateAsync({

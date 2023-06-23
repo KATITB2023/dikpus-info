@@ -59,12 +59,11 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (!event) {
+      if (!event)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Event not found"
         });
-      }
 
       const attendance = await ctx.prisma.attendance.findFirst({
         where: {
@@ -73,28 +72,25 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (attendance && attendance.status === AttendanceStatus.HADIR) {
+      if (attendance && attendance.status === AttendanceStatus.HADIR)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Attendance already set"
         });
-      }
 
       const currentTime = new Date(Date.now());
 
-      if (currentTime < event.startTime) {
+      if (currentTime < event.startTime)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Event not yet started"
         });
-      }
 
-      if (currentTime > event.endTime) {
+      if (currentTime > event.endTime)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Event is finished"
         });
-      }
 
       await ctx.prisma.attendance.updateMany({
         where: {
@@ -251,12 +247,11 @@ export const attendanceRouter = createTRPCRouter({
         }
       });
 
-      if (input.kehadiran !== AttendanceStatus.HADIR && !input.reason) {
+      if (input.kehadiran !== AttendanceStatus.HADIR && !input.reason)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Please provide a reason"
         });
-      }
 
       await ctx.prisma.attendanceReason.upsert({
         where: {

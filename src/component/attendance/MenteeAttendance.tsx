@@ -21,6 +21,7 @@ import { AttendanceStatus, type Event } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
 import { saveAs } from "file-saver";
 import Link from "next/link";
+import { match } from "ts-pattern";
 import { api } from "~/utils/api";
 import { getDate, getDateList, validTime, afterTime } from "~/utils/date";
 import { FolderEnum, downloadFile } from "~/utils/file";
@@ -85,10 +86,6 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
   const downloadMutation = api.storage.generateURLForDownload.useMutation();
   const absenMutation = api.attendance.setAttendance.useMutation();
   const tanggal = getDate(attendance.event.startTime);
-  // const waktu = getTwoTime(
-  //   attendance.event.startTime,
-  //   attendance.event.endTime
-  // );
   const canAbsen = validTime(
     attendance.event.startTime,
     attendance.event.endTime
@@ -131,7 +128,7 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
       toast({
         title: "Success",
         status: "success",
-        description: result?.message,
+        description: result.message,
         duration: 2000,
         isClosable: true,
         position: "top"
@@ -154,10 +151,17 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
     setLoading(false);
   };
 
+  const displayStatus = (status: AttendanceStatus) => {
+    return match(status)
+      .with(AttendanceStatus.HADIR, () => "Hadir")
+      .with(AttendanceStatus.IZIN, () => "Izin")
+      .with(AttendanceStatus.TIDAK_HADIR, () => "Tidak Hadir")
+      .exhaustive();
+  };
+
   return (
     <Tr>
       <Td>{tanggal}</Td>
-      {/* <Td>{waktu}</Td> */}
       <Td>{attendance.event.title}</Td>
       <Td>
         {attendance.event.materialPath !== null ? (
@@ -183,7 +187,7 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
       <Td>
         {alreadyAbsen ? (
           <TableButton
-            text={attendance.status.toLowerCase()}
+            text={displayStatus(attendance.status)}
             bg='transparent'
           />
         ) : canAbsen ? (
@@ -198,7 +202,7 @@ const TableRow = ({ attendance }: { attendance: Attendance }) => {
           )
         ) : absenDahLewat ? (
           <TableButton
-            text={attendance.status.toLowerCase().replaceAll("_", " ")}
+            text={displayStatus(attendance.status)}
             bg='transparent'
           />
         ) : (
@@ -216,15 +220,15 @@ export const MenteeAttendance = () => {
   });
 
   const [eventList, setEventList] = useState<Attendance[] | undefined>(
-    eventQuery?.data
+    eventQuery.data
   );
   const [filter, setFilter] = useState<string>("");
 
-  const dateList = getDateList(eventQuery?.data);
+  const dateList = getDateList(eventQuery.data);
   const tableHeader = ["Tanggal", "Topik", "Materi", "Video", "Absen"];
 
   useEffect(() => {
-    let toFilter = eventQuery?.data;
+    let toFilter = eventQuery.data;
 
     if (filter !== "") {
       toFilter = toFilter?.filter((event) => {
@@ -235,13 +239,11 @@ export const MenteeAttendance = () => {
 
     setEventList(
       toFilter?.sort((a: Attendance, b: Attendance) => {
-        const dateA = getDate(a.event.startTime);
-        const dateB = getDate(b.event.startTime);
-
-        // whygini?LINTERCUK
-        if (dateA < dateB) return 1;
-        if (dateA > dateB) return -1;
-        return a.event.startTime > b.event.startTime ? 1 : -1;
+        return a.event.startTime > b.event.startTime
+          ? 1
+          : a.event.startTime < b.event.startTime
+          ? -1
+          : 0;
       })
     );
   }, [eventQuery?.data, filter]);
@@ -264,28 +266,26 @@ export const MenteeAttendance = () => {
         }}
         w='fit-content'
       >
-        {dateList
-          ? dateList.map((date, index) => <option key={index}>{date}</option>)
-          : null}
+        {dateList.map((date, index) => (
+          <option key={index}>{date}</option>
+        ))}
       </Select>
       <TableContainer>
         <Table variant='unstyled'>
           <Thead borderBottom='1px solid'>
             <Tr>
-              {tableHeader.map((header, index) => {
-                return (
-                  <Th fontFamily='SomarRounded-Bold' key={index}>
-                    {header}
-                  </Th>
-                );
-              })}
+              {tableHeader.map((header, index) => (
+                <Th fontFamily='SomarRounded-Bold' key={index}>
+                  {header}
+                </Th>
+              ))}
             </Tr>
           </Thead>
           <Tbody>
             {eventList && eventList?.length > 0 ? (
-              eventList.map((item: Attendance, index: number) => {
-                return <TableRow attendance={item} key={index} />;
-              })
+              eventList.map((item: Attendance, index: number) => (
+                <TableRow attendance={item} key={index} />
+              ))
             ) : (
               <Tr>
                 <Td colSpan={6} textAlign='center'>

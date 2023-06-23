@@ -8,12 +8,11 @@ const prisma = new PrismaClient();
 
 interface RawData {
   nim: string;
-  password: string;
-  rawGroup: string;
+  classId: string;
 }
 
 async function main() {
-  const groupFilePath = path.resolve(__dirname, "data/mentor.csv");
+  const groupFilePath = path.resolve(__dirname, "data/student-class.csv");
   const groupFileContent = fs.readFileSync(groupFilePath, {
     encoding: "utf-8"
   });
@@ -22,39 +21,37 @@ async function main() {
     groupFileContent,
     {
       delimiter: ",",
-      columns: ["nim", "password", "rawGroup"]
+      columns: ["nim", "classId"]
     },
     async (err, records: RawData[]) => {
       if (err) console.error(err);
-      const mentor = await Promise.all(
+      const studentClass = await Promise.all(
         records.map(async (record) => {
-          const group = await prisma.group.findUnique({
+          const student = await prisma.student.findFirst({
             where: {
-              group: parseInt(record.rawGroup)
-            }
-          });
-
-          if (!group) throw new Error(`Group ${record.rawGroup} not found`);
-
-          return await prisma.user.create({
-            data: {
-              nim: record.nim,
-              passwordHash: await hash(record.password, 10),
-              role: UserRole.MENTOR,
-              mentor: {
-                create: {
-                  mentorGroup: {
-                    create: {
-                      groupId: group.id
-                    }
-                  }
-                }
+              user: {
+                nim: record.nim
               }
             }
           });
+
+          if (!student) throw new Error(`Student ${record.nim} not found`);
+
+          try {
+            return await prisma.studentClass.create({
+              data: {
+                studentId: student.id,
+                classId: record.classId
+              }
+            });
+          } catch (e) {
+            throw new Error(
+              `Record ${record.nim} ${record.classId} violates constraint`
+            );
+          }
         })
       );
-      console.log(mentor);
+      console.log(studentClass);
     }
   );
 }

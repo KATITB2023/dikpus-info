@@ -158,7 +158,7 @@ function AssignmentBox({
           <Box display={"inline-flex"} justifyItems='left' alignItems='bottom'>
             <Text fontSize={"20px"} fontWeight={"700"}>
               Deadline :{" "}
-              {tugas.deadline?.toLocaleString("id-ID", {
+              {tugas.deadline.toLocaleString("id-ID", {
                 day: "numeric",
                 month: "long",
                 year: "numeric"
@@ -351,9 +351,7 @@ export default function MenteeAssigment() {
 
     if (submittedA && !submittedB) return 1;
     if (!submittedA && submittedB) return -1;
-    return (
-      new Date(a.deadline ?? 0).getTime() - new Date(b.deadline ?? 0).getTime()
-    );
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
 
   if (assignmentsDetails && assignmentsDetails.length > 0) {

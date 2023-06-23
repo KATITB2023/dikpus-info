@@ -18,11 +18,14 @@ import {
   useToast,
   Avatar,
   Spinner,
-  useDisclosure
+  useDisclosure,
+  Select
 } from "@chakra-ui/react";
+import { Gender } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
 import { useRouter } from "next/router";
 import { useState, useRef } from "react";
+import { match } from "ts-pattern";
 import { api } from "~/utils/api";
 import { FolderEnum, AllowableFileTypeEnum, uploadFile } from "~/utils/file";
 
@@ -33,6 +36,7 @@ interface EditingModalProps {
     firstName: string;
     lastName?: string;
     phoneNumber?: string;
+    gender?: Gender;
     imageUrl?: string;
   };
   toggleEditing: () => void;
@@ -52,6 +56,7 @@ export const EditingModal = ({
   const [phoneNumber, setPhoneNumber] = useState<string | undefined>(
     initialState.phoneNumber
   );
+  const [gender, setGender] = useState<Gender | undefined>(initialState.gender);
   const [imageUrl, setImageUrl] = useState<string | undefined>(
     initialState.imageUrl
   );
@@ -89,6 +94,7 @@ export const EditingModal = ({
         firstName,
         lastName,
         phoneNumber,
+        gender,
         profileURL: newImageUrl
       });
 
@@ -170,6 +176,41 @@ export const EditingModal = ({
                       border='1px solid white'
                       fontSize='sm'
                     />
+                  </Td>
+                </Tr>
+                <Tr>
+                  <Td className='modal-row'>Gender</Td>
+                  <Td>
+                    <Select
+                      placeholder='Pilih gender'
+                      variant='filled'
+                      bg='#1C939A'
+                      onChange={(e) =>
+                        setGender(
+                          match(e.target.value)
+                            .with("Male", () => Gender.MALE)
+                            .with("Female", () => Gender.FEMALE)
+                            .otherwise(() => undefined)
+                        )
+                      }
+                      transition='all 0.2s ease-in-out'
+                      _hover={{
+                        opacity: 0.8
+                      }}
+                      css={{
+                        option: {
+                          background: "#1C939A"
+                        }
+                      }}
+                      w='fit-content'
+                    >
+                      <option key='Male' value='Male'>
+                        Male
+                      </option>
+                      <option key='Female' value='Female'>
+                        Female
+                      </option>
+                    </Select>
                   </Td>
                 </Tr>
               </Tbody>

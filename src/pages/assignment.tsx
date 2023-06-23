@@ -7,9 +7,10 @@ import { Redirect } from "~/component/Redirect";
 
 export default function Assignment() {
   const { data: session } = useSession();
-  const role = session?.user.role;
 
   if (!session) return <Redirect />;
+
+  const role = session.user.role;
 
   return (
     <PageLayout title='Tugas'>
