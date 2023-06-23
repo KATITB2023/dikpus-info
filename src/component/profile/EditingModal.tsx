@@ -244,6 +244,7 @@ export const EditingModal = ({
             )}
             <Input
               type='file'
+              accept='image/png'
               ref={profilePicRef}
               onChange={profilePicChangeHandler}
               display='none'
