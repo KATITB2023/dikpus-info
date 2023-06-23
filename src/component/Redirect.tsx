@@ -1,7 +1,6 @@
 import { Flex, Text, Button } from "@chakra-ui/react";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
-import Link from "next/link";
 
 export const Redirect = () => {
   return (
