@@ -1,6 +1,5 @@
-import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { parse } from "csv-parse";
-import { hash } from "bcrypt";
 import path from "path";
 import fs from "fs";
 
@@ -12,7 +11,7 @@ interface RawData {
 }
 
 async function main() {
-  const groupFilePath = path.resolve(__dirname, "data/student-class.csv");
+  const groupFilePath = path.resolve(__dirname, "data/student-class-issue.csv");
   const groupFileContent = fs.readFileSync(groupFilePath, {
     encoding: "utf-8"
   });

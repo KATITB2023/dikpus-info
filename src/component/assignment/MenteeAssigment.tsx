@@ -243,6 +243,7 @@ function AssignmentBox({
           </Text>
           <input
             type='file'
+            accept='application/pdf'
             onChange={handleFileChange}
             style={{ display: "none" }}
             id={`browse-files-${tugas.title}`}
