@@ -291,7 +291,7 @@ function AssignmentBox({
                   marginBottom={"2px"}
                   fontSize='lg'
                 >
-                  Upload{" "}
+                  Submit{" "}
                 </Text>
                 <Icon
                   as={MdOutlineFileUpload}
