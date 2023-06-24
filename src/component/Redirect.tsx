@@ -1,6 +1,6 @@
 import { Flex, Text, Button } from "@chakra-ui/react";
+import { signIn } from "next-auth/react";
 import Head from "next/head";
-import Link from "next/link";
 
 export const Redirect = () => {
   return (
@@ -21,18 +21,17 @@ export const Redirect = () => {
       >
         <Text fontFamily='SomarRounded-Bold'>Kamu sepertinya belum login</Text>
         <Text fontSize='lg'>Login skuy :D</Text>
-        <Link href={"/"}>
-          <Button
-            mt={6}
-            bg='#1C939A'
-            color='white'
-            textTransform='capitalize'
-            _hover={{ opacity: 0.8 }}
-            transition='all 0.2 ease-in-out'
-          >
-            Login
-          </Button>
-        </Link>
+        <Button
+          mt={6}
+          bg='#1C939A'
+          color='white'
+          textTransform='capitalize'
+          _hover={{ opacity: 0.8 }}
+          transition='all 0.2 ease-in-out'
+          onClick={() => void signIn()}
+        >
+          Login
+        </Button>
       </Flex>
     </>
   );

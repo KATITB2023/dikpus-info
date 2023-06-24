@@ -20,6 +20,7 @@ import {
 import { FaYoutube, FaUniversity } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { signOut, useSession } from "next-auth/react";
+import { UserRole } from "@prisma/client";
 
 interface Props {
   title: string;
@@ -28,10 +29,10 @@ interface Props {
 
 export default function Navbar({ title, titleOnly }: Props) {
   const { data: session } = useSession();
-  const role = session?.user?.role ?? "MENTOR";
+  const role = session?.user?.role ?? UserRole.MENTOR;
 
   const links = {
-    STUDENT: [
+    [UserRole.STUDENT]: [
       { name: "Profile", href: "/profile", icon: <AiOutlineHome size={20} /> },
       { name: "Absen", href: "/attendance", icon: <BsPeopleFill size={20} /> },
       {
@@ -55,7 +56,7 @@ export default function Navbar({ title, titleOnly }: Props) {
         icon: <MdPassword size={20} />
       }
     ],
-    MENTOR: [
+    [UserRole.MENTOR]: [
       { name: "Absen", href: "/attendance", icon: <BsPeopleFill size={20} /> },
       {
         name: "Tugas",

@@ -158,7 +158,7 @@ function AssignmentBox({
           <Box display={"inline-flex"} justifyItems='left' alignItems='bottom'>
             <Text fontSize={"20px"} fontWeight={"700"}>
               Deadline :{" "}
-              {tugas.deadline?.toLocaleString("id-ID", {
+              {tugas.deadline.toLocaleString("id-ID", {
                 day: "numeric",
                 month: "long",
                 year: "numeric"
@@ -243,6 +243,7 @@ function AssignmentBox({
           </Text>
           <input
             type='file'
+            accept='application/pdf'
             onChange={handleFileChange}
             style={{ display: "none" }}
             id={`browse-files-${tugas.title}`}
@@ -290,7 +291,7 @@ function AssignmentBox({
                   marginBottom={"2px"}
                   fontSize='lg'
                 >
-                  Upload{" "}
+                  Submit{" "}
                 </Text>
                 <Icon
                   as={MdOutlineFileUpload}
@@ -351,9 +352,7 @@ export default function MenteeAssigment() {
 
     if (submittedA && !submittedB) return 1;
     if (!submittedA && submittedB) return -1;
-    return (
-      new Date(a.deadline ?? 0).getTime() - new Date(b.deadline ?? 0).getTime()
-    );
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
 
   if (assignmentsDetails && assignmentsDetails.length > 0) {

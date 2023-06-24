@@ -108,6 +108,7 @@ export default function ProfileBody() {
                 firstName: student.firstName,
                 lastName: student.lastName || undefined,
                 phoneNumber: student.phoneNumber || undefined,
+                gender: student.gender || undefined,
                 imageUrl: generateURLForDownload.data?.url
               }}
             />
@@ -143,7 +144,7 @@ export default function ProfileBody() {
                   data={
                     student.group ? (
                       <Link href={student.group.zoomLink} target='_blank'>
-                        {student.group?.zoomLink}
+                        {student.group.zoomLink}
                       </Link>
                     ) : (
                       "Belum ada data"

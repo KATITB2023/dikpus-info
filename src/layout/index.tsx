@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import Head from "next/head";
-import Navbar from "./Navbar";
 import { motion } from "framer-motion";
+import Navbar from "~/layout/Navbar";
 
 interface Props {
   title: string;

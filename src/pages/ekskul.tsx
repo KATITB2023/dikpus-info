@@ -2,22 +2,12 @@ import { useSession } from "next-auth/react";
 import PageLayout from "~/layout";
 import { Redirect } from "~/component/Redirect";
 import { UserRole } from "@prisma/client";
-import {
-  Center,
-  Text,
-  Heading,
-  Flex,
-  Box,
-  Button
-} from "@chakra-ui/react";
+import { Center, Text, Heading, Flex, Box, Button } from "@chakra-ui/react";
 import { api } from "~/utils/api";
 
 export default function Ekskul() {
   const { data: session } = useSession();
-
   const getBroadcast = api.profile.getBroadcast.useQuery();
-
-  const broadcastData = getBroadcast.data?.broadcasts;
 
   if (!session) return <Redirect />;
 
@@ -50,17 +40,17 @@ export default function Ekskul() {
           flexDir={{ base: "column", md: "row" }}
           gap={10}
         >
-          {broadcastData?.map((broadcast) => {
+          {getBroadcast.data?.broadcasts?.map((broadcast) => {
             return (
               <Flex
-                key={broadcast.broadcastTemplate[0]}
+                key={broadcast.broadcastTemplate}
                 alignItems='center'
                 justifyContent='center'
                 flexDir='column'
                 gap={10}
               >
                 <Box
-                  key={broadcast.broadcastTemplate[0]}
+                  key={broadcast.broadcastTemplate}
                   outline={"2px solid #1C939A"}
                   p={2}
                 >
@@ -70,13 +60,13 @@ export default function Ekskul() {
                     fontFamily='SomarRounded-Bold'
                     marginBottom={2}
                   >
-                    {"Kelas " + broadcast.type}
+                    {`Kelas ${broadcast.type}`}
                   </Text>
                   <Text whiteSpace={"pre-wrap"}>
                     {broadcast.broadcastTemplate}
                   </Text>
                 </Box>
-                {broadcast.zoomLink && (
+                {
                   <Button
                     as='a'
                     href={broadcast.zoomLink}
@@ -85,7 +75,7 @@ export default function Ekskul() {
                   >
                     Join Zoom
                   </Button>
-                )}
+                }
               </Flex>
             );
           })}

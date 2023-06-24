@@ -19,6 +19,7 @@ import { api, type RouterOutputs } from "~/utils/api";
 import { AttendanceStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { TRPCClientError } from "@trpc/client";
+import { match } from "ts-pattern";
 
 const getEditingArr = (
   attendanceList: RouterOutputs["attendance"]["getAttendance"]["event"]
@@ -72,6 +73,7 @@ export const MentorAttendance = () => {
         }
       });
     });
+
     setGroupList([...temp]);
   }, [attendanceList]);
 
@@ -148,17 +150,10 @@ export const MentorAttendance = () => {
       (temp[index1] as boolean[])[index2] = false;
       setEditStatus(temp);
 
-      let changedStatus: AttendanceStatus;
-      switch (status) {
-        case "HADIR":
-          changedStatus = AttendanceStatus.HADIR;
-          break;
-        case "IZIN":
-          changedStatus = AttendanceStatus.IZIN;
-          break;
-        default:
-          changedStatus = AttendanceStatus.TIDAK_HADIR;
-      }
+      const changedStatus = match(status)
+        .with("HADIR", () => AttendanceStatus.HADIR)
+        .with("IZIN", () => AttendanceStatus.IZIN)
+        .otherwise(() => AttendanceStatus.TIDAK_HADIR);
 
       try {
         const result = await attendanceMutation.mutateAsync({
@@ -254,11 +249,9 @@ export const MentorAttendance = () => {
             }
           }}
         >
-          {eventList
-            ? eventList.map((event, index: number) => {
-                return <option key={index}>{event.title}</option>;
-              })
-            : null}
+          {eventList?.map((event, index: number) => {
+            return <option key={index}>{event.title}</option>;
+          })}
         </Select>
         <Select
           placeholder='Pilih kelompok'
@@ -275,124 +268,120 @@ export const MentorAttendance = () => {
             }
           }}
         >
-          {groupList
-            ? groupList.map((group, index: number) => {
-                return <option key={index}>{group}</option>;
-              })
-            : null}
+          {groupList?.map((group, index: number) => {
+            return <option key={index}>{group}</option>;
+          })}
         </Select>
       </HStack>
       <VStack spacing={8} alignItems='flex-start'>
-        {filteredList
-          ? filteredList.map((event, index1) => {
-              return (
-                <VStack
-                  alignItems='flex-start'
-                  spacing={5}
-                  key={`${index1}-${event.title}`}
-                >
-                  <Heading size='lg'>{event.title}</Heading>
-                  <TableContainer>
-                    <Table variant='unstyled'>
-                      <Tbody>
-                        {event.attendances.map((item, index2) => {
-                          return (
-                            <Tr key={index2}>
-                              <Td>
-                                {editStatus?.[index1]?.[index2] ? (
-                                  <>
-                                    <Button
-                                      variant='ghost'
-                                      _hover={{
-                                        background: "#25263E"
-                                      }}
-                                      onClick={() =>
-                                        void handleClickSave(index1, index2)
-                                      }
-                                    >
-                                      <HiOutlineCheck color='white' />
-                                    </Button>
-                                    <Button
-                                      variant='ghost'
-                                      _hover={{
-                                        background: "#761300"
-                                      }}
-                                      onClick={() =>
-                                        handleClickDiscard(index1, index2)
-                                      }
-                                    >
-                                      <HiOutlineX color='white' />
-                                    </Button>{" "}
-                                  </>
-                                ) : (
-                                  <>
-                                    <Button
-                                      variant='ghost'
-                                      _hover={{
-                                        background: "#25263E"
-                                      }}
-                                      onClick={() =>
-                                        handleClickEdit(index1, index2)
-                                      }
-                                    >
-                                      <HiPencil color='white' />
-                                    </Button>
-                                  </>
-                                )}
-                              </Td>
-                              <Td>{`${item.student.firstName} ${
-                                item.student.lastName ?? ""
-                              }`}</Td>
-                              <Td>Kelompok {item.student.group.group}</Td>
-                              <Td>
-                                {editStatus?.[index1]?.[index2] ? (
-                                  <Select
-                                    variant='filled'
-                                    bg='#1C939A'
-                                    id={`status-${index1}-${index2}`}
-                                    defaultValue={item.status}
-                                    transition='all 0.2s ease-in-out'
-                                    _hover={{
-                                      opacity: 0.8
-                                    }}
-                                    css={{
-                                      option: {
-                                        background: "#1C939A"
-                                      }
-                                    }}
-                                  >
-                                    <option>HADIR</option>
-                                    <option>IZIN</option>
-                                    <option>TIDAK_HADIR</option>
-                                  </Select>
-                                ) : (
-                                  item.status
-                                )}
-                              </Td>
-                              <Td>
-                                {editStatus?.[index1]?.[index2] ? (
-                                  <FormControl>
-                                    <Input
-                                      placeholder='Masukkan alasan...'
-                                      variant='flushed'
-                                      id={`alasan-${index1}-${index2}`}
-                                      defaultValue={item.reason?.reason ?? ""}
-                                    />
-                                  </FormControl>
-                                ) : (
-                                  item.reason?.reason
-                                )}
-                              </Td>
-                            </Tr>
-                          );
-                        })}
-                      </Tbody>
-                    </Table>
-                  </TableContainer>
-                </VStack>
-              );
-            })
-          : null}
+        {filteredList?.map((event, index1) => {
+          return (
+            <VStack
+              alignItems='flex-start'
+              spacing={5}
+              key={`${index1}-${event.title}`}
+            >
+              <Heading size='lg'>{event.title}</Heading>
+              <TableContainer>
+                <Table variant='unstyled'>
+                  <Tbody>
+                    {event.attendances.map((item, index2) => {
+                      return (
+                        <Tr key={index2}>
+                          <Td>
+                            {editStatus?.[index1]?.[index2] ? (
+                              <>
+                                <Button
+                                  variant='ghost'
+                                  _hover={{
+                                    background: "#25263E"
+                                  }}
+                                  onClick={() =>
+                                    void handleClickSave(index1, index2)
+                                  }
+                                >
+                                  <HiOutlineCheck color='white' />
+                                </Button>
+                                <Button
+                                  variant='ghost'
+                                  _hover={{
+                                    background: "#761300"
+                                  }}
+                                  onClick={() =>
+                                    void handleClickDiscard(index1, index2)
+                                  }
+                                >
+                                  <HiOutlineX color='white' />
+                                </Button>{" "}
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant='ghost'
+                                  _hover={{
+                                    background: "#25263E"
+                                  }}
+                                  onClick={() =>
+                                    void handleClickEdit(index1, index2)
+                                  }
+                                >
+                                  <HiPencil color='white' />
+                                </Button>
+                              </>
+                            )}
+                          </Td>
+                          <Td>{`${item.student.firstName} ${
+                            item.student.lastName ?? ""
+                          }`}</Td>
+                          <Td>Kelompok {item.student.group.group}</Td>
+                          <Td>
+                            {editStatus?.[index1]?.[index2] ? (
+                              <Select
+                                variant='filled'
+                                bg='#1C939A'
+                                id={`status-${index1}-${index2}`}
+                                defaultValue={item.status}
+                                transition='all 0.2s ease-in-out'
+                                _hover={{
+                                  opacity: 0.8
+                                }}
+                                css={{
+                                  option: {
+                                    background: "#1C939A"
+                                  }
+                                }}
+                              >
+                                <option>HADIR</option>
+                                <option>IZIN</option>
+                                <option>TIDAK_HADIR</option>
+                              </Select>
+                            ) : (
+                              item.status
+                            )}
+                          </Td>
+                          <Td>
+                            {editStatus?.[index1]?.[index2] ? (
+                              <FormControl>
+                                <Input
+                                  placeholder='Masukkan alasan...'
+                                  variant='flushed'
+                                  id={`alasan-${index1}-${index2}`}
+                                  defaultValue={item.reason?.reason ?? ""}
+                                />
+                              </FormControl>
+                            ) : (
+                              item.reason?.reason
+                            )}
+                          </Td>
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </VStack>
+          );
+        })}
       </VStack>
     </VStack>
   );

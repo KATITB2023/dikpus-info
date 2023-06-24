@@ -9,6 +9,7 @@ import { compare, hash } from "bcrypt";
 import { sprintf } from "sprintf-js";
 import { TRPCError } from "@trpc/server";
 import { env } from "~/env.mjs";
+import { Gender } from "@prisma/client";
 
 export const profileRouter = createTRPCRouter({
   getProfile: studentProcedure.query(async ({ ctx }) => {
@@ -47,7 +48,8 @@ export const profileRouter = createTRPCRouter({
         profileURL: z.string().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
-        phoneNumber: z.string().optional()
+        phoneNumber: z.string().optional(),
+        gender: z.nativeEnum(Gender).optional()
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,7 +61,8 @@ export const profileRouter = createTRPCRouter({
           imagePath: input.profileURL,
           firstName: input.firstName,
           lastName: input.lastName,
-          phoneNumber: input.phoneNumber
+          phoneNumber: input.phoneNumber,
+          gender: input.gender
         }
       });
 
