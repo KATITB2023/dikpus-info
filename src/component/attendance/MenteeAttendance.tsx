@@ -239,9 +239,9 @@ export const MenteeAttendance = () => {
 
     setEventList(
       toFilter?.sort((a: Attendance, b: Attendance) => {
-        return a.event.startTime > b.event.startTime
+        return a.event.startTime < b.event.startTime
           ? 1
-          : a.event.startTime < b.event.startTime
+          : a.event.startTime > b.event.startTime
           ? -1
           : 0;
       })
