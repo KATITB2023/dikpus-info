@@ -35,7 +35,7 @@ function AssignmentBox({
   );
 
   const pastDeadline = new Date(Date.now()) > tugas.deadline;
-  const isRed = pastDeadline && !submitted;
+  const isRed = pastDeadline && !submitted ? true : submitted ? false : true;
 
   const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
