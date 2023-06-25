@@ -121,12 +121,11 @@ export const attendanceRouter = createTRPCRouter({
     });
 
     // error handling (kalau gak ada ini yg students gak mau jalan)
-    if (!mentor) {
+    if (!mentor)
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Mentor not found"
       });
-    }
 
     // get mentor group
     const mentorGroups = await ctx.prisma.mentorGroup.findMany({
@@ -138,12 +137,11 @@ export const attendanceRouter = createTRPCRouter({
       }
     });
 
-    if (mentorGroups.length === 0) {
+    if (mentorGroups.length === 0)
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Mentor group not found"
       });
-    }
 
     const groups = await ctx.prisma.group.findMany({
       where: {
@@ -157,12 +155,11 @@ export const attendanceRouter = createTRPCRouter({
       }
     });
 
-    if (groups.length === 0) {
+    if (groups.length === 0)
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Group not found"
       });
-    }
 
     // get all studentId
     const students = await ctx.prisma.student.findMany({

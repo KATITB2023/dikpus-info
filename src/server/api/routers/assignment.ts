@@ -141,6 +141,29 @@ export const assignmentRouter = createTRPCRouter({
           message: "Student not found"
         });
 
+      const assignment = await ctx.prisma.assignment.findUnique({
+        where: {
+          id: input.assignmentId
+        },
+        select: {
+          deadline: true
+        }
+      });
+
+      if (!assignment)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Assignment not found"
+        });
+
+      const currentTime = new Date(Date.now());
+
+      if (currentTime > assignment.deadline)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Assignment deadline has passed"
+        });
+
       await ctx.prisma.assignmentSubmission.updateMany({
         where: {
           studentId: student.id,

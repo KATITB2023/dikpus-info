@@ -30,12 +30,12 @@ function AssignmentBox({
   const [loading, setLoading] = useState(false);
   const generateURLMutation = api.storage.generateURLForUpload.useMutation();
   const uploadMutation = api.assignment.updateSubmission.useMutation();
-  const [submitted, setSubmitted] = useState(tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null)
+  const [submitted, setSubmitted] = useState(
+    tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null
+  );
 
-  const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
-  // const submitted =
-    // tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null;
-  const isRed = pastDeadline && !submitted ? true : (submitted ? false : true);
+  const pastDeadline = new Date(Date.now()) > tugas.deadline;
+  const isRed = pastDeadline && !submitted;
 
   const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
@@ -189,7 +189,7 @@ function AssignmentBox({
               background={!isRed ? "#E6FEED" : "#FEE9E6"}
               border={!isRed ? "2px solid #069154" : "2px solid #F43518"}
             >
-              {(pastDeadline && !submitted)
+              {pastDeadline && !submitted
                 ? "Tidak mengumpulkan"
                 : submitted
                 ? "Sudah terkumpul"
@@ -197,32 +197,32 @@ function AssignmentBox({
             </Text>
           </Box>
           {submitted && !pastDeadline && (
-              <Button
-                padding={"0px 40px 0px 20px"}
-                backgroundColor={"#1C939A"}
-                color={"white"}
-                fontWeight={"normal"}
-                _hover={{ background: "#117584" }}
-                cursor={"pointer"}
-                onClick={() => void handleReupload()}
+            <Button
+              padding={"0px 40px 0px 20px"}
+              backgroundColor={"#1C939A"}
+              color={"white"}
+              fontWeight={"normal"}
+              _hover={{ background: "#117584" }}
+              cursor={"pointer"}
+              onClick={() => void handleReupload()}
+            >
+              <Text
+                marginRight={"10px"}
+                marginTop={"5px"}
+                marginBottom={"2px"}
+                fontSize='md'
               >
-                <Text
-                  marginRight={"10px"}
-                  marginTop={"5px"}
-                  marginBottom={"2px"}
-                  fontSize='md'
-                >
-                  Reupload{" "}
-                </Text>
-                <Icon
-                  as={MdOutlineFileUpload}
-                  w={7}
-                  h={7}
-                  marginRight={"-30px"}
-                  color={"white"}
-                />
-              </Button>
-            )}
+                Reupload{" "}
+              </Text>
+              <Icon
+                as={MdOutlineFileUpload}
+                w={7}
+                h={7}
+                marginRight={"-30px"}
+                color={"white"}
+              />
+            </Button>
+          )}
         </Flex>
       </Flex>
       <Flex
@@ -232,7 +232,7 @@ function AssignmentBox({
         onDragLeave={handleDragLeave}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        display={(submitted || pastDeadline) ? "none" : "flex"}
+        display={submitted || pastDeadline ? "none" : "flex"}
       >
         <Flex
           background={
@@ -336,7 +336,6 @@ function AssignmentBox({
                 />
               </Button>
             </Flex>
-            
           </>
         )}
       </Flex>
@@ -387,7 +386,7 @@ export default function MenteeAssigment() {
 
     if (submittedA && !submittedB) return 1;
     if (!submittedA && submittedB) return -1;
-    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    return a.deadline.getTime() - b.deadline.getTime();
   });
 
   if (assignmentsDetails && assignmentsDetails.length > 0) {
