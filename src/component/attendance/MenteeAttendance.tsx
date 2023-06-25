@@ -239,11 +239,13 @@ export const MenteeAttendance = () => {
 
     setEventList(
       toFilter?.sort((a: Attendance, b: Attendance) => {
-        return a.event.startTime < b.event.startTime
-          ? 1
-          : a.event.startTime > b.event.startTime
-          ? -1
-          : 0;
+        const dateA = getDate(a.event.startTime);
+        const dateB = getDate(b.event.startTime);
+
+        // whygini?LINTERCUK
+        if (dateA < dateB) return 1;
+        if (dateA > dateB) return -1;
+        return a.event.startTime > b.event.startTime ? 1 : -1;
       })
     );
   }, [eventQuery?.data, filter]);
