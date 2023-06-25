@@ -30,11 +30,12 @@ function AssignmentBox({
   const [loading, setLoading] = useState(false);
   const generateURLMutation = api.storage.generateURLForUpload.useMutation();
   const uploadMutation = api.assignment.updateSubmission.useMutation();
+  const [submitted, setSubmitted] = useState(tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null)
 
   const pastDeadline = new Date(Date.now()) > new Date(tugas.deadline);
-  const submitted =
-    tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null;
-  const isRed = pastDeadline || !submitted;
+  // const submitted =
+    // tugas.submission[0] !== undefined && tugas.submission[0].filePath !== null;
+  const isRed = pastDeadline && !submitted ? true : (submitted ? false : true);
 
   const handleDragEnter: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
@@ -74,6 +75,10 @@ function AssignmentBox({
 
   const uploadFileButton = (title: string) => {
     document.getElementById(`browse-files-${title}`)?.click();
+  };
+
+  const handleReupload = () => {
+    setSubmitted(false);
   };
 
   const handleOnClick = async () => {
@@ -131,6 +136,8 @@ function AssignmentBox({
     setLoading(false);
   };
 
+  console.log(tugas.title, submitted, pastDeadline);
+
   return (
     <Flex flexDir={"column"} id={tugas.title} display={""}>
       <Flex
@@ -182,13 +189,40 @@ function AssignmentBox({
               background={!isRed ? "#E6FEED" : "#FEE9E6"}
               border={!isRed ? "2px solid #069154" : "2px solid #F43518"}
             >
-              {pastDeadline
+              {(pastDeadline && !submitted)
                 ? "Tidak mengumpulkan"
                 : submitted
                 ? "Sudah terkumpul"
                 : "Belum terkumpul"}
             </Text>
           </Box>
+          {submitted && !pastDeadline && (
+              <Button
+                padding={"0px 40px 0px 20px"}
+                backgroundColor={"#1C939A"}
+                color={"white"}
+                fontWeight={"normal"}
+                _hover={{ background: "#117584" }}
+                cursor={"pointer"}
+                onClick={() => void handleReupload()}
+              >
+                <Text
+                  marginRight={"10px"}
+                  marginTop={"5px"}
+                  marginBottom={"2px"}
+                  fontSize='md'
+                >
+                  Reupload{" "}
+                </Text>
+                <Icon
+                  as={MdOutlineFileUpload}
+                  w={7}
+                  h={7}
+                  marginRight={"-30px"}
+                  color={"white"}
+                />
+              </Button>
+            )}
         </Flex>
       </Flex>
       <Flex
@@ -198,7 +232,7 @@ function AssignmentBox({
         onDragLeave={handleDragLeave}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        display={submitted ? "none" : "flex"}
+        display={(submitted || pastDeadline) ? "none" : "flex"}
       >
         <Flex
           background={
@@ -302,6 +336,7 @@ function AssignmentBox({
                 />
               </Button>
             </Flex>
+            
           </>
         )}
       </Flex>
