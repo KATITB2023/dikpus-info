@@ -38,6 +38,7 @@ export const assignmentRouter = createTRPCRouter({
     });
   }),
 
+  // TODO: Hilangkan filter
   getAssignmentResult: mentorProcedure.query(async ({ ctx }) => {
     // get mentorId
     const mentor = await ctx.prisma.mentor.findUnique({
@@ -72,19 +73,6 @@ export const assignmentRouter = createTRPCRouter({
     const groupIds = mentorGroups.map((mentorGroup) => mentorGroup.groupId);
 
     const submissionList = await ctx.prisma.assignment.findMany({
-      where: {
-        submission: {
-          some: {
-            student: {
-              group: {
-                id: {
-                  in: groupIds
-                }
-              }
-            }
-          }
-        }
-      },
       select: {
         id: true,
         title: true,
@@ -113,7 +101,12 @@ export const assignmentRouter = createTRPCRouter({
     });
 
     return {
-      submissions: submissionList
+      submissions: submissionList.map((submission) => ({
+        ...submission,
+        submission: submission.submission.filter((sub) =>
+          groupIds.includes(sub.student.group.id)
+        )
+      }))
     };
   }),
 

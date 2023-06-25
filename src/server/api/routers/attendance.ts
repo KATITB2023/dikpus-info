@@ -108,6 +108,7 @@ export const attendanceRouter = createTRPCRouter({
       };
     }),
 
+  // TODO: Hilangkan filter
   getAttendance: mentorProcedure.query(async ({ ctx }) => {
     // get mentorId
     const mentor = await ctx.prisma.mentor.findUnique({
@@ -210,14 +211,12 @@ export const attendanceRouter = createTRPCRouter({
     });
 
     return {
-      event: events.map((event) => {
-        return {
-          ...event,
-          attendances: event.attendances.filter((attendance) =>
-            studentIds.includes(attendance.studentId)
-          )
-        };
-      })
+      event: events.map((event) => ({
+        ...event,
+        attendances: event.attendances.filter((attendance) =>
+          studentIds.includes(attendance.studentId)
+        )
+      }))
     };
   }),
 
