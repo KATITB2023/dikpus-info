@@ -1,6 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { assignmentRouter } from "~/server/api/routers/assignment";
 import { attendanceRouter } from "~/server/api/routers/attendance";
+import { announcementRouter } from "~/server/api/routers/announcement";
 import { profileRouter } from "~/server/api/routers/profile";
 import { storageRouter } from "~/server/api/routers/storage";
 import { utilityRouter } from "~/server/api/routers/utility";
@@ -13,6 +14,7 @@ import { utilityRouter } from "~/server/api/routers/utility";
 export const appRouter = createTRPCRouter({
   assignment: assignmentRouter,
   attendance: attendanceRouter,
+  announcement: announcementRouter,
   profile: profileRouter,
   storage: storageRouter,
   utility: utilityRouter
