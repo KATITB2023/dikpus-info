@@ -197,6 +197,11 @@ model Acceptance {
   clue    Clue    @relation(fields: [clueId], references: [id])
 }
 
+model ShowClue {
+  id   String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  show Boolean @default(false)
+}
+
 enum UserRole {
   MENTOR
   STUDENT
