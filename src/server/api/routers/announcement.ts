@@ -41,6 +41,13 @@ export const announcementRouter = createTRPCRouter({
       }
     })
 
+    if (!announcement) {
+      return {
+        message: "Maaf, Anda tidak lolos proses recruitment.",
+        accepted: false,
+      }
+    }
+
     return announcement;
   }),
 
@@ -80,10 +87,25 @@ export const announcementRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const data = input.data;
 
-      const createAcceptance = await ctx.prisma.acceptance.createMany({
+      await ctx.prisma.acceptance.createMany({
         data
       })
 
-      return createAcceptance;
+      const studentIds = data.map((el) => el.studentId);
+
+      await ctx.prisma.student.updateMany({
+        where: {
+          id: {
+            in: studentIds
+          }
+        },
+        data: {
+          accepted: true
+        }
+      })
+
+      return {
+        status: "Update acceptance successfull"
+      };
     })
 })
