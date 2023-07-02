@@ -41,6 +41,12 @@ export const announcementRouter = createTRPCRouter({
       }
     })
 
+    if (!announcement) {
+      return {
+        message: "Maaf, Anda tidak lolos proses recruitment."
+      }
+    }
+
     return announcement;
   }),
 
