@@ -43,7 +43,8 @@ export const announcementRouter = createTRPCRouter({
 
     if (!announcement) {
       return {
-        message: "Maaf, Anda tidak lolos proses recruitment."
+        message: "Maaf, Anda tidak lolos proses recruitment.",
+        accepted: false,
       }
     }
 
