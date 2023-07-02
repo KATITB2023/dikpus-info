@@ -179,6 +179,11 @@ model StudentClass {
   @@unique([studentId, classId])
 }
 
+model ShowClue {
+  id   String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  show Boolean @default(false)
+}
+
 model Clue {
   id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   divisi String @db.VarChar(255)
