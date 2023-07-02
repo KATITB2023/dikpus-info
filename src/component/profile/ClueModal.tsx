@@ -22,7 +22,7 @@ interface Props {
   nama: string | undefined;
   divisi: string | undefined;
   clue: string | undefined;
-  link: string | undefined;
+  link: string | null | undefined;
 }
 
 export const ClueModal = ({

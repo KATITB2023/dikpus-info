@@ -15,9 +15,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import { EditingModal } from "~/component/profile/EditingModal";
+import { ClueModal } from "~/component/profile/ClueModal";
 import { type RouterOutputs, api } from "~/utils/api";
 import { FolderEnum } from "~/utils/file";
-import { ClueModal } from "./ClueModal";
 
 export default function ProfileBody() {
   const { data: session } = useSession();
