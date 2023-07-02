@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   studentProcedure,
-  protectedProcedure,
+  protectedProcedure
 } from "~/server/api/trpc";
 
 export const announcementRouter = createTRPCRouter({
@@ -18,34 +18,37 @@ export const announcementRouter = createTRPCRouter({
         }
       },
       select: {
-        id: true,
-        studentId: true,
-        clueId: true,
         student: {
           select: {
             firstName: true,
             lastName: true,
             fakultas: true,
             accepted: true,
-            userId: true,
+            userId: true
           }
         },
         clue: {
           select: {
-            id: true,
             divisi: true,
             clue: true,
-            link: true,
+            link: true
           }
         }
       }
-    })
+    });
 
+    // ts di fe meledak kalau ga gini....
     if (!announcement) {
       return {
-        message: "Maaf, Anda tidak lolos proses recruitment.",
-        accepted: false,
-      }
+        student: {
+          accepted: false
+        },
+        clue: {
+          clue: "Dengan berat hati kami mengumumkan bahwa Anda belum lolos proses seleksi calon panitia OSKM 2023. Namun, jika Anda merasa hasil tidak sesuai dengan harapan, Anda dapat melakukan banding di area DPR (Depan Plaza Widya) dengan panitia yang bertugas. Terima kasih, semoga lancar dan tetap semangat!",
+          divisi: "Banding",
+          link: ""
+        }
+      };
     }
 
     return announcement;
@@ -68,7 +71,7 @@ export const announcementRouter = createTRPCRouter({
 
       const createClue = await ctx.prisma.clue.createMany({
         data
-      })
+      });
 
       return createClue;
     }),
@@ -79,7 +82,7 @@ export const announcementRouter = createTRPCRouter({
         data: z.array(
           z.object({
             studentId: z.string().uuid(),
-            clueId: z.string().uuid(),
+            clueId: z.string().uuid()
           })
         )
       })
@@ -89,7 +92,7 @@ export const announcementRouter = createTRPCRouter({
 
       await ctx.prisma.acceptance.createMany({
         data
-      })
+      });
 
       const studentIds = data.map((el) => el.studentId);
 
@@ -102,28 +105,22 @@ export const announcementRouter = createTRPCRouter({
         data: {
           accepted: true
         }
-      })
+      });
 
       return {
         status: "Update acceptance successfull"
       };
     }),
 
-  getShowClue: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid()
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const showClueStatus = await ctx.prisma.showClue.findUnique({
-        where: {
-          id: input.id
-        },
-      })
+  getShowClue: protectedProcedure.query(async ({ ctx }) => {
+    const showClueStatus = await ctx.prisma.showClue.findFirst({
+      select: {
+        show: true
+      }
+    });
 
-      return showClueStatus;
-    }),
+    return showClueStatus;
+  }),
 
   updateShowClue: protectedProcedure
     .input(
@@ -135,12 +132,12 @@ export const announcementRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.showClue.update({
         where: {
-          id: input.id,
+          id: input.id
         },
         data: {
           show: input.show
         }
-      })
+      });
 
       return {
         message: "Updated successfully."
@@ -152,10 +149,10 @@ export const announcementRouter = createTRPCRouter({
       data: {
         show: false
       }
-    })
+    });
 
     return {
       message: "Success"
-    }
+    };
   })
-})
+});

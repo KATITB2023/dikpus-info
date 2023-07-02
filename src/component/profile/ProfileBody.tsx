@@ -7,15 +7,17 @@ import {
   Tbody,
   Tr,
   Td,
-  Box
+  Box,
+  Button
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import { EditingModal } from "~/component/profile/EditingModal";
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import { FolderEnum } from "~/utils/file";
+import { ClueModal } from "./ClueModal";
 
 export default function ProfileBody() {
   const { data: session } = useSession();
@@ -25,6 +27,22 @@ export default function ProfileBody() {
   });
   const generateURLForDownload =
     api.storage.generateURLForDownload.useMutation();
+  const clueQuery = api.announcement.getAnnouncement.useQuery(undefined, {
+    enabled: session?.user !== undefined
+  });
+  const showClue = api.announcement.getShowClue.useQuery();
+
+  // ndak ngerti lagi sama ts
+  const clueObj: RouterOutputs["announcement"]["getAnnouncement"] | undefined =
+    clueQuery.data;
+  const showObj: RouterOutputs["announcement"]["getShowClue"] | undefined =
+    showClue.data;
+
+  const accepted = clueObj?.student?.accepted;
+  const clueText = clueObj?.clue?.clue;
+  const clueDivisi = clueObj?.clue?.divisi;
+  const clueLink = clueObj?.clue?.link;
+  const isShowClue = showObj?.show;
 
   const student = profileQuery.data;
   const imagePath = student?.imagePath;
@@ -156,6 +174,28 @@ export default function ProfileBody() {
           </TableContainer>
         </Flex>
       </Flex>
+      {isShowClue ? (
+        <ClueModal
+          accepted={accepted}
+          nama={student.firstName}
+          divisi={clueDivisi}
+          clue={clueText}
+          link={clueLink}
+        >
+          <Button
+            bg='#1C939A'
+            colorScheme='teal'
+            transition='all 0.2s ease-in-out'
+            color='white'
+            _hover={{
+              opacity: 0.8
+            }}
+            mt={5}
+          >
+            Apa nih?
+          </Button>
+        </ClueModal>
+      ) : null}
     </Flex>
   );
 }
