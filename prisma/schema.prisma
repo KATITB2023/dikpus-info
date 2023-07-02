@@ -185,10 +185,10 @@ model ShowClue {
 }
 
 model Clue {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  divisi String @db.VarChar(255)
-  clue   String @db.Text
-  link   String @db.VarChar(255)
+  id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  divisi String  @db.VarChar(255)
+  clue   String  @db.Text
+  link   String? @db.VarChar(255)
 
   acceptance Acceptance[]
 }
