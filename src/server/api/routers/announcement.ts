@@ -145,5 +145,17 @@ export const announcementRouter = createTRPCRouter({
       return {
         message: "Updated successfully."
       };
+    }),
+
+  createShowClue: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.showClue.create({
+      data: {
+        show: false
+      }
     })
+
+    return {
+      message: "Success"
+    }
+  })
 })
