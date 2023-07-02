@@ -81,6 +81,7 @@ model Student {
   attendance Attendance[]
   submission AssignmentSubmission[]
   class      StudentClass[]
+  acceptance Acceptance?
 }
 
 model Attendance {
@@ -176,6 +177,24 @@ model StudentClass {
   class   Class   @relation(fields: [classId], references: [id])
 
   @@unique([studentId, classId])
+}
+
+model Clue {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  divisi String @db.VarChar(255)
+  clue   String @db.Text
+  link   String @db.VarChar(255)
+
+  acceptance Acceptance[]
+}
+
+model Acceptance {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId String @unique @db.Uuid
+  clueId    String @db.Uuid
+
+  student Student @relation(fields: [studentId], references: [id])
+  clue    Clue    @relation(fields: [clueId], references: [id])
 }
 
 enum UserRole {
