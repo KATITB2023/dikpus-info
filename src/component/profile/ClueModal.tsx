@@ -50,13 +50,13 @@ export const ClueModal = ({
             {accepted ? (
               <>
                 <Text>
-                  Selamat {nama}! Kamu diterima di divisi <b>{divisi}</b> untuk
+                  Selamat {nama}! Kamu diterima di bidang/divisi <b>{divisi}</b> untuk
                   kepanitiaan OSKM 2023 ini! :D
                 </Text>
                 <Text>
                   <br />
                   Nah sekarang, kamu harus mencari tempat pertemuan pertama
-                  divisi kamu. Cari tahu tempat pertemuan kamu dari clue di
+                  bidang/divisi kamu. Cari tahu tempat pertemuan kamu dari clue di
                   bawah ini. Tetap semangat ya!! :)
                 </Text>
                 <Accordion allowToggle mt={5}>
