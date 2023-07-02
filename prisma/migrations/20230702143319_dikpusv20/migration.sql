@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Clue" ALTER COLUMN "link" DROP NOT NULL;
