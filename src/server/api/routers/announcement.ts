@@ -107,5 +107,43 @@ export const announcementRouter = createTRPCRouter({
       return {
         status: "Update acceptance successfull"
       };
+    }),
+
+  getShowClue: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid()
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const showClueStatus = await ctx.prisma.showClue.findUnique({
+        where: {
+          id: input.id
+        },
+      })
+
+      return showClueStatus;
+    }),
+
+  updateShowClue: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        show: z.boolean()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.showClue.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          show: input.show
+        }
+      })
+
+      return {
+        message: "Updated successfully."
+      };
     })
 })
